@@ -34,13 +34,23 @@ def main() -> int:
     args = parser.parse_args()
 
     aggregate_path = REPO / args.results_root / "aggregate" / "aggregate.json"
+    figures_dir = REPO / args.figures
+    out_path = REPO / args.out
+
+    if not aggregate_path.exists() and args.results_root == "results":
+        fallback_agg = REPO / "results-qwen2.5-1.5b" / "aggregate" / "aggregate.json"
+        if fallback_agg.exists():
+            print(f"[info] '{aggregate_path.relative_to(REPO)}' not found; defaulting to '{fallback_agg.relative_to(REPO)}'", file=sys.stderr)
+            aggregate_path = fallback_agg
+            if args.figures == "reports/figures":
+                figures_dir = REPO / "reports" / "figures-qwen2.5-1.5b"
+            if args.out == "reports/FINDINGS.md":
+                out_path = REPO / "reports" / "FINDINGS-qwen2.5-1.5b.md"
+
     if not aggregate_path.exists():
         print(f"{aggregate_path} not found. Run scripts/aggregate_results.py first.",
               file=sys.stderr)
         return 1
-
-    figures_dir = REPO / args.figures
-    out_path = REPO / args.out
 
     # Belt and braces: even with --allow-synthetic, fabricated output must not be
     # written to the path a reader will take for the real findings report.
@@ -54,7 +64,7 @@ def main() -> int:
         )
         return 3
     try:
-        relative = Path(args.figures).relative_to(out_path.parent.relative_to(REPO)).as_posix()
+        relative = Path(figures_dir).relative_to(out_path.parent.relative_to(REPO)).as_posix()
     except ValueError:
         relative = figures_dir.as_posix()
 
@@ -83,6 +93,10 @@ def main() -> int:
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(concise_md, encoding="utf-8")
     full_path.write_text(full_md, encoding="utf-8")
+    if not args.allow_synthetic and out_path.name != "FINDINGS.md":
+        # Keep reports/FINDINGS.md in sync with the primary real report
+        (out_path.parent / "FINDINGS.md").write_text(concise_md, encoding="utf-8")
+        (out_path.parent / "FINDINGS_FULL.md").write_text(full_md, encoding="utf-8")
 
     lines = len(concise_md.splitlines())
     print(f"wrote {out_path.relative_to(REPO)} ({lines} lines) -- the submission document")

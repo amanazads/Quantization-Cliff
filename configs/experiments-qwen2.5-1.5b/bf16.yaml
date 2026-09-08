@@ -16,7 +16,7 @@ model:
 
 precision:
   id: bf16
-  label: "BF16"
+  label: "F16"
   nominal_bits: 16
   family: floating_point
   is_reference: true

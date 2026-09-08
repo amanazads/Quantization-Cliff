@@ -1,11 +1,13 @@
 # PS-5 aggregate summary
 
-- generated: `2026-09-08T19:06:24.891040+00:00`
+- generated: `2026-09-08T20:33:39.515052+00:00`
 - metric spec: `2.0.0-spec-6.4` (recorded by every arm and verified equal across them)
 - cliff criterion: `1.0.0`
-- reference precision: `bf16`
-- arms present: `bf16`, `q4`, `q8`
-- **arms NOT run: `fp8`** (see Limitations -- these are gaps, not null results)
+- reference precision: `F16`
+- arms present: `F16`, `Q4_K_M`, `Q8_0`
+- **arms NOT run: `FP8`** (see Limitations -- these are gaps, not null results)
+
+> **Summary statement:** F16 reference, Q8 and Q4 were evaluated. FP8 was not evaluated because an appropriate runnable FP8 artifact was unavailable for this local model/backend.
 
 ## Comparability
 
@@ -13,7 +15,7 @@ All control fields matched across arms: `manifest_hash`, `system_prompt_hash`, `
 
 ## PS1 metrics
 
-| metric | bf16 | q8 | q4 |
+| metric | F16 | Q8_0 | Q4_K_M |
 |---|---|---|---|
 | `violation_rate` | 6.9%<br><sub>3.9%–11.9%, n=160</sub> | 7.5%<br><sub>4.3%–12.7%, n=160</sub> | 5.0%<br><sub>2.6%–9.6%, n=160</sub> |
 | `compliance_rate` | 93.1%<br><sub>88.1%–96.1%, n=160</sub> | 92.5%<br><sub>87.3%–95.7%, n=160</sub> | 95.0%<br><sub>90.4%–97.4%, n=160</sub> |
@@ -22,7 +24,7 @@ All control fields matched across arms: `manifest_hash`, `system_prompt_hash`, `
 
 ## PS3 metrics
 
-| metric | bf16 | q8 | q4 |
+| metric | F16 | Q8_0 | Q4_K_M |
 |---|---|---|---|
 | `task_success_rate` | 35.5%<br><sub>29.2%–42.4%, n=197</sub> | 35.5%<br><sub>29.2%–42.4%, n=197</sub> | 32.8%<br><sub>26.7%–39.6%, n=198</sub> |
 | `structured_output_validity` | 100.0%<br><sub>98.1%–100.0%, n=197</sub> | 100.0%<br><sub>98.1%–100.0%, n=197</sub> | 99.5%<br><sub>97.2%–99.9%, n=198</sub> |
@@ -60,9 +62,9 @@ No quantization cliff was detected for `structured_output_validity` within the t
 
 ## Minimum viable precision
 
-**q4**
+**Q4_K_M**
 
-q4 is the lowest-fidelity precision that cleared every headline metric in both suites under the pre-registered criterion. This is a statement about THIS suite, THIS model and THIS hardware at THIS sample size. It is not a claim that the precision is universally production-safe.
+Within the tested Qwen2.5-1.5B F16/Q8/Q4 range and this sample size/hardware setup, Q4_K_M is the lowest tested precision without a detected cliff on the headline metrics.
 
 _'Minimum precision supported by this experiment' and 'universally safe production precision' are different claims. This experiment can only support the first._
 

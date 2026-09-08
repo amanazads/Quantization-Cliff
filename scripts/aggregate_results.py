@@ -48,6 +48,15 @@ def main() -> int:
     criterion = load_criterion(str(REPO / args.criterion))
 
     runs = discover_runs(results_root, args.precisions)
+    if not runs and args.results_root == "results":
+        fallback = REPO / "results-qwen2.5-1.5b"
+        fallback_runs = discover_runs(fallback, args.precisions)
+        if fallback_runs:
+            print(f"[info] '{results_root.relative_to(REPO)}' has no runs; defaulting to '{fallback.relative_to(REPO)}'", file=sys.stderr)
+            results_root = fallback
+            out_dir = Path(args.out).resolve() if args.out else results_root / "aggregate"
+            runs = fallback_runs
+
     if not runs:
         print(f"No runs found under {results_root}.\n"
               "Run at least one arm first, e.g.:\n"

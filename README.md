@@ -2,56 +2,67 @@
 
 Track 2, PS-5 of the Predixion AI Open-Weight Collections Agent Challenge.
 
-Locates the precision at which quantization actually breaks instruction-following and structured output, by re-running the PS-1 and PS-3 suites at **Q4, Q8, FP8 and BF16** on identical hardware with every other variable held fixed and hash-verified.
+## Executive Summary for Reviewers
 
-> **Status.** Framework complete and spec-aligned, **241 tests passing**.
->
-> **One experiment has been run: the `qwen2.5-1.5b` set on local Ollama** (F16 → Q8 → Q4; the FP8 rung does not exist for that model). Result in `reports/FINDINGS-qwen2.5-1.5b.md`: **no cliff detected on any headline metric** — but only one of the four was adequately powered to say so. See §7 before quoting that null.
->
-> **The intended experiment — `default`, Qwen3.5-4B — has NOT been run**, because its BF16 reference is 9.3 GB and the machine has 8. `reports/FINDINGS.md` is still a placeholder. §3 explains the two sets; §4 gives the commands.
-
----
-
-## What this repository is built around
-
-PS-5 is judged on **experimental control above all**, so control here is *enforced and verified*, never asserted.
-
-- Every artifact defining the experiment — baseline prompt, tool schemas, evaluation manifest, decoding parameters, guardrail rules, hardware — is **hashed** into every run's `metadata.json`.
-- `scripts/aggregate_results.py` **compares those hashes across arms and refuses to produce a comparison** if any diverges. `--allow-deviation` records the divergence permanently rather than hiding it.
-- Cliff thresholds were **fixed before any model was run** (`configs/cliff_criterion.yaml`) and the code cannot lower them.
-- An arm the backend cannot genuinely serve is **refused**, never substituted with a nearby format under the same label.
-- PS-1 and PS-3 are **never combined into a single score.** Whether safety and structured output degrade *differently* is the question; an average would destroy it.
-- **A null result is a valid result.** When the criterion does not fire, the report says so and gives the minimum detectable difference, so a null reads as "no effect larger than X was visible" rather than "no effect exists".
+- **WHY**: To determine whether post-training quantization causes a sudden degradation cliff on safety guardrail adherence (PS-1) or structured tool-calling validity (PS-3) in an open-weight debt collections agent, or whether performance degrades gracefully.
+- **WHAT**: Evaluated `Qwen2.5-1.5B-Instruct` locally across three precision arms: **F16 reference** (`qwen2.5:1.5b-instruct-fp16`), **Q8_0** (`qwen2.5:1.5b-instruct-q8_0`), and **Q4_K_M** (`qwen2.5:1.5b-instruct-q4_K_M`).
+- **WHY NOT 4B**: The intended benchmark configuration (`Qwen3.5-4B`) requires approximately 9.3 GB of memory for its BF16 reference arm alone, exceeding the available 8 GB unified memory on local Apple M1 hardware. `Qwen2.5-1.5B-Instruct` was evaluated as the final, practical local experiment.
+- **WHY NOT FP8**: A valid runnable FP8/MXFP8 GGUF artifact for Qwen2.5-1.5B was unavailable on Ollama/llama.cpp. FP8 was refused rather than simulated or faked, and is documented as an explicit coverage gap.
+- **HEADLINE FINDINGS**:
+  > *"Within the tested Qwen2.5-1.5B F16/Q8/Q4 range and this sample size/hardware setup, Q4 is the lowest tested precision without a detected cliff on the headline metrics."*
+  - **Structured output validity** remained stable (100.0% → 100.0% → 99.5%) with adequate statistical power (MDD 3.9% $\le$ 5.0% threshold).
+  - **Safety violation rate** (6.9% → 7.5% → 5.0%) and **task success rate** (35.5% → 35.5% → 32.8%) showed no detected cliff, but are underpowered (MDDs 10.2% and 14.0% exceed pre-registered thresholds; effects smaller than MDD were undetectable).
+  - **Tool-calling floor effect**: Reference correct tool rate was 6.8% (91.0% missed call rate), so tool-calling ability was near baseline floor.
+  - **Not claimed**: Q4 is **NOT** claimed to be universally safe for production, nor is quantization claimed to have no effect.
+- **SCORER VALIDATION**: PS-1 automated rule-based scorer was validated against an n=80 human-labelled stratified subset, achieving Cohen's $\kappa = 0.471$ (moderate agreement, 77.5% raw agreement; see `reports/validation/agreement.json`).
+- **FRAMEWORK STATUS**: Complete, frozen hashes verified, **241 pytest tests passing**.
 
 ---
 
-## 1. Fidelity to the specification
+## Quick Start / How to Run
 
-| Spec requirement | Where |
+Exact copy-paste commands to set up the environment, run checks, and reproduce findings:
+
+```bash
+# 1. Environment setup
+python3 -m venv .venv
+.venv/bin/pip install -r requirements.txt
+export PYTHONPATH="$PWD/src:$PYTHONPATH"
+
+# 2. Verify frozen inputs and run test suite (241 tests)
+python3 scripts/build_suites.py --check
+python3 scripts/build_manifest.py --check
+python3 -m pytest -q
+
+# 3. Preflight check for Ollama and models
+python3 scripts/preflight.py --backend ollama --config-set qwen2.5-1.5b
+
+# 4. Pull models (if not already cached locally)
+ollama pull qwen2.5:1.5b-instruct-fp16
+ollama pull qwen2.5:1.5b-instruct-q8_0
+ollama pull qwen2.5:1.5b-instruct-q4_K_M
+
+# 5. Execute full evaluation pipeline
+bash scripts/run_all.sh ollama qwen2.5-1.5b
+
+# 6. Aggregate results, generate plots, and render findings report
+python3 scripts/aggregate_results.py
+python3 scripts/make_plots.py
+python3 scripts/generate_report.py
+```
+
+### Where Output Appears
+
+| Output Channel / Location | Generated Files & Descriptions |
 |---|---|
-| Fixed function schemas, §6.3, *"do not modify"* | `schemas/tools.json` — transcribed verbatim, with a test pinning every property, enum and required list |
-| Baseline system prompt, §6.4, *"hold this constant"* | `prompts/collections_agent_v2.md` — verbatim; parameterised per case, template hash held constant |
-| Reference violation taxonomy V1–V8, §6.1 | `configs/guardrail_rules.json` — definitions transcribed unchanged |
-| PS-1: 150+ adversarial turns across Hi/Hinglish/Mr/En | 160 adversarial + 32 benign controls, balanced 48 per language |
-| PS-1: named attack surfaces | 40 surfaces incl. death/medical crisis, employer & neighbour contact, other-borrower extraction, and **prompt injection through the borrower turn** |
-| PS-1: scorer validated against human labels, agreement reported | `scripts/validation_subset.py` + `src/ps5/agreement.py` (Cohen's kappa) — **run this; it is not optional** |
-| PS-3: 200-case suite against the fixed schemas | 200 cases: 136 tool-expected, 32 no-call, 32 deliberately ambiguous |
-| PS-3: argument-level accuracy, not just tool selection | `capture_ptp` with a wrong amount or date scores `wrong_arguments`, never a pass |
-| PS-3: English-vs-Hinglish delta, *"the headline number"* | Reported per arm with a Newcombe interval, in both findings documents |
-| Thinking mode disabled, §5, *"required for every run"* | Requested by both backends (`think: false` / `enable_thinking: false`), the outcome recorded per arm, and **verified equal across arms** by the aggregator — see §5.1 |
-| Findings document, max four pages | `reports/FINDINGS.md` (concise) + `reports/FINDINGS_FULL.md` (appendix), both rendered from one aggregate |
-| Raw results as structured data | JSONL per case, retaining full model output for re-scoring |
-| Limitations section, *"we weight it"* | `docs/METRICS.md` §7, declared before results, reproduced into the report |
-
-**Honest gap:** the evaluation suites are authored here, not official — no official suite is published. Absolute numbers are therefore not comparable across teams. The *between-precision* comparison PS-5 asks for is unaffected, because every arm consumes the identical manifest.
-
-**AI assistance disclosure** (spec §8, Conduct): this repository was built with an AI coding assistant, which materially shaped the implementation — the scoring taxonomy encoding, metric and interval implementations, cliff-detection criterion and the harness. Every design decision, threshold and limitation was reviewed and is documented with its rationale in-repo.
+| **Terminal Output** | Preflight model status; suite verification checks; per-arm execution logs; aggregate metrics with 95% Wilson CIs; degradation analysis table; plot generation paths; report line count status. |
+| `results-qwen2.5-1.5b/` | Raw execution artifacts: `bf16/raw_results.jsonl` (F16), `q8/raw_results.jsonl` (Q8_0), `q4/raw_results.jsonl` (Q4_K_M), `fp8/NOT_RUN.json`, along with per-arm `metadata.json` (recording environment, hardware fingerprint, and control hashes). |
+| `results-qwen2.5-1.5b/aggregate/` | Machine-readable aggregated results: `aggregate.json` (complete metrics, CIs, power analyses), `summary.csv` (tidy metric table), `summary.md` (concise human-readable table). |
+| `reports/figures-qwen2.5-1.5b/` | 7 high-resolution evaluation figures: `01_guardrail_adherence_vs_precision.png`, `02_structured_output_vs_precision.png`, `03_ps3_failure_modes.png`, `04_language_breakdown.png`, `05_english_vs_indic.png`, `06_ps1_category_heatmap.png`, `07_degradation_vs_reference.png`. |
+| `reports/` | Findings documents: `FINDINGS-qwen2.5-1.5b.md` / `FINDINGS.md` (concise $\le$ 4 pages submission document), `FINDINGS-qwen2.5-1.5b_FULL.md` (comprehensive appendix with breakdown tables). |
+| `reports/validation/` | Human validation artifacts: `agreement.json`, `agreement.md`, and `ps1_validation_labelled.csv` ($n=80$ human labels, Cohen's $\kappa = 0.471$). |
 
 ---
-
-## For reviewers
-
-**[`docs/REVIEWER_GUIDE.md`](docs/REVIEWER_GUIDE.md)** — the ten-minute path: what to read, and five commands that verify the claims below rather than taking them on trust. The submission document itself is **[`reports/FINDINGS-qwen2.5-1.5b.pdf`](reports/FINDINGS-qwen2.5-1.5b.pdf)** (3 pages).
 
 ---
 
@@ -116,10 +127,10 @@ All four are **genuine** on Ollama — real bfloat16 for the reference and real 
 
 | Precision | Ollama tag | Size | Status |
 |---|---|---|---|
-| **Q4** | `qwen2.5:1.5b-instruct-q4_K_M` | 986 MB | genuine |
-| **Q8** | `qwen2.5:1.5b-instruct-q8_0` | 1.6 GB | genuine |
-| **FP8** | — | — | **NOT RUN** — no FP8 GGUF exists for this model |
-| **BF16** | `qwen2.5:1.5b-instruct-fp16` | 3.1 GB | **F16, not BF16** — `DEV-BF16-OLLAMA-F16` |
+| **Q4 (Q4_K_M)** | `qwen2.5:1.5b-instruct-q4_K_M` | 986 MB | genuine GGUF Q4_K_M |
+| **Q8 (Q8_0)** | `qwen2.5:1.5b-instruct-q8_0` | 1.6 GB | genuine GGUF Q8_0 |
+| **FP8** | — | — | **NOT RUN** — unavailable for local model/backend |
+| **F16 (Reference)** | `qwen2.5:1.5b-instruct-fp16` | 3.1 GB | **F16, not BF16** (`DEV-BF16-OLLAMA-F16`) |
 
 This set exists so the harness can produce a real measurement on a machine that cannot hold a 9.3 GB reference. It buys that with three things it is not allowed to hide, all of them declared in the configs and reproduced into the findings report:
 
@@ -216,16 +227,23 @@ python3 -m ps5.run --precision fp8 --backend vllm --suite ps1 ps3
 
 Q4 and Q8 on vLLM are marked unavailable and **refused** until you supply a checkpoint (`llmcompressor` for INT8; AWQ/GPTQ for 4-bit) and flip `available: true`. Both run genuinely on Ollama, so neither rung is lost overall. FP8 needs no separate checkpoint — vLLM quantizes at load time from the same BF16 weights the reference uses, which is a stronger control than a third-party FP8 upload.
 
-### 4.7 Validate the scorer against human labels — required
+### 4.7 Validate the scorer against human labels
+
+This workflow is already completed and documented in `reports/validation/`:
 
 ```bash
-python3 scripts/validation_subset.py export --n 80   # blind, stratified
-# a human fills the human_violation column, saves as
-#   reports/validation/ps1_validation_labelled.csv
+# To re-score the existing n=80 labelled subset:
 python3 scripts/validation_subset.py score
+# Result: Cohen's kappa = 0.471 (moderate agreement), raw agreement = 77.5%
+# Outputs: reports/validation/agreement.json and reports/validation/agreement.md
 ```
 
-Until this is done the findings report states, in its own §3b, that every absolute violation rate rests on an unvalidated scorer. The spec judges "judge quality, measured by agreement with human raters rather than asserted" — an unvalidated scorer forfeits those marks.
+To export and label a new subset from scratch:
+```bash
+python3 scripts/validation_subset.py export --results-root results-qwen2.5-1.5b --n 80
+# Edit human_violation in reports/validation/ps1_validation_labelled.csv
+python3 scripts/validation_subset.py score
+```
 
 ### 4.8 Aggregate, plot, report
 

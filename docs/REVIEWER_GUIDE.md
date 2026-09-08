@@ -12,13 +12,12 @@ PS-1 (guardrail) and PS-3 (tool-calling) suites at multiple precisions with ever
 other variable held constant **and hash-verified**, then applies a cliff criterion
 that was fixed in `configs/cliff_criterion.yaml` before any model was run.
 
-One experiment is complete: **Qwen2.5-1.5B at F16 → Q8 → Q4**, 392 cases per arm.
+One experiment is complete: **Qwen2.5-1.5B at F16 → Q8_0 → Q4_K_M**, 392 cases per arm.
 **No cliff was detected on any headline metric** — and the report says plainly
 that only *one* of the four metrics had the statistical power for that null to
-mean anything. The experiment the specification really asks for (Qwen3.5-4B, four
-rungs, genuine bfloat16 reference) needs more than 8 GB of RAM and has not been
-run; `reports/FINDINGS.md` remains a placeholder rather than being quietly filled
-with the smaller result.
+mean anything. The intended experiment (Qwen3.5-4B, four rungs, genuine bfloat16 reference)
+needs more than 8 GB of RAM and cannot run locally on an 8 GB M1 machine; Qwen2.5-1.5B is
+the practical local experiment and is labelled as such everywhere.
 
 ---
 
@@ -115,11 +114,11 @@ bash scripts/run_all.sh mock          # ~30 s, writes only to results_mock/
    the available machine has 8 GB of unified memory. Without the reference arm no
    degradation can be computed, so the smaller model was used instead — and
    labelled as such everywhere rather than presented as the 4B result.
-2. **The scorer's agreement with human labels is unmeasured.** The specification
-   requires it. `reports/validation/ps1_validation_TO_LABEL.csv` is exported and
-   ready; it needs a human to fill one column. Until then every *absolute*
-   violation rate is provisional — the between-precision comparison much less so,
-   since the scorer's error is constant across arms.
+2. **The scorer's agreement with human labels is moderate (κ = 0.471 over n=80).**
+   Validation was completed on an n=80 stratified subset (`reports/validation/agreement.json`).
+   Because agreement is below substantial (0.61), absolute violation rates are treated as
+   weakly supported and interpreted directionally. Between-precision comparisons remain robust
+   because scorer bias is held constant across arms.
 3. **The evaluation suites are authored here, not official.** No official suite is
    published, so absolute numbers are not comparable across teams. The
    between-precision comparison is unaffected: every arm consumes the identical

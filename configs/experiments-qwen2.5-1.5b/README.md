@@ -21,10 +21,10 @@ That is a real trade, not a free one. What it costs is stated in each config's
 
 | Precision | Tag | Size | Status |
 |---|---|---|---|
-| BF16 (reference) | `qwen2.5:1.5b-instruct-fp16` | 3.1 GB | **F16, not BF16** — material deviation |
+| F16 (reference) | `qwen2.5:1.5b-instruct-fp16` | 3.1 GB | **F16, not BF16** — material deviation |
 | FP8 | — | — | **NOT RUN** — no FP8 GGUF exists for this model |
-| Q8 | `qwen2.5:1.5b-instruct-q8_0` | 1.6 GB | genuine |
-| Q4 | `qwen2.5:1.5b-instruct-q4_K_M` | 986 MB | genuine |
+| Q8_0 | `qwen2.5:1.5b-instruct-q8_0` | 1.6 GB | genuine |
+| Q4_K_M | `qwen2.5:1.5b-instruct-q4_K_M` | 986 MB | genuine |
 
 ## What this set cannot tell you
 

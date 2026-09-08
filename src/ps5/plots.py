@@ -35,6 +35,31 @@ __all__ = ["render_all", "PRECISION_ORDER"]
 PRECISION_ORDER = ["bf16", "fp8", "q8", "q4"]
 PRECISION_LABEL = {"bf16": "BF16", "fp8": "FP8", "q8": "Q8", "q4": "Q4"}
 
+
+def _plot_label(p: str, arms: Optional[Dict[str, Any]] = None) -> str:
+    """Return the accurate display label for a precision arm.
+
+    If an arm is substituted with F16 (e.g. DEV-BF16-OLLAMA-F16 or resolved to F16),
+    it is labelled 'F16', never 'BF16'.
+    """
+    if arms and p in arms:
+        arm = arms[p]
+        resolved = (arm.get("model") or {}).get("resolved") or {}
+        q_level = resolved.get("quantization_level")
+        if q_level:
+            return q_level
+        deviations = arm.get("deviations") or []
+        if any(d.get("id") == "DEV-BF16-OLLAMA-F16" for d in deviations):
+            return "F16"
+        prec = arm.get("precision") or {}
+        if prec.get("label"):
+            return prec["label"]
+    if p == "bf16" and arms:
+        for a in arms.values():
+            if "fp16" in (a.get("model") or {}).get("tag", "").lower():
+                return "F16"
+    return PRECISION_LABEL.get(p, p.upper())
+
 # Validated categorical palette (light surface). Assigned in fixed order, never cycled.
 SERIES = ["#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4", "#008300", "#4a3aa7", "#e34948"]
 SURFACE = "#fcfcfb"
@@ -105,6 +130,7 @@ def _line_panel(
     ax: "plt.Axes", precisions: Sequence[str],
     series: List[Tuple[str, List[float], List[float], List[float]]],
     title: str, ylabel: str,
+    arms: Optional[Dict[str, Any]] = None,
 ) -> None:
     x = list(range(len(precisions)))
     for idx, (label, values, lo, hi) in enumerate(series):
@@ -123,7 +149,7 @@ def _line_panel(
                 xytext=(8, 0), va="center", fontsize=8, color=INK_MUTED,
             )
     ax.set_xticks(x)
-    ax.set_xticklabels([PRECISION_LABEL.get(p, p.upper()) for p in precisions])
+    ax.set_xticklabels([_plot_label(p, arms) for p in precisions])
     ax.set_xlim(-0.35, len(precisions) - 1 + 0.9)
     ax.set_ylim(0, 100)
     ax.set_ylabel(ylabel)
@@ -166,15 +192,16 @@ def fig_guardrail(agg: Dict[str, Any], out_dir: Path, synthetic: bool) -> Option
         return None
     fig, axes = plt.subplots(1, 2, figsize=(11, 4.4))
 
+    arms = agg.get("arms", {})
     v, vlo, vhi, ns = _series(agg, "ps1", "violation_rate", precisions)
     _line_panel(axes[0], precisions, [("violation rate", v, vlo, vhi)],
-                "PS-1 guardrail violation rate vs precision", "violation rate (%)  ↓ better")
+                "PS-1 guardrail violation rate vs precision", "violation rate (%)  ↓ better", arms)
 
     c, clo, chi, _ = _series(agg, "ps1", "compliance_rate", precisions)
     b, blo, bhi, _ = _series(agg, "ps1", "benign_refusal_rate", precisions)
     _line_panel(axes[1], precisions,
                 [("compliance", c, clo, chi), ("benign over-refusal", b, blo, bhi)],
-                "Adherence vs over-refusal", "rate (%)")
+                "Adherence vs over-refusal", "rate (%)", arms)
     axes[1].legend(frameon=False, fontsize=8, loc="center left")
 
     return _save(fig, out_dir, "01_guardrail_adherence_vs_precision.png", synthetic,
@@ -197,8 +224,9 @@ def fig_structured(agg: Dict[str, Any], out_dir: Path, synthetic: bool) -> Optio
     ]:
         values, lo, hi, _ = _series(agg, "ps3", metric, precisions)
         series.append((label, values, lo, hi))
+    arms = agg.get("arms", {})
     _line_panel(ax, precisions, series,
-                "PS-3 structured output vs precision", "rate (%)  ↑ better")
+                "PS-3 structured output vs precision", "rate (%)  ↑ better", arms)
     ax.legend(frameon=False, fontsize=8, loc="lower left")
     return _save(fig, out_dir, "02_structured_output_vs_precision.png", synthetic,
                  "Task success is the end-to-end number; correct-tool rate ignores "
@@ -221,8 +249,9 @@ def fig_failure_modes(agg: Dict[str, Any], out_dir: Path, synthetic: bool) -> Op
         ax.bar(offs, values, width=width * 0.86, color=SERIES[idx], label=label,
                yerr=[lo, hi], capsize=2, error_kw={"elinewidth": 0.9, "ecolor": INK_MUTED},
                zorder=3)
+    arms = agg.get("arms", {})
     ax.set_xticks(x)
-    ax.set_xticklabels([PRECISION_LABEL.get(p, p.upper()) for p in precisions])
+    ax.set_xticklabels([_plot_label(p, arms) for p in precisions])
     ax.set_ylim(0, 100)
     ax.set_ylabel("rate (%)  ↓ better")
     ax.set_xlabel("precision  (higher fidelity  →  lower fidelity)")
@@ -241,6 +270,7 @@ def fig_language(agg: Dict[str, Any], out_dir: Path, synthetic: bool) -> Optiona
         return None
     fig, axes = plt.subplots(1, 2, figsize=(11.5, 4.6))
 
+    arms = agg.get("arms", {})
     if p1:
         series = []
         for idx, lang in enumerate(["en", "hi", "hinglish", "mr"]):
@@ -248,7 +278,7 @@ def fig_language(agg: Dict[str, Any], out_dir: Path, synthetic: bool) -> Optiona
             if any(v == v for v in values):
                 series.append((lang, values, lo, hi))
         _line_panel(axes[0], p1, series, "PS-1 violation rate by language",
-                    "violation rate (%)  ↓ better")
+                    "violation rate (%)  ↓ better", arms)
         axes[0].legend(frameon=False, fontsize=8, loc="upper left")
     else:
         axes[0].axis("off")
@@ -259,7 +289,7 @@ def fig_language(agg: Dict[str, Any], out_dir: Path, synthetic: bool) -> Optiona
             values, lo, hi, _ = _series(agg, "ps3", f"by_language.{lang}.task_success_rate", p3)
             if any(v == v for v in values):
                 series.append((lang, values, lo, hi))
-        _line_panel(axes[1], p3, series, "PS-3 task success by language", "rate (%)  ↑ better")
+        _line_panel(axes[1], p3, series, "PS-3 task success by language", "rate (%)  ↑ better", arms)
         axes[1].legend(frameon=False, fontsize=8, loc="lower left")
     else:
         axes[1].axis("off")
@@ -275,6 +305,7 @@ def fig_english_indic(agg: Dict[str, Any], out_dir: Path, synthetic: bool) -> Op
         return None
     fig, axes = plt.subplots(1, 2, figsize=(11.5, 4.4))
 
+    arms = agg.get("arms", {})
     for ax, suite, precisions, metric, title, ylabel in [
         (axes[0], "ps1", p1, "english_indic_delta", "PS-1 violation rate: English vs Indic",
          "violation rate (%)  ↓ better"),
@@ -288,7 +319,7 @@ def fig_english_indic(agg: Dict[str, Any], out_dir: Path, synthetic: bool) -> Op
         for label, key in [("English", "english"), ("Indic (hi/hinglish/mr)", "indic")]:
             values, lo, hi, _ = _series(agg, suite, f"{metric}.{key}", precisions)
             series.append((label, values, lo, hi))
-        _line_panel(ax, precisions, series, title, ylabel)
+        _line_panel(ax, precisions, series, title, ylabel, arms)
         ax.legend(frameon=False, fontsize=8, loc="center left")
 
     return _save(fig, out_dir, "05_english_vs_indic.png", synthetic,
@@ -325,8 +356,9 @@ def fig_category_heatmap(agg: Dict[str, Any], out_dir: Path, synthetic: bool) ->
     cmap = matplotlib.colors.LinearSegmentedColormap.from_list("seq", ["#f4f8fd", SEQ_HUE])
     im = ax.imshow(matrix, cmap=cmap, vmin=0, vmax=100, aspect="auto")
 
+    arms = agg.get("arms", {})
     ax.set_xticks(range(len(precisions)))
-    ax.set_xticklabels([PRECISION_LABEL.get(p, p.upper()) for p in precisions])
+    ax.set_xticklabels([_plot_label(p, arms) for p in precisions])
     ax.set_yticks(range(len(categories)))
     ax.set_yticklabels(categories)
     for i in range(len(categories)):
@@ -363,9 +395,10 @@ def fig_degradation_bars(agg: Dict[str, Any], out_dir: Path, synthetic: bool) ->
     if not rows:
         return None
 
+    arms = agg.get("arms", {})
     fig, axes = plt.subplots(len(rows), 1, figsize=(7.6, 2.5 * len(rows)), squeeze=False)
     for ax, (suite, metric, threshold, points) in zip(axes[:, 0], rows):
-        labels = [PRECISION_LABEL.get(p, p.upper()) for p, _, _ in points]
+        labels = [_plot_label(p, arms) for p, _, _ in points]
         values = [v for _, v, _ in points]
         # Colour encodes the verdict, which is a status, not a series identity.
         colours = ["#e34948" if past else "#2a78d6" for _, _, past in points]
@@ -386,8 +419,9 @@ def fig_degradation_bars(agg: Dict[str, Any], out_dir: Path, synthetic: bool) ->
                         textcoords="offset points", xytext=(0, 5 if value >= 0 else -5),
                         ha="center", va="bottom" if value >= 0 else "top",
                         fontsize=8, color=INK)
-        ax.set_title(f"{suite.upper()} · {metric} — degradation vs "
-                     f"{agg['degradation']['reference_precision'].upper()}", loc="left")
+        ref_prec = agg.get("degradation", {}).get("reference_precision", "bf16")
+        ref_label = _plot_label(ref_prec, arms)
+        ax.set_title(f"{suite.upper()} · {metric} — degradation vs {ref_label}", loc="left")
         ax.set_ylabel("worse  →  (pp)")
         ax.tick_params(axis="x", pad=6)
         _style(ax)

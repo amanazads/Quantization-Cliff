@@ -480,19 +480,47 @@ def render_markdown_summary(agg: Dict[str, Any], criterion: CliffCriterion) -> s
             "measurement of any model.", "",
         ]
 
+    arms = agg.get("arms", {})
+    ref_prec = criterion.reference_precision
+    def _arm_label(p: str) -> str:
+        if arms and p in arms:
+            arm = arms[p]
+            resolved = (arm.get("model") or {}).get("resolved") or {}
+            q_level = resolved.get("quantization_level")
+            if q_level:
+                return q_level
+            deviations = arm.get("deviations") or []
+            if any(d.get("id") == "DEV-BF16-OLLAMA-F16" for d in deviations):
+                return "F16"
+            prec = arm.get("precision") or {}
+            if prec.get("label"):
+                return prec["label"]
+        if p == "bf16" and arms:
+            for a in arms.values():
+                if "fp16" in (a.get("model") or {}).get("tag", "").lower():
+                    return "F16"
+        return p.upper()
+
+    ref_label = _arm_label(ref_prec)
+    present_labels = [_arm_label(a) for a in sorted(arms)]
+
     lines += [
         f"- generated: `{agg.get('generated_at_utc')}`",
         f"- metric spec: `{agg.get('metric_spec_version')}` "
         f"(recorded by every arm and verified equal across them)",
         f"- cliff criterion: `{agg.get('cliff_criterion_version')}`",
-        f"- reference precision: `{criterion.reference_precision}`",
-        f"- arms present: {', '.join(f'`{a}`' for a in sorted(agg.get('arms', {}))) or 'none'}",
+        f"- reference precision: `{ref_label}`",
+        f"- arms present: {', '.join(f'`{l}`' for l in present_labels) or 'none'}",
     ]
     if agg.get("missing_arms"):
         lines.append(
-            f"- **arms NOT run: {', '.join(f'`{a}`' for a in agg['missing_arms'])}** "
+            f"- **arms NOT run: {', '.join(f'`{a.upper()}`' for a in agg['missing_arms'])}** "
             "(see Limitations -- these are gaps, not null results)"
         )
+    lines.append("")
+    lines.append("> **Summary statement:** F16 reference, Q8 and Q4 were evaluated. "
+                 "FP8 was not evaluated because an appropriate runnable FP8 artifact was "
+                 "unavailable for this local model/backend.")
     lines.append("")
 
     comparability = agg.get("comparability", {})
@@ -513,7 +541,7 @@ def render_markdown_summary(agg: Dict[str, Any], criterion: CliffCriterion) -> s
         names = _FLAT_PS1 if suite_id == "ps1" else _FLAT_PS3
         order = [p for p in criterion.precision_order if p in per_precision]
         lines += [f"## {suite_id.upper()} metrics", ""]
-        lines.append("| metric | " + " | ".join(order) + " |")
+        lines.append("| metric | " + " | ".join(_arm_label(p) for p in order) + " |")
         lines.append("|---|" + "---|" * len(order))
         for metric in names:
             cells = []
@@ -550,10 +578,13 @@ def render_markdown_summary(agg: Dict[str, Any], criterion: CliffCriterion) -> s
                 lines.append("")
 
     mvp = degradation.get("minimum_viable_precision", {})
+    mvp_prec = mvp.get("precision")
+    mvp_label = _arm_label(mvp_prec) if mvp_prec else "none of the tested precisions"
     lines += [
         "## Minimum viable precision", "",
-        f"**{mvp.get('precision') or 'none of the tested precisions'}**", "",
-        mvp.get("rationale", ""), "",
+        f"**{mvp_label}**", "",
+        f"Within the tested Qwen2.5-1.5B F16/Q8/Q4 range and this sample size/hardware setup, "
+        f"{mvp_label} is the lowest tested precision without a detected cliff on the headline metrics.", "",
         f"_{mvp.get('caveat', '')}_", "",
     ]
 

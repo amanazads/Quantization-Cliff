@@ -7,7 +7,7 @@ model:
 
 precision:
   id: q4
-  label: "Q4"
+  label: "Q4_K_M"
   nominal_bits: 4
   family: integer_block_quantization
 

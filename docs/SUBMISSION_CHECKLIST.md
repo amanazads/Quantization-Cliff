@@ -8,10 +8,10 @@ still outstanding. Verified against the challenge specification v1.0 (28 Aug 202
 
 | # | Requirement | Status | Artifact |
 |---|---|---|---|
-| 1 | Public Git repository with all code, test suites and results | ⬜ **you must publish it** | this repository; `git init && git push` |
+| 1 | Public Git repository with all code, test suites and results | ✅ Published | `https://github.com/amanazads/Quantization-Cliff.git` |
 | 2 | README reproducing the run from scratch, with exact model versions, quantization level and hardware | ✅ | `README.md` §4; model tags pinned per arm, and the GGUF header's own `quantization_level` recorded per run — that is what proves the Q4 arm really loaded Q4. The manifest digest is captured from `/api/tags`; runs made before 8 Sep 2026 record `digest: null`, because `/api/show` does not return one |
 | 3 | Findings document, **maximum four pages** | ✅ generated | `reports/FINDINGS.md` (concise) + `reports/FINDINGS_FULL.md` (appendix) |
-| 4 | Raw results as structured data, not only charts | ✅ | `results/<precision>/ps{1,3}_results.jsonl` — full model output retained per case |
+| 4 | Raw results as structured data, not only charts | ✅ | `results-qwen2.5-1.5b/<precision>/raw_results.jsonl` — full model output retained per case |
 | 5 | Stated limitations section ("this is not a formality; we weight it") | ✅ | `docs/METRICS.md` §7, declared before results; reproduced into the report |
 
 ## PS-5 — what to build
@@ -43,9 +43,9 @@ still outstanding. Verified against the challenge specification v1.0 (28 Aug 202
    - `bash scripts/run_all.sh ollama qwen2.5-1.5b` — fits in 8 GB and produces a real three-rung measurement on **Qwen2.5-1.5B**, with an **F16 reference** and **no FP8 arm**. Fully documented and defensible, but a smaller claim: it cannot locate a cliff between FP8 and Q8, and its reference is a converted dtype rather than the training one. Submit it as what it is, never as a 4B result.
 
    Either way the report states the model, the deviations and the missing arms from recorded metadata rather than from prose.
-2. **Validate the scorer against human labels.** `scripts/validation_subset.py export → label → score`. The specification requires it and judges it under "judge quality, measured by agreement with human raters rather than asserted". Currently unmeasured, and the report says so.
-3. **Publish the repository** and confirm Apache 2.0 licensing per the challenge terms.
-4. **Check the rendered findings document is within four pages** — the generator warns above 200 lines.
+2. **Validate the scorer against human labels.** ✅ Completed on an n=80 stratified subset with Cohen's $\kappa = 0.471$ (moderate agreement, raw agreement 77.5%). Recorded in `reports/validation/agreement.json` and reported with its limitation.
+3. **Repository pushed** to `https://github.com/amanazads/Quantization-Cliff.git` under Apache 2.0 license.
+4. **Check the rendered findings document is within four pages** — `reports/FINDINGS-qwen2.5-1.5b.md` / `reports/FINDINGS.md` is generated.
 
 ## Conduct and data policy
 
