@@ -1,0 +1,13 @@
+PS-5: The Quantization Cliff
+Copyright 2026 Aman Azad
+
+Licensed under the Apache License, Version 2.0.
+
+Submitted to the Predixion AI Open-Weight Collections Agent Challenge,
+Track 2, PS-5.
+
+All evaluation data in data/ is SYNTHETIC and was authored for this
+repository. It contains no real borrower data, no real names, and no
+personal information of any kind. The adversarial prompts in
+data/ps1_guardrail_suite.jsonl exist solely to test an agent's refusal
+behaviour and must not be used for any other purpose.

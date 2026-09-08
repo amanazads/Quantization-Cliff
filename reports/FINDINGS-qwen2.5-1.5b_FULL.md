@@ -1,6 +1,6 @@
 # PS-5: The Quantization Cliff
 
-_Generated from `aggregate.json` at 2026-09-08T18:47:15.897023+00:00. Metric spec `2.0.0-spec-6.4`. Every figure and table in this document is rendered from raw results; none is typed by hand._
+_Generated from `aggregate.json` at 2026-09-08T19:06:24.891040+00:00. Metric spec `2.0.0-spec-6.4`. Every figure and table in this document is rendered from raw results; none is typed by hand._
 
 ---
 
@@ -33,7 +33,7 @@ Safety and structured output are **never combined into a single score**. The cen
 - Accelerator: `Apple M1` (`metal`)
 - CUDA: `n/a` · compute capability: `n/a`
 - Python: `3.14.7`
-- Code revision: `6d03ce3e47bf23663437199cfd71144ac8ee4d90` **(working tree was dirty — the recorded commit does not fully describe the code that ran)**
+- Code revision: `6d03ce3e47bf23663437199cfd71144ac8ee4d90` **(working tree dirty — the recorded commit does not fully describe the code that ran)**
 - Hardware fingerprint: `sha256:7e8a83e234c408251ee4d09539a0f18df83f3117dd8f2b27ca76f0c958bd5eb8`
 
 **Decoding parameters** (identical across arms; hash-verified):
@@ -56,7 +56,8 @@ Safety and structured output are **never combined into a single score**. The cen
 
 These required precisions were **not executed**. They are gaps in coverage, and must not be read as null results:
 
-- **FP8** — not run in this comparison set.
+- **FP8** — refused, not skipped. Ollama publishes no FP8 or MXFP8 GGUF for Qwen2.5-1.5B-Instruct, and llama.cpp has no FP8 tensor type to convert one into.
+  - _Substitution policy:_ Do NOT substitute the Q8_0 tag here, and do NOT relabel Q8 as FP8. This arm is reported as NOT RUN -- a documented GAP in precision coverage, never a null result. To close the gap, use configs/experiments/ (Qwen3.5-4B, which has a genuine mxfp8 tag) or serve this model on vLLM with --quantization fp8 on a GPU with compute capability >= 8.9.
 
 ---
 
@@ -97,7 +98,7 @@ The aggregator **verifies** these rather than trusting them: it compares `manife
 
 > To close this gap:
 > ```bash
-> python3 scripts/validation_subset.py export --n 80   # blind, stratified
+> python3 scripts/validation_subset.py export --results-root results-qwen2.5-1.5b --n 80   # blind, stratified
 > # a human labels reports/validation/ps1_validation_labelled.csv
 > python3 scripts/validation_subset.py score
 > ```
@@ -332,10 +333,10 @@ python scripts/build_suites.py --check
 python scripts/build_manifest.py --check
 
 # 3. run each arm (see README for backend setup)
-python -m ps5.run --precision bf16 --backend ollama --suite ps1 ps3
-python -m ps5.run --precision fp8 --backend ollama --suite ps1 ps3   # NOT RUN in this comparison set
-python -m ps5.run --precision q8 --backend ollama --suite ps1 ps3
-python -m ps5.run --precision q4 --backend ollama --suite ps1 ps3
+python -m ps5.run --precision bf16 --backend ollama --config-set qwen2.5-1.5b --suite ps1 ps3
+python -m ps5.run --precision fp8 --backend ollama --config-set qwen2.5-1.5b --suite ps1 ps3   # NOT RUN in this comparison set
+python -m ps5.run --precision q8 --backend ollama --config-set qwen2.5-1.5b --suite ps1 ps3
+python -m ps5.run --precision q4 --backend ollama --config-set qwen2.5-1.5b --suite ps1 ps3
 
 # 4. aggregate, plot, report
 python scripts/aggregate_results.py

@@ -302,6 +302,35 @@ def aggregate(
     spec_versions = {r.metadata.get("metric_spec_version") for r in runs.values()}
     spec_versions.discard(None)
 
+    missing_arms = [p for p in criterion.precision_order if p not in runs]
+    missing_reasons: Dict[str, Any] = {}
+    # The results root is wherever the arms that DID run were written.
+    roots = {r.directory.parent for r in runs.values()}
+
+    recorded_sets = {r.metadata.get("config_set") for r in runs.values()}
+    recorded_sets.discard(None)
+    if len(recorded_sets) == 1:
+        config_set = next(iter(recorded_sets))
+    else:
+        config_set = None
+        for root in roots:
+            name = root.name
+            for prefix in ("results-", "results_mock-"):
+                if name.startswith(prefix):
+                    config_set = name[len(prefix):]
+                    break
+            if config_set:
+                break
+    for precision in missing_arms:
+        for root in roots:
+            marker = root / precision / "NOT_RUN.json"
+            if marker.exists():
+                try:
+                    missing_reasons[precision] = json.loads(marker.read_text(encoding="utf-8"))
+                except (ValueError, OSError):
+                    pass
+                break
+
     return {
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
         "aggregate_version": "1.0.0",
@@ -331,7 +360,18 @@ def aggregate(
             }
             for precision, run in runs.items()
         },
-        "missing_arms": [p for p in criterion.precision_order if p not in runs],
+        # Which experiment this is, for the reproduction command in the report.
+        # Recorded by the runner; for runs made before that was added, derived
+        # from the results directory name, which the CLI builds from the same
+        # value ("results-qwen2.5-1.5b" -> "qwen2.5-1.5b").
+        "config_set": config_set,
+        # Where this aggregate's raw results live, so instructions printed in the
+        # report point at the right directory instead of the default one.
+        "results_root": (sorted(roots)[0].name if roots else None),
+        "missing_arms": missing_arms,
+        # Why each one is missing, where the runner left a record. Distinguishes
+        # "refused on principle, here is the reason" from "never attempted".
+        "missing_arm_reasons": missing_reasons,
         "comparability": comparability,
         "deviations": all_deviations,
         "metrics": per_suite,

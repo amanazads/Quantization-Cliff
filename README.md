@@ -49,6 +49,12 @@ PS-5 is judged on **experimental control above all**, so control here is *enforc
 
 ---
 
+## For reviewers
+
+**[`docs/REVIEWER_GUIDE.md`](docs/REVIEWER_GUIDE.md)** — the ten-minute path: what to read, and five commands that verify the claims below rather than taking them on trust. The submission document itself is **[`reports/FINDINGS-qwen2.5-1.5b.pdf`](reports/FINDINGS-qwen2.5-1.5b.pdf)** (3 pages).
+
+---
+
 ## 2. Layout
 
 ```

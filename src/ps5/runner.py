@@ -117,6 +117,11 @@ class ExperimentRunner:
         return {
             "experiment_id": self.experiment_id,
             "created_at_utc": datetime.now(timezone.utc).isoformat(),
+            # Which four-arm experiment this arm belongs to. Recorded so the
+            # findings document can print the command that actually reproduces
+            # IT, rather than the default set's command -- a reproduction
+            # instruction that runs a different model is worse than none.
+            "config_set": getattr(self.cfg, "config_set", None),
 
             "precision": {
                 "id": self.cfg.precision.id,

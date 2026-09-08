@@ -71,6 +71,27 @@ def _metric_table(per_precision: Dict[str, Any], metrics: Sequence[str],
     return lines
 
 
+def _backend_name(arms: Dict[str, Any], order: Sequence[str]) -> str:
+    return (arms[order[0]] or {}).get("backend", "ollama") if order else "ollama"
+
+
+def _set_arg(agg: Dict[str, Any]) -> str:
+    """The config-set argument, so the printed command reruns THIS experiment.
+
+    Omitted for the default set, whose command takes no set argument. A
+    reproduction line that silently runs a different model would be worse than
+    printing none at all.
+    """
+    name = agg.get("config_set")
+    return f" {name}" if name and name != "default" else ""
+
+
+def _set_flag(agg: Dict[str, Any]) -> str:
+    """`--config-set X` for the per-arm commands, omitted for the default set."""
+    name = agg.get("config_set")
+    return f" --config-set {name}" if name and name != "default" else ""
+
+
 def _load_agreement(repo_root: Path) -> Optional[Dict[str, Any]]:
     """Scorer-vs-human agreement, if it has been measured."""
     path = repo_root / "reports" / "validation" / "agreement.json"
@@ -175,21 +196,36 @@ def render_findings(
     out.append("")
 
     env = (arms[order[0]].get("environment_summary") or {})
-    out += [
-        "**Hardware and software** (identical across arms; the fingerprint is verified "
-        "by the aggregator, not asserted):", "",
-        f"- OS: `{env.get('os')}`",
-        f"- CPU: `{env.get('cpu')}`",
-        f"- RAM: `{env.get('ram_gb')} GB`",
-        f"- Accelerator: `{env.get('accelerator')}` (`{env.get('accelerator_kind')}`)",
-        f"- CUDA: `{env.get('cuda_version') or 'n/a'}` · compute capability: `{env.get('compute_capability') or 'n/a'}`",
-        f"- Python: `{env.get('python')}`",
-        f"- Code revision: `{env.get('git_commit')}`"
-        + (" **(working tree was dirty — the recorded commit does not fully describe the code that ran)**"
-           if env.get("git_dirty") else ""),
-        f"- Hardware fingerprint: `{arms[order[0]].get('hardware_fingerprint')}`",
-        "",
-    ]
+    dirty = (" **(working tree dirty — the recorded commit does not fully describe "
+             "the code that ran)**" if env.get("git_dirty") else "")
+    if concise:
+        # The four-page cap is a hard requirement, so the submission document
+        # gets one prose line here and the full environment block goes to the
+        # appendix. Nothing is dropped -- the fingerprint that PROVES the
+        # hardware was identical stays, because that is the load-bearing claim.
+        out += [
+            "**Hardware and software** (identical across arms; the fingerprint is "
+            f"verified by the aggregator, not asserted): `{env.get('os')}` · "
+            f"`{env.get('cpu')}` · {env.get('ram_gb')} GB RAM · accelerator "
+            f"`{env.get('accelerator')}` (`{env.get('accelerator_kind')}`) · CUDA "
+            f"`{env.get('cuda_version') or 'n/a'}` · Python `{env.get('python')}` · "
+            f"code `{str(env.get('git_commit') or '?')[:12]}`{dirty} · fingerprint "
+            f"`{str(arms[order[0]].get('hardware_fingerprint') or '')[:19]}…`", "",
+        ]
+    else:
+        out += [
+            "**Hardware and software** (identical across arms; the fingerprint is verified "
+            "by the aggregator, not asserted):", "",
+            f"- OS: `{env.get('os')}`",
+            f"- CPU: `{env.get('cpu')}`",
+            f"- RAM: `{env.get('ram_gb')} GB`",
+            f"- Accelerator: `{env.get('accelerator')}` (`{env.get('accelerator_kind')}`)",
+            f"- CUDA: `{env.get('cuda_version') or 'n/a'}` · compute capability: `{env.get('compute_capability') or 'n/a'}`",
+            f"- Python: `{env.get('python')}`",
+            f"- Code revision: `{env.get('git_commit')}`" + dirty,
+            f"- Hardware fingerprint: `{arms[order[0]].get('hardware_fingerprint')}`",
+            "",
+        ]
 
     generation = arms[order[0]].get("generation_config", {})
     if concise:
@@ -212,8 +248,21 @@ def render_findings(
             "These required precisions were **not executed**. They are gaps in "
             "coverage, and must not be read as null results:", "",
         ]
+        reasons = agg.get("missing_arm_reasons") or {}
         for precision in missing:
-            out.append(f"- **{PRECISION_LABEL.get(precision, precision.upper())}** — not run in this comparison set.")
+            label = PRECISION_LABEL.get(precision, precision.upper())
+            detail = reasons.get(precision) or {}
+            reason = (detail.get("reason") or "").strip()
+            if reason:
+                # A refusal with a stated reason is a different thing from an
+                # arm nobody attempted, and the difference is worth a reader's
+                # attention: it is the difference between a gap and an omission.
+                out.append(f"- **{label}** — refused, not skipped. {reason}")
+                policy = (detail.get("substitution_policy") or "").strip()
+                if policy and not concise:
+                    out.append(f"  - _Substitution policy:_ {policy}")
+            else:
+                out.append(f"- **{label}** — not run in this comparison set.")
         out.append("")
 
     out += ["---", "", "## 3. Experimental controls", "", "### Held constant", ""]
@@ -308,7 +357,11 @@ def render_findings(
             "",
             "> To close this gap:",
             "> ```bash",
-            "> python3 scripts/validation_subset.py export --n 80   # blind, stratified",
+            # Must name the results root this report was built from. The default
+            # is `results/`, which is a different experiment (or empty), so the
+            # command as printed previously failed for anyone who followed it.
+            f"> python3 scripts/validation_subset.py export --results-root "
+            f"{agg.get('results_root') or 'results'} --n 80   # blind, stratified",
             "> # a human labels reports/validation/ps1_validation_labelled.csv",
             "> python3 scripts/validation_subset.py score",
             "> ```",
@@ -372,12 +425,18 @@ def render_findings(
 
     out += ["---", "", "## 5. PS-3 results — structured output and tool calling", ""]
     if "ps3" in metrics:
-        out += _metric_table(metrics["ps3"],
-                             ["task_success_rate", "correct_tool_rate", "argument_accuracy",
-                              "structured_output_validity", "malformed_argument_rate",
-                              "wrong_tool_rate", "wrong_argument_rate", "spurious_call_rate",
-                              "missed_call_rate", "fallback_extraction_rate",
-                              "generation_failure_rate"], order)
+        # The concise document carries the metrics a reader needs to judge the
+        # cliff verdict; the remaining failure-mode breakdown lives in the
+        # appendix. Both render from the same aggregate, so they cannot disagree.
+        ps3_metrics = ["task_success_rate", "correct_tool_rate", "argument_accuracy",
+                       "structured_output_validity", "malformed_argument_rate",
+                       "missed_call_rate", "generation_failure_rate"] if concise else [
+                       "task_success_rate", "correct_tool_rate", "argument_accuracy",
+                       "structured_output_validity", "malformed_argument_rate",
+                       "wrong_tool_rate", "wrong_argument_rate", "spurious_call_rate",
+                       "missed_call_rate", "fallback_extraction_rate",
+                       "generation_failure_rate"]
+        out += _metric_table(metrics["ps3"], ps3_metrics, order)
         out += [
             "`correct_tool_rate` counts a case as correct when the tool identity is "
             "right, **regardless of the argument values**. `task_success_rate` requires "
@@ -405,7 +464,15 @@ def render_findings(
             )
         out += ["", "<sub>NEGATIVE delta means Indic tool-calling is worse than English.</sub>", ""]
 
-    if "ps3" in metrics and not concise:
+    # NOTE: "not run" depends ONLY on whether the suite is absent -- never on
+    # whether this is the concise rendering. An earlier version bound the else
+    # to `and not concise`, so the four-page submission document asserted
+    # "PS-3 was not run in this comparison set" directly beneath a full page of
+    # PS-3 results. A report that contradicts its own tables is worse than one
+    # that omits them.
+    if "ps3" not in metrics:
+        out += ["_PS-3 was not run in this comparison set._", ""]
+    elif not concise:
         out += ["### By language", ""]
         present = [p for p in order if p in metrics["ps3"]]
         languages = sorted({l for p in metrics["ps3"].values() for l in (p.get("by_language") or {})})
@@ -417,12 +484,16 @@ def render_findings(
                                .get("task_success_rate")) for p in present]
                 out.append(f"| {language} | " + " | ".join(cells) + " |")
             out += ["", "<sub>Task success rate by language.</sub>", ""]
-    else:
-        out += ["_PS-3 was not run in this comparison set._", ""]
 
     # ---- figures ---------------------------------------------------------- #
     out += ["---", "", "## 6. Quantization degradation", ""]
-    wanted = FIGURES[:3] + [FIGURES[6]] if concise else FIGURES
+    # Three figures in the concise document, not seven: one for each axis the
+    # specification requires reported separately (guardrail adherence,
+    # structured output), plus degradation against the reference, which is the
+    # PS-5 deliverable itself. The failure-mode and per-language breakdowns are
+    # in the appendix. Measured at 4 pages with scripts/export_pdf.sh; adding a
+    # fourth figure pushed it over.
+    wanted = [FIGURES[0], FIGURES[1], FIGURES[6]] if concise else FIGURES
     if figures_dir and figures_dir.exists():
         for filename, caption in wanted:
             if (figures_dir / filename).exists():
@@ -432,7 +503,18 @@ def render_findings(
         out += ["_Figures not rendered. Run `python scripts/make_plots.py`._", ""]
 
     # ---- cliff ------------------------------------------------------------ #
-    out += ["---", "", "## 7. The quantization cliff", "", "### Methodology", "",
+    out += ["---", "", "## 7. The quantization cliff", "", "### Methodology", ""]
+    if concise:
+        out += [
+            "Fixed in `configs/cliff_criterion.yaml` and `docs/METRICS.md` **before any "
+            "model was run**. A precision is *past the cliff* on a metric only when "
+            "**both** hold: degradation vs the reference meets the pre-registered "
+            "threshold for that metric, **and** the Newcombe 95% interval for the "
+            "difference excludes zero. Requiring both stops a large-but-noisy "
+            "difference at small `n` being called a cliff, and equally stops a "
+            "statistically clean but operationally trivial one.", ""]
+    else:
+        out += [
             "Fixed in `configs/cliff_criterion.yaml` and `docs/METRICS.md` **before any "
             "model was run**. A precision is *past the cliff* on a metric only when "
             "**both** conditions hold:", "",
@@ -500,13 +582,47 @@ def render_findings(
                  for s, v in (degradation.get("analyses") or {}).items()
                  for a in v if a.get("pattern") == "none"]
         if nulls:
-            mdds = [a.get("minimum_detectable_difference")
-                    for v in (degradation.get("analyses") or {}).values() for a in v
-                    if a.get("pattern") == "none" and a.get("minimum_detectable_difference")]
-            tail = (f" The smallest difference this sample size could resolve was "
-                    f"{max(mdds):.1%}, so a real effect below that was invisible to the "
-                    "experiment rather than absent." if mdds else "")
-            out += [f"- **No cliff detected** on: {', '.join(nulls)}." + tail, ""]
+            # Per-metric, NOT a single worst case across all of them. An earlier
+            # version printed max(mdds) as though it applied to every null --
+            # which took the weakest cell (a benign-control rate at n=32) and
+            # let it speak for metrics that were resolved an order of magnitude
+            # more finely. That understated the experiment's own best result.
+            #
+            # A null is only informative when the experiment could have SEEN the
+            # effect it pre-registered: MDD <= threshold. Sorting the nulls into
+            # those two groups is the difference between "we found nothing" and
+            # "we found nothing, and here is what that is worth".
+            out += [f"- **No cliff detected** on: {', '.join(nulls)}.", ""]
+            rows = [(s, a) for s, v in (degradation.get("analyses") or {}).items()
+                    for a in v if a.get("pattern") == "none"
+                    and a.get("minimum_detectable_difference") is not None]
+            if rows:
+                out += [
+                    "**How much each null is worth.** A null means something only "
+                    "where the minimum detectable difference (MDD) at the achieved "
+                    "sample size is no larger than the effect the criterion was "
+                    "pre-registered to look for.", "",
+                    "| suite · metric | threshold | MDD | is this null informative? |",
+                    "|---|---|---|---|",
+                ]
+                powered = 0
+                for suite, analysis in rows:
+                    threshold = analysis.get("threshold")
+                    mdd = analysis["minimum_detectable_difference"]
+                    ok = threshold is not None and mdd <= threshold
+                    powered += bool(ok)
+                    verdict = (
+                        "**Yes** — a cliff of the pre-registered size would have been visible"
+                        if ok else
+                        f"**No** — ~{mdd / threshold:.0f}× too few cases to see a "
+                        f"{threshold:.1%} effect" if threshold else "unknown"
+                    )
+                    out.append(f"| {suite.upper()} · `{analysis['metric']}` | "
+                               f"{threshold:.1%} | {mdd:.1%} | {verdict} |")
+                out += ["", f"<sub>{powered} of {len(rows)} null results were adequately "
+                            "powered. For the rest, a real effect smaller than the MDD was "
+                            "invisible to this experiment rather than absent — they are not "
+                            "evidence that quantization did no harm.</sub>", ""]
 
     for suite, analyses in ({} if concise else (degradation.get("analyses") or {})).items():
         out += [f"#### {suite.upper()}", ""]
@@ -558,14 +674,25 @@ def render_findings(
                     )
         out.append("")
 
+    out += ["### What this recommendation is, and is not", ""]
+    if concise:
+        out += [
+            "**Supported:** the minimum precision for *this* suite, model, hardware and "
+            "sample size — that is exactly what was measured. **Not supported:** a "
+            "universally safe production precision, and any claim that the recommended "
+            "precision is production-*safe*. Absence of a detected cliff is not evidence "
+            "of safety, especially where the minimum detectable difference exceeds the "
+            "effect that would matter operationally — see the power table in §7.", ""]
+    else:
+        out += [
+            "| claim | supported by this experiment? |",
+            "|---|---|",
+            "| Minimum precision supported by **this** suite, model, hardware and sample size | **Yes** — that is exactly what was measured. |",
+            "| Universally safe production precision for collections | **No.** This experiment cannot support that claim and does not make it. |",
+            "| Evidence that the recommended precision is production-**safe** | **No.** Absence of a detected cliff is not evidence of safety, particularly where the minimum detectable difference is larger than the effect that would matter operationally. |",
+            "",
+        ]
     out += [
-        "### What this recommendation is, and is not", "",
-        "| claim | supported by this experiment? |",
-        "|---|---|",
-        "| Minimum precision supported by **this** suite, model, hardware and sample size | **Yes** — that is exactly what was measured. |",
-        "| Universally safe production precision for collections | **No.** This experiment cannot support that claim and does not make it. |",
-        "| Evidence that the recommended precision is production-**safe** | **No.** Absence of a detected cliff is not evidence of safety, particularly where the minimum detectable difference is larger than the effect that would matter operationally. |",
-        "",
         "Confidence: **moderate for the direction of the effect, low for its exact "
         "magnitude.** Sample sizes are fixed and modest, the PS-1 scorer's agreement "
         "with human judgement is unmeasured, and the suites are single-turn.",
@@ -621,13 +748,11 @@ def render_findings(
                 "```bash",
                 "pip install -r requirements.txt && export PYTHONPATH=$PWD/src",
                 "python3 scripts/build_suites.py --check && python3 scripts/build_manifest.py --check",
-                f"bash scripts/run_all.sh {(arms[order[0]] or {}).get('backend', 'ollama')}",
+                f"bash scripts/run_all.sh {_backend_name(arms, order)}{_set_arg(agg)}",
                 "```", "",
-                "Reproduction is exact only when these match §2: `manifest_hash`, "
-                "`system_prompt_hash`, `tool_schema_hash`, `generation_config_hash`, "
-                "`guardrail_rules_hash`, `hardware_fingerprint` — all recorded in every "
-                "run's `metadata.json`. Full runbook in README §4; complete breakdown "
-                "tables in `FINDINGS_FULL.md`.", ""]
+                "Reproduction is exact only when the six control hashes in §2 match; "
+                "all are recorded in every run's `metadata.json`. Runbook in README §4, "
+                "full breakdowns in `FINDINGS_FULL.md`.", ""]
         return "\n".join(out) + "\n"
 
     out += ["---", "", "## 10. Reproduction", "",
@@ -641,7 +766,8 @@ def render_findings(
     for precision in criterion.precision_order:
         backend = (arms.get(precision) or {}).get("backend", "ollama")
         marker = "" if precision in arms else "   # NOT RUN in this comparison set"
-        out.append(f"python -m ps5.run --precision {precision} --backend {backend} --suite ps1 ps3{marker}")
+        out.append(f"python -m ps5.run --precision {precision} --backend {backend}"
+                   f"{_set_flag(agg)} --suite ps1 ps3{marker}")
     out += ["", "# 4. aggregate, plot, report",
             "python scripts/aggregate_results.py",
             "python scripts/make_plots.py",

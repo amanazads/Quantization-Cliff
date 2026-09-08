@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import List, Optional
 
@@ -24,6 +25,37 @@ BACKENDS = ["ollama", "vllm", "openai_compat", "mock"]
 
 def _repo_root() -> Path:
     return Path(__file__).resolve().parents[2]
+
+
+def _write_not_run_marker(cfg, args, error: str) -> None:
+    """Leave a machine-readable record of a refused arm beside the results.
+
+    A precision that was deliberately refused and one that was simply never
+    attempted look identical in a results directory, and both render as "not
+    run" in the report. They are not the same thing: one is a documented gap
+    with a reason, the other is an omission. The aggregator reads this file so
+    the findings document can tell a reader which it was.
+
+    Best-effort: failing to write it must never change the exit code, which is
+    what the runner script keys on.
+    """
+    try:
+        out_dir = Path(cfg.results_root) / cfg.precision.id
+        out_dir.mkdir(parents=True, exist_ok=True)
+        (out_dir / "NOT_RUN.json").write_text(json.dumps({
+            "precision": cfg.precision.id,
+            "precision_label": cfg.precision.label,
+            "backend": args.backend,
+            "model_tag": cfg.backend.model_tag,
+            "refused_at_utc": datetime.now(timezone.utc).isoformat(),
+            "reason": (cfg.backend.unavailable_reason or "").strip() or None,
+            "substitution_policy": (cfg.backend.substitution_policy or "").strip() or None,
+            "runner_message": error.strip(),
+            "note": ("This arm was REFUSED, not skipped. It is a documented gap in "
+                     "precision coverage and must never be read as a null result."),
+        }, indent=2), encoding="utf-8")
+    except Exception:  # pragma: no cover - never let bookkeeping fail a run
+        pass
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -103,6 +135,10 @@ def main(argv: Optional[List[str]] = None) -> int:
         print(f"\nCONFIGURATION ERROR\n{'-' * 70}\n{exc}\n", file=sys.stderr)
         return 2
 
+    # Recorded into every arm's metadata, so the findings report can print the
+    # command that reproduces THIS experiment rather than the default one.
+    cfg.config_set = None if args.config else args.config_set
+
     # Give each config set its own results root, so an alternate model cannot land
     # on top of the default set's arms. Applied after loading rather than as an
     # override, so it suffixes whatever base.yaml declares instead of assuming it.
@@ -129,6 +165,11 @@ def main(argv: Optional[List[str]] = None) -> int:
         summary = runner.run(args.suite)
     except ConfigError as exc:
         print(f"\nARM NOT RUNNABLE\n{'-' * 70}\n{exc}\n", file=sys.stderr)
+        # Record WHY, next to the results, so the gap is self-documenting. The
+        # reason otherwise lives only in this terminal's scrollback and in a
+        # config file, and the findings report could say no more than "not run"
+        # -- which reads like an omission rather than a refusal on principle.
+        _write_not_run_marker(cfg, args, str(exc))
         return 3
     except BackendError as exc:
         print(f"\nBACKEND ERROR\n{'-' * 70}\n{exc}\n", file=sys.stderr)

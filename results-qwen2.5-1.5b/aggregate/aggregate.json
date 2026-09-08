@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2026-09-08T18:47:15.897023+00:00",
+  "generated_at_utc": "2026-09-08T19:06:24.891040+00:00",
   "aggregate_version": "1.0.0",
   "metric_spec_version": "2.0.0-spec-6.4",
   "cliff_criterion_version": "1.0.0",
@@ -214,9 +214,24 @@
       "deviations": []
     }
   },
+  "config_set": "qwen2.5-1.5b",
+  "results_root": "results-qwen2.5-1.5b",
   "missing_arms": [
     "fp8"
   ],
+  "missing_arm_reasons": {
+    "fp8": {
+      "precision": "fp8",
+      "precision_label": "FP8",
+      "backend": "ollama",
+      "model_tag": null,
+      "refused_at_utc": "2026-09-08T18:57:25.583038+00:00",
+      "reason": "Ollama publishes no FP8 or MXFP8 GGUF for Qwen2.5-1.5B-Instruct, and llama.cpp has no FP8 tensor type to convert one into.",
+      "substitution_policy": "Do NOT substitute the Q8_0 tag here, and do NOT relabel Q8 as FP8. This arm is reported as NOT RUN -- a documented GAP in precision coverage, never a null result. To close the gap, use configs/experiments/ (Qwen3.5-4B, which has a genuine mxfp8 tag) or serve this model on vLLM with --quantization fp8 on a GPU with compute capability >= 8.9.",
+      "runner_message": "Precision 'fp8' is NOT available on backend 'ollama'.\n\nReason: Ollama publishes no FP8 or MXFP8 GGUF for Qwen2.5-1.5B-Instruct, and llama.cpp has no FP8 tensor type to convert one into.\n\nSubstitution policy: Do NOT substitute the Q8_0 tag here, and do NOT relabel Q8 as FP8. This arm is reported as NOT RUN -- a documented GAP in precision coverage, never a null result. To close the gap, use configs/experiments/ (Qwen3.5-4B, which has a genuine mxfp8 tag) or serve this model on vLLM with --quantization fp8 on a GPU with compute capability >= 8.9.\n\nThis arm must be reported as NOT RUN. Do not substitute a different precision under this label.",
+      "note": "This arm was REFUSED, not skipped. It is a documented gap in precision coverage and must never be read as a null result."
+    }
+  },
   "comparability": {
     "checked_fields": [
       "manifest_hash",

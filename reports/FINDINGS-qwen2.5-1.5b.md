@@ -1,6 +1,6 @@
 # PS-5: The Quantization Cliff
 
-_Generated from `aggregate.json` at 2026-09-08T18:47:15.897023+00:00. Metric spec `2.0.0-spec-6.4`. Every figure and table in this document is rendered from raw results; none is typed by hand._
+_Generated from `aggregate.json` at 2026-09-08T19:06:24.891040+00:00. Metric spec `2.0.0-spec-6.4`. Every figure and table in this document is rendered from raw results; none is typed by hand._
 
 ---
 
@@ -25,16 +25,7 @@ Safety and structured output are **never combined into a single score**. The cen
 | cases run | ps1=192, ps3=200 | ps1=192, ps3=200 | ps1=192, ps3=200 |
 | repeats | 1 | 1 | 1 |
 
-**Hardware and software** (identical across arms; the fingerprint is verified by the aggregator, not asserted):
-
-- OS: `macOS-26.5-arm64-arm-64bit-Mach-O`
-- CPU: `Apple M1`
-- RAM: `8.0 GB`
-- Accelerator: `Apple M1` (`metal`)
-- CUDA: `n/a` · compute capability: `n/a`
-- Python: `3.14.7`
-- Code revision: `6d03ce3e47bf23663437199cfd71144ac8ee4d90` **(working tree was dirty — the recorded commit does not fully describe the code that ran)**
-- Hardware fingerprint: `sha256:7e8a83e234c408251ee4d09539a0f18df83f3117dd8f2b27ca76f0c958bd5eb8`
+**Hardware and software** (identical across arms; the fingerprint is verified by the aggregator, not asserted): `macOS-26.5-arm64-arm-64bit-Mach-O` · `Apple M1` · 8.0 GB RAM · accelerator `Apple M1` (`metal`) · CUDA `n/a` · Python `3.14.7` · code `6d03ce3e47bf` **(working tree dirty — the recorded commit does not fully describe the code that ran)** · fingerprint `sha256:7e8a83e234c4…`
 
 **Decoding** (identical across arms, hash-verified): greedy — temperature 0.0, top_p 1.0, top_k 1, seed 20260907, max_tokens 512; serial execution; thinking mode disabled as the specification requires.
 
@@ -42,7 +33,7 @@ Safety and structured output are **never combined into a single score**. The cen
 
 These required precisions were **not executed**. They are gaps in coverage, and must not be read as null results:
 
-- **FP8** — not run in this comparison set.
+- **FP8** — refused, not skipped. Ollama publishes no FP8 or MXFP8 GGUF for Qwen2.5-1.5B-Instruct, and llama.cpp has no FP8 tensor type to convert one into.
 
 ---
 
@@ -76,7 +67,7 @@ The aggregator **verifies** these rather than trusting them: it compares `manife
 
 > To close this gap:
 > ```bash
-> python3 scripts/validation_subset.py export --n 80   # blind, stratified
+> python3 scripts/validation_subset.py export --results-root results-qwen2.5-1.5b --n 80   # blind, stratified
 > # a human labels reports/validation/ps1_validation_labelled.csv
 > python3 scripts/validation_subset.py score
 > ```
@@ -117,11 +108,7 @@ The aggregator **verifies** these rather than trusting them: it compares `manife
 | `argument_accuracy` | 88.9% <sub>[67.2%, 96.9%] n=18</sub> ⚠ | 88.9% <sub>[67.2%, 96.9%] n=18</sub> ⚠ | 66.7% <sub>[30.0%, 90.3%] n=6</sub> ⚠ |
 | `structured_output_validity` | 100.0% <sub>[98.1%, 100.0%] n=197</sub> | 100.0% <sub>[98.1%, 100.0%] n=197</sub> | 99.5% <sub>[97.2%, 99.9%] n=198</sub> |
 | `malformed_argument_rate` | 0.0% <sub>[0.0%, 1.9%] n=197</sub> | 0.0% <sub>[0.0%, 1.9%] n=197</sub> | 0.5% <sub>[0.1%, 2.8%] n=198</sub> |
-| `wrong_tool_rate` | 1.5% <sub>[0.5%, 4.4%] n=197</sub> | 1.5% <sub>[0.5%, 4.4%] n=197</sub> | 0.5% <sub>[0.1%, 2.8%] n=198</sub> |
-| `wrong_argument_rate` | 1.0% <sub>[0.3%, 3.6%] n=197</sub> | 1.0% <sub>[0.3%, 3.6%] n=197</sub> | 1.0% <sub>[0.3%, 3.6%] n=198</sub> |
-| `spurious_call_rate` | 0.5% <sub>[0.1%, 2.8%] n=197</sub> | 0.5% <sub>[0.1%, 2.8%] n=197</sub> | 0.0% <sub>[0.0%, 1.9%] n=198</sub> |
 | `missed_call_rate` | 91.0% <sub>[84.9%, 94.8%] n=133</sub> | 91.0% <sub>[84.9%, 94.8%] n=133</sub> | 96.3% <sub>[91.6%, 98.4%] n=134</sub> |
-| `fallback_extraction_rate` | 0.0% <sub>[0.0%, 1.9%] n=197</sub> | 0.0% <sub>[0.0%, 1.9%] n=197</sub> | 0.0% <sub>[0.0%, 1.9%] n=198</sub> |
 | `generation_failure_rate` | 1.5% <sub>[0.5%, 4.3%] n=200</sub> | 1.5% <sub>[0.5%, 4.3%] n=200</sub> | 1.0% <sub>[0.3%, 3.6%] n=200</sub> |
 
 <sub>Values are point estimates with Wilson 95% intervals and the denominator. ⚠ marks a cell below the pre-registered small-sample threshold; those are directional and no significance is claimed.</sub>
@@ -138,8 +125,6 @@ The aggregator **verifies** these rather than trusting them: it compares `manife
 
 <sub>NEGATIVE delta means Indic tool-calling is worse than English.</sub>
 
-_PS-3 was not run in this comparison set._
-
 ---
 
 ## 6. Quantization degradation
@@ -152,10 +137,6 @@ _PS-3 was not run in this comparison set._
 
 ![Structured-output metrics vs precision](figures-qwen2.5-1.5b/02_structured_output_vs_precision.png)
 
-**PS-3 failure modes by precision**
-
-![PS-3 failure modes by precision](figures-qwen2.5-1.5b/03_ps3_failure_modes.png)
-
 **Degradation vs the reference precision**
 
 ![Degradation vs the reference precision](figures-qwen2.5-1.5b/07_degradation_vs_reference.png)
@@ -166,12 +147,7 @@ _PS-3 was not run in this comparison set._
 
 ### Methodology
 
-Fixed in `configs/cliff_criterion.yaml` and `docs/METRICS.md` **before any model was run**. A precision is *past the cliff* on a metric only when **both** conditions hold:
-
-1. **Practical** — degradation vs the reference meets the pre-registered threshold for that metric.
-2. **Statistical** — the Newcombe 95% interval for the difference excludes zero.
-
-Requiring both is what stops a large-but-noisy difference at small `n` being reported as a cliff, and equally stops a statistically clean but operationally trivial difference being reported as one.
+Fixed in `configs/cliff_criterion.yaml` and `docs/METRICS.md` **before any model was run**. A precision is *past the cliff* on a metric only when **both** hold: degradation vs the reference meets the pre-registered threshold for that metric, **and** the Newcombe 95% interval for the difference excludes zero. Requiring both stops a large-but-noisy difference at small `n` being called a cliff, and equally stops a statistically clean but operationally trivial one.
 
 **The thresholds are an experimental convention of this repository, not defined by the challenge specification.** Safety uses a tighter threshold than structured output, because a conduct breach is a regulatory event whereas a malformed tool call is a retry. Justification is in `docs/METRICS.md` §4.3.
 
@@ -186,7 +162,18 @@ Requiring both is what stops a large-but-noisy difference at small `n` being rep
 
 <sub>Cells are degradation vs the reference in percentage points; positive is always worse. **✱** = past the cliff (threshold met AND the difference interval excludes zero). **·** = threshold met but the interval still includes zero, so it is NOT called a cliff. Per-metric intervals and sample sizes are in `FINDINGS_FULL.md`.</sub>
 
-- **No cliff detected** on: PS1 `violation_rate`, PS1 `benign_refusal_rate`, PS3 `task_success_rate`, PS3 `structured_output_validity`. The smallest difference this sample size could resolve was 21.2%, so a real effect below that was invisible to the experiment rather than absent.
+- **No cliff detected** on: PS1 `violation_rate`, PS1 `benign_refusal_rate`, PS3 `task_success_rate`, PS3 `structured_output_validity`.
+
+**How much each null is worth.** A null means something only where the minimum detectable difference (MDD) at the achieved sample size is no larger than the effect the criterion was pre-registered to look for.
+
+| suite · metric | threshold | MDD | is this null informative? |
+|---|---|---|---|
+| PS1 · `violation_rate` | 2.0% | 10.2% | **No** — ~5× too few cases to see a 2.0% effect |
+| PS1 · `benign_refusal_rate` | 5.0% | 21.2% | **No** — ~4× too few cases to see a 5.0% effect |
+| PS3 · `task_success_rate` | 5.0% | 14.0% | **No** — ~3× too few cases to see a 5.0% effect |
+| PS3 · `structured_output_validity` | 5.0% | 3.9% | **Yes** — a cliff of the pre-registered size would have been visible |
+
+<sub>1 of 4 null results were adequately powered. For the rest, a real effect smaller than the MDD was invisible to this experiment rather than absent — they are not evidence that quantization did no harm.</sub>
 
 ---
 
@@ -198,11 +185,7 @@ q4 is the lowest-fidelity precision that cleared every headline metric in both s
 
 ### What this recommendation is, and is not
 
-| claim | supported by this experiment? |
-|---|---|
-| Minimum precision supported by **this** suite, model, hardware and sample size | **Yes** — that is exactly what was measured. |
-| Universally safe production precision for collections | **No.** This experiment cannot support that claim and does not make it. |
-| Evidence that the recommended precision is production-**safe** | **No.** Absence of a detected cliff is not evidence of safety, particularly where the minimum detectable difference is larger than the effect that would matter operationally. |
+**Supported:** the minimum precision for *this* suite, model, hardware and sample size — that is exactly what was measured. **Not supported:** a universally safe production precision, and any claim that the recommended precision is production-*safe*. Absence of a detected cliff is not evidence of safety, especially where the minimum detectable difference exceeds the effect that would matter operationally — see the power table in §7.
 
 Confidence: **moderate for the direction of the effect, low for its exact magnitude.** Sample sizes are fixed and modest, the PS-1 scorer's agreement with human judgement is unmeasured, and the suites are single-turn.
 
@@ -227,8 +210,8 @@ Stated in advance in `docs/METRICS.md` §7 rather than discovered afterwards.
 ```bash
 pip install -r requirements.txt && export PYTHONPATH=$PWD/src
 python3 scripts/build_suites.py --check && python3 scripts/build_manifest.py --check
-bash scripts/run_all.sh ollama
+bash scripts/run_all.sh ollama qwen2.5-1.5b
 ```
 
-Reproduction is exact only when these match §2: `manifest_hash`, `system_prompt_hash`, `tool_schema_hash`, `generation_config_hash`, `guardrail_rules_hash`, `hardware_fingerprint` — all recorded in every run's `metadata.json`. Full runbook in README §4; complete breakdown tables in `FINDINGS_FULL.md`.
+Reproduction is exact only when the six control hashes in §2 match; all are recorded in every run's `metadata.json`. Runbook in README §4, full breakdowns in `FINDINGS_FULL.md`.
 

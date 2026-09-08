@@ -1,6 +1,6 @@
 # PS-5 aggregate summary
 
-- generated: `2026-09-08T18:47:15.897023+00:00`
+- generated: `2026-09-08T19:06:24.891040+00:00`
 - metric spec: `2.0.0-spec-6.4` (recorded by every arm and verified equal across them)
 - cliff criterion: `1.0.0`
 - reference precision: `bf16`

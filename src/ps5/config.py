@@ -196,6 +196,9 @@ class ExperimentConfig:
     model_parameters: str
     model_variant: str
     repo_root: Path
+    #: Which config set this arm came from ("default", "qwen2.5-1.5b", ...).
+    #: Set by the CLI, so a config loaded directly by path leaves it None.
+    config_set: Optional[str] = None
     raw: Dict[str, Any] = field(default_factory=dict)
 
     # -- derived identity ---------------------------------------------------- #
