@@ -4,7 +4,7 @@ Track 2, PS-5 of the Predixion AI Open-Weight Collections Agent Challenge.
 
 Locates the precision at which quantization actually breaks instruction-following and structured output, by re-running the PS-1 and PS-3 suites at **Q4, Q8, FP8 and BF16** on identical hardware with every other variable held fixed and hash-verified.
 
-> **Status.** The framework is complete, spec-aligned and validated end-to-end against a deterministic mock backend (**238 tests passing**). **No model has been run yet**, so `reports/FINDINGS.md` contains placeholders, not results. §4 gives the exact commands.
+> **Status.** The framework is complete, spec-aligned and validated end-to-end against a deterministic mock backend (**239 tests passing**). **No model has been run yet**, so `reports/FINDINGS.md` contains placeholders, not results. §4 gives the exact commands.
 >
 > Two config sets are provided: `default` (Qwen3.5-4B, the specification's candidate, whose BF16 reference needs more than 8 GB) and `qwen2.5-1.5b` (runs in 8 GB, at the cost of a three-rung curve and an F16 reference). §3 states exactly what the smaller set can and cannot support.
 
@@ -72,7 +72,7 @@ scripts/
   make_plots.py generate_report.py rescore.py validation_subset.py
   run_all.sh   suite_content/{ps1,ps3}_content.py
 docs/METRICS.md              metric + cliff spec, frozen before any run
-tests/                       238 tests
+tests/                       239 tests
 ```
 
 ---
@@ -139,7 +139,7 @@ export PYTHONPATH="$PWD/src:$PYTHONPATH"
 ```bash
 python3 scripts/build_suites.py --check
 python3 scripts/build_manifest.py --check
-python3 -m pytest -q                     # 238 tests
+python3 -m pytest -q                     # 239 tests
 ```
 
 ### 4.3 Check what can run, before running anything

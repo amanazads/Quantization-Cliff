@@ -67,7 +67,14 @@ examples
                    help="override experiment.repeats, to estimate run-to-run variance")
     p.add_argument("--host", default=None, help="Ollama host, e.g. http://127.0.0.1:11434")
     p.add_argument("--base-url", default=None, help="OpenAI-compatible base URL")
-    p.add_argument("--quiet", action="store_true")
+    # Two separate things, because conflating them is how a multi-hour run ends
+    # up with no output at all and no way to tell slow from hung.
+    p.add_argument("--quiet", action="store_true",
+                   help="suppress per-case progress. An arm is hundreds of serial "
+                        "generations, so this makes a live run unobservable; the "
+                        "results JSONL is flushed per case either way.")
+    p.add_argument("--no-summary", action="store_true",
+                   help="keep progress, but skip the JSON summary dump at the end")
     return p
 
 
@@ -127,7 +134,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         print(f"\nBACKEND ERROR\n{'-' * 70}\n{exc}\n", file=sys.stderr)
         return 4
 
-    if not args.quiet:
+    if not args.quiet and not args.no_summary:
         print("\n" + json.dumps(summary, indent=2, default=str))
     return 0
 

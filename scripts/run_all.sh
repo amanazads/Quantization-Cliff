@@ -195,7 +195,7 @@ for PRECISION in bf16 fp8 q8 q4; do
   echo "== $PRECISION =="
   if "$PY" -m ps5.run --precision "$PRECISION" --backend "$BACKEND" \
        --config-set "$CONFIG_SET" --suite ps1 ps3 \
-       --results-root "$RESULTS_ROOT" --quiet; then
+       --results-root "$RESULTS_ROOT" --no-summary; then
     echo "   ok"
     RAN+=("$PRECISION")
   else

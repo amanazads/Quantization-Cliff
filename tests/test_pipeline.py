@@ -240,6 +240,40 @@ def pipeline(repo, tmp_path_factory):
     return out, criterion, agg
 
 
+def test_each_case_is_on_disk_before_the_next_one_starts(repo, tmp_path):
+    """A full arm is hundreds of serial generations with no output in between.
+
+    Left to Python's 8 KB buffer, the results file sits at zero bytes for
+    minutes, so `wc -l` cannot tell a slow run from a hung one -- which is
+    exactly the question you have during a multi-hour run, and the one time you
+    cannot answer it by waiting. Flushing per record also means an interrupted
+    run keeps every case it finished.
+
+    Asserted from inside the backend, mid-run: the previous case must already be
+    readable on disk. Checking after the run would prove nothing, because closing
+    the file flushes it anyway.
+    """
+    from ps5.backends.mock import MockBackend
+
+    observed = []
+
+    class WatchingBackend(MockBackend):
+        def generate(self, *args, **kwargs):
+            path = tmp_path / "q4" / "ps1_results.jsonl"
+            if path.exists():
+                observed.append(sum(1 for _ in path.open(encoding="utf-8")))
+            return super().generate(*args, **kwargs)
+
+    cfg = load_experiment_config(
+        repo / "configs" / "experiments" / "q4.yaml", "mock", repo_root=repo,
+        overrides={"experiment": {"results_root": str(tmp_path)}})
+    ExperimentRunner(cfg, backend=WatchingBackend("mock:q4", {"precision_id": "q4"}),
+                     limit=5, verbose=False).run(["ps1"])
+
+    assert observed[:5] == [0, 1, 2, 3, 4], (
+        f"records were not visible on disk as they were produced: {observed[:5]}")
+
+
 def test_all_four_arms_produce_results(pipeline):
     out, _criterion, agg = pipeline
     assert set(agg["arms"]) == {"bf16", "fp8", "q8", "q4"}

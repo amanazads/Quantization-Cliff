@@ -241,13 +241,24 @@ class ExperimentRunner:
                     fh.write(json.dumps(self._record(
                         suite_id, case, repeat_idx, result, score_dict
                     ), ensure_ascii=False) + "\n")
+                    # Flushed per record rather than left to the 8 KB buffer. An
+                    # arm is hundreds of serial generations; without this the
+                    # results file sits at 0 bytes for minutes and `wc -l` cannot
+                    # distinguish a slow run from a hung one. It also means a run
+                    # interrupted part-way leaves every completed case on disk.
+                    fh.flush()
 
-                    if self.verbose and (index % 10 == 0 or index == n_total):
+                    # Dense at the start, sparse later, deliberately: the first
+                    # case carries the model load -- often tens of seconds on a
+                    # memory-constrained machine -- and is exactly where a run
+                    # looks hung. Once a rate is established every tenth is plenty.
+                    if index <= 3 or index % 10 == 0 or index == n_total:
                         elapsed = time.time() - started
                         rate = index / elapsed if elapsed else 0.0
+                        eta_min = (n_total - index) / rate / 60 if rate else 0.0
                         self._log(
                             f"  [{self.cfg.precision.id}/{suite_id}] {index}/{n_total} "
-                            f"({rate:.2f} case/s) counts={counts}"
+                            f"({rate:.2f} case/s, ~{eta_min:.0f} min left) counts={counts}"
                         )
 
         elapsed = time.time() - started
