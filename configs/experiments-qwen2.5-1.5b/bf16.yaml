@@ -1,0 +1,86 @@
+inherits: ../base.yaml
+
+# BF16 is the REFERENCE arm. Every delta in the analysis is measured against it,
+# so its integrity matters more than any other arm's -- and in THIS config set it
+# is the arm carrying the compromise. Read DEV-BF16-OLLAMA-F16 below before
+# reading any number produced from this set.
+
+# Model identity override for the whole set. Family and size are controlled
+# variables: identical across the four arms here, and deliberately DIFFERENT from
+# configs/experiments/, which is why the two sets write to different results
+# roots and can never be aggregated together.
+model:
+  family: "qwen2.5"
+  parameters: "1.5b"
+  variant: "instruct"
+
+precision:
+  id: bf16
+  label: "BF16"
+  nominal_bits: 16
+  family: floating_point
+  is_reference: true
+
+backends:
+  ollama:
+    available: true
+    model_tag: "qwen2.5:1.5b-instruct-fp16"
+    quantization_format: "GGUF F16 (IEEE half) -- SUBSTITUTED FOR BF16"
+    approx_download_gb: 3.1
+    quantization_config:
+      method: "none (full-precision reference)"
+      dtype: "float16"
+      bits: 16
+      notes: >-
+        IEEE binary16: 5 exponent bits, 10 mantissa bits. NOT bfloat16, which has
+        8 exponent bits and 7 mantissa bits. Ollama publishes no bf16 GGUF for
+        Qwen2.5-1.5B, and substituting a different MODEL to obtain one would be a
+        far worse trade than substituting a nearby dtype of the same model.
+    deviations:
+      - id: DEV-BF16-OLLAMA-F16
+        severity: material
+        description: >-
+          THIS ARM IS F16, NOT BF16. Qwen2.5 was trained in bfloat16, so this file
+          is a format conversion of the training weights rather than the training
+          weights themselves. F16 trades exponent range for mantissa precision.
+        impact: >-
+          Any weight whose magnitude falls outside F16's narrower dynamic range is
+          flushed or clipped on conversion. At 1.5B parameters that is very
+          unlikely to be measurable, but this is the arm every other arm is
+          subtracted from, so an unmeasured assumption sits underneath every
+          degradation figure in this set. Report the reference as "F16", never as
+          "BF16", and do not pool it with a genuine BF16 arm from another set.
+        remediation: >-
+          Use configs/experiments/ (Qwen3.5-4B), whose reference arm is a genuine
+          bf16 GGUF. It needs more than 8 GB of unified memory.
+
+  vllm:
+    available: true
+    model_tag: "Qwen/Qwen2.5-1.5B-Instruct"
+    quantization_format: "BF16 (unquantized)"
+    quantization_config:
+      method: "none"
+      dtype: "bfloat16"
+      bits: 16
+      launch: >-
+        vllm serve Qwen/Qwen2.5-1.5B-Instruct --dtype bfloat16
+        --enable-auto-tool-choice --tool-call-parser hermes
+      notes: >-
+        On vLLM this arm IS genuine bfloat16 -- the HF checkpoint is served in its
+        training dtype, so DEV-BF16-OLLAMA-F16 does not apply here. A vLLM run of
+        this set therefore has a stronger reference than an Ollama run of it.
+    deviations: []
+
+  mock:
+    available: true
+    model_tag: "mock:bf16"
+    quantization_format: "SYNTHETIC -- not a real quantization"
+    quantization_config:
+      method: "none -- fabricated fixture"
+    deviations:
+      - id: DEV-BF16-MOCK-1
+        severity: blocking
+        description: >-
+          Output came from the deterministic mock backend. These numbers are a
+          pipeline-validation fixture, not a measurement of any model, and must
+          never be reported as a PS-5 result.

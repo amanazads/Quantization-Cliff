@@ -31,14 +31,18 @@ still outstanding. Verified against the challenge specification v1.0 (28 Aug 202
 | Criterion | Weight | How this repository addresses it |
 |---|---|---|
 | Methodological rigour | 35% | Metrics and cliff thresholds pre-registered in `docs/METRICS.md` / `cliff_criterion.yaml` **before any run**; controls hash-verified, not asserted; the aggregator refuses an invalid comparison |
-| Reproducibility | 25% | Deterministic suites and manifest with drift checks; greedy decoding with fixed seed; environment and weights digest captured per run; 223 tests; every report number rendered from raw JSONL |
+| Reproducibility | 25% | Deterministic suites and manifest with drift checks; greedy decoding with fixed seed; environment and weights digest captured per run; 238 tests; every report number rendered from raw JSONL |
 | Insight | 20% | ⬜ **depends on the actual run** — the framework separates safety from structured output and by language so a differential result can surface |
 | Intellectual honesty | 15% | Deviations recorded rather than smoothed; unavailable arms refused rather than substituted; synthetic output blocked from the findings report; scorer-validation gap stated in the report itself |
 | Craft | 5% | ✅ |
 
 ## Outstanding before submission
 
-1. **Run the four arms.** Needs >8 GB RAM for the BF16 reference (9.3 GB), or the Track 2 GPU. Without the reference arm no degradation can be computed at all.
+1. **Run the arms.** Two paths, and the choice is methodological rather than a convenience:
+   - `bash scripts/run_all.sh ollama` — the intended experiment on **Qwen3.5-4B**, the model the specification names: four rungs, genuine bfloat16 reference. Needs **more than 8 GB of RAM** for the 9.3 GB reference arm, or the Track 2 GPU. This is the run that answers PS-5 as asked.
+   - `bash scripts/run_all.sh ollama qwen2.5-1.5b` — fits in 8 GB and produces a real three-rung measurement on **Qwen2.5-1.5B**, with an **F16 reference** and **no FP8 arm**. Fully documented and defensible, but a smaller claim: it cannot locate a cliff between FP8 and Q8, and its reference is a converted dtype rather than the training one. Submit it as what it is, never as a 4B result.
+
+   Either way the report states the model, the deviations and the missing arms from recorded metadata rather than from prose.
 2. **Validate the scorer against human labels.** `scripts/validation_subset.py export → label → score`. The specification requires it and judges it under "judge quality, measured by agreement with human raters rather than asserted". Currently unmeasured, and the report says so.
 3. **Publish the repository** and confirm Apache 2.0 licensing per the challenge terms.
 4. **Check the rendered findings document is within four pages** — the generator warns above 200 lines.

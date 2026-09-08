@@ -386,8 +386,8 @@ def test_mock_run_defaults_to_its_own_results_root(repo):
     a default that overwrites it is a trap, not a convenience.
     """
     script = (repo / "scripts" / "run_all.sh").read_text(encoding="utf-8")
-    assert 'RESULTS_ROOT="${2:-results_mock}"' in script
-    assert 'RESULTS_ROOT="${2:-results}"' in script
+    assert 'RESULTS_ROOT="${3:-results_mock$SUFFIX}"' in script
+    assert 'RESULTS_ROOT="${3:-results$SUFFIX}"' in script
 
 
 def test_mock_refuses_to_write_into_a_root_holding_measured_arms(repo, tmp_path):
@@ -395,7 +395,7 @@ def test_mock_refuses_to_write_into_a_root_holding_measured_arms(repo, tmp_path)
     (tmp_path / "q4" / "metadata.json").write_text(
         json.dumps({"backend": {"name": "ollama", "synthetic": False}}), encoding="utf-8")
 
-    proc = _run_all(repo, ["mock", str(tmp_path)])
+    proc = _run_all(repo, ["mock", "default", str(tmp_path)])
     assert proc.returncode == 1
     assert "ABORT" in proc.stdout
     assert "q4  (real)" in proc.stdout
@@ -410,7 +410,14 @@ def test_a_real_run_refuses_to_aggregate_alongside_fabricated_arms(repo, tmp_pat
     (tmp_path / "q8" / "metadata.json").write_text(
         json.dumps({"backend": {"name": "mock", "synthetic": True}}), encoding="utf-8")
 
-    proc = _run_all(repo, ["ollama", str(tmp_path)])
+    proc = _run_all(repo, ["ollama", "default", str(tmp_path)])
     assert proc.returncode == 1
     assert "q8  (synthetic)" in proc.stdout
     assert "invented numbers" in proc.stdout
+
+
+def test_an_unknown_config_set_lists_the_real_ones(repo):
+    proc = _run_all(repo, ["ollama", "no-such-model"])
+    assert proc.returncode == 1
+    assert "no config set named 'no-such-model'" in proc.stdout
+    assert "default" in proc.stdout and "qwen2.5-1.5b" in proc.stdout

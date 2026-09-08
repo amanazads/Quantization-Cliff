@@ -27,11 +27,72 @@ __all__ = [
     "ExperimentConfig",
     "load_experiment_config",
     "ConfigError",
+    "DEFAULT_CONFIG_SET",
+    "config_set_dir",
+    "config_set_suffix",
+    "available_config_sets",
 ]
 
 
 class ConfigError(RuntimeError):
     """Raised when a configuration is malformed or describes an impossible run."""
+
+
+# --------------------------------------------------------------------------- #
+# Config sets
+#
+# A config set is one complete four-arm experiment: a model, and the tag that
+# realises each precision for it. `default` (configs/experiments/) targets the
+# specification's Qwen3.5-4B; alternates exist because a 9.3 GB reference arm
+# does not fit on every machine.
+#
+# Two arms of DIFFERENT models must never land in the same results directory.
+# The aggregator already refuses to compare across model families, but that check
+# fires after the fact -- by then one run may have overwritten the other's raw
+# JSONL. So the results root is derived from the set name instead of being a free
+# parameter, and collision is prevented rather than detected.
+# --------------------------------------------------------------------------- #
+
+DEFAULT_CONFIG_SET = "default"
+_CONFIG_SET_PREFIX = "experiments"
+
+
+def config_set_dir(repo_root: str | Path, name: str = DEFAULT_CONFIG_SET) -> Path:
+    """Directory holding one set's per-precision configs. Raises if it is absent."""
+    root = Path(repo_root)
+    name = (name or DEFAULT_CONFIG_SET).strip()
+    if name in ("", DEFAULT_CONFIG_SET):
+        path = root / "configs" / _CONFIG_SET_PREFIX
+    else:
+        if "/" in name or "\\" in name or name.startswith("."):
+            raise ConfigError(f"Invalid config set name {name!r}: it is a name, not a path.")
+        path = root / "configs" / f"{_CONFIG_SET_PREFIX}-{name}"
+    if not path.is_dir():
+        known = available_config_sets(root)
+        raise ConfigError(
+            f"No config set named {name!r} (looked in {path}).\n"
+            f"Available sets: {', '.join(known) if known else '(none found)'}"
+        )
+    return path
+
+
+def config_set_suffix(name: str = DEFAULT_CONFIG_SET) -> str:
+    """Suffix appended to results roots so two sets cannot share a directory."""
+    name = (name or DEFAULT_CONFIG_SET).strip()
+    return "" if name in ("", DEFAULT_CONFIG_SET) else f"-{name}"
+
+
+def available_config_sets(repo_root: str | Path) -> List[str]:
+    configs = Path(repo_root) / "configs"
+    names = []
+    for child in sorted(configs.iterdir() if configs.is_dir() else []):
+        if not child.is_dir():
+            continue
+        if child.name == _CONFIG_SET_PREFIX:
+            names.append(DEFAULT_CONFIG_SET)
+        elif child.name.startswith(f"{_CONFIG_SET_PREFIX}-"):
+            names.append(child.name[len(_CONFIG_SET_PREFIX) + 1:])
+    return names
 
 
 # --------------------------------------------------------------------------- #

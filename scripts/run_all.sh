@@ -1,13 +1,20 @@
 #!/usr/bin/env bash
 # Run every precision arm, then aggregate, plot and report.
 #
-#   bash scripts/run_all.sh ollama     # Q4, Q8, BF16(as F16). FP8 is refused -- by design.
-#   bash scripts/run_all.sh vllm       # all four precisions
-#   bash scripts/run_all.sh mock       # pipeline validation, FABRICATED output
+#   bash scripts/run_all.sh ollama                  # default set: Qwen3.5-4B
+#   bash scripts/run_all.sh ollama qwen2.5-1.5b     # the set that fits in 8 GB
+#   bash scripts/run_all.sh vllm                    # all four precisions
+#   bash scripts/run_all.sh mock                    # pipeline check, FABRICATED
 #
-# A second argument overrides the results root. Mock runs default to
-# `results_mock/` so a pipeline check can never land on top of measured arms;
-# mixing the two in one root is refused before anything runs.
+#   $1 backend   $2 config set (default: "default")   $3 results root override
+#
+# Each config set is a different MODEL, so each gets its own results root
+# (results, results-qwen2.5-1.5b, ...). The aggregator refuses to compare across
+# model families anyway, but a shared directory would still let one run overwrite
+# the other's raw JSONL -- so collision is prevented, not merely detected.
+#
+# Mock runs default to `results_mock*` for the same reason, and mixing fabricated
+# with measured arms in one root is refused before anything runs.
 #
 # Use `bash scripts/run_all.sh ...` rather than `./scripts/run_all.sh ...` unless
 # you have run `chmod +x scripts/*.sh`; the execute bit does not survive every
@@ -19,17 +26,36 @@
 set -uo pipefail
 
 BACKEND="${1:-ollama}"
+CONFIG_SET="${2:-default}"
+REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$REPO"
+
+if [ "$CONFIG_SET" = "default" ]; then
+  CONFIG_DIR="configs/experiments"
+  SUFFIX=""
+else
+  CONFIG_DIR="configs/experiments-$CONFIG_SET"
+  SUFFIX="-$CONFIG_SET"
+fi
+if [ ! -d "$CONFIG_DIR" ]; then
+  echo "ERROR: no config set named '$CONFIG_SET' (looked for $CONFIG_DIR)."
+  echo "Available sets:"
+  echo "  default"
+  for D in configs/experiments-*/; do
+    [ -d "$D" ] && echo "  $(basename "$D" | sed 's/^experiments-//')"
+  done
+  exit 1
+fi
+
 # A mock run defaults to its OWN results root. The raw JSONL is the primary
 # evidence of the experiment and each real arm costs a long time to produce, so a
 # pipeline check run afterwards must not be able to overwrite it. An explicit
-# second argument still wins -- this is a safe default, not a restriction.
+# third argument still wins -- this is a safe default, not a restriction.
 if [ "$BACKEND" = "mock" ]; then
-  RESULTS_ROOT="${2:-results_mock}"
+  RESULTS_ROOT="${3:-results_mock$SUFFIX}"
 else
-  RESULTS_ROOT="${2:-results}"
+  RESULTS_ROOT="${3:-results$SUFFIX}"
 fi
-REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-cd "$REPO"
 
 # --------------------------------------------------------------------------- #
 # Resolve a Python interpreter.
@@ -60,6 +86,7 @@ fi
 export PYTHONPATH="$REPO/src:${PYTHONPATH:-}"
 
 echo "backend      : $BACKEND"
+echo "config set   : $CONFIG_SET  ($CONFIG_DIR)"
 echo "results root : $RESULTS_ROOT"
 echo "python       : $PY  ($("$PY" -V 2>&1))"
 echo
@@ -148,7 +175,7 @@ fi
 # Preflight: report every arm's readiness at once, before running anything.
 # --------------------------------------------------------------------------- #
 echo "== preflight =="
-"$PY" scripts/preflight.py --backend "$BACKEND"
+"$PY" scripts/preflight.py --backend "$BACKEND" --config-set "$CONFIG_SET"
 PREFLIGHT=$?
 echo
 if [ $PREFLIGHT -eq 2 ]; then
@@ -167,7 +194,8 @@ RAN=()
 for PRECISION in bf16 fp8 q8 q4; do
   echo "== $PRECISION =="
   if "$PY" -m ps5.run --precision "$PRECISION" --backend "$BACKEND" \
-       --suite ps1 ps3 --results-root "$RESULTS_ROOT" --quiet; then
+       --config-set "$CONFIG_SET" --suite ps1 ps3 \
+       --results-root "$RESULTS_ROOT" --quiet; then
     echo "   ok"
     RAN+=("$PRECISION")
   else
@@ -183,14 +211,18 @@ if [ ${#RAN[@]} -eq 0 ]; then
   exit 1
 fi
 
-# A validation run must NEVER overwrite the real findings report or its figures.
+# A validation run must NEVER overwrite the real findings report or its figures,
+# and neither must a different MODEL's run: two config sets measure two different
+# models, so each gets its own report and figure directory. Everything a run
+# writes is keyed by (backend kind, config set), which is what makes it safe to
+# run the small set and the full set on the same checkout.
 if [ "$BACKEND" = "mock" ]; then
-  FIGURES="reports/figures_mock"
-  REPORT="reports/FINDINGS_MOCK.md"
+  FIGURES="reports/figures_mock$SUFFIX"
+  REPORT="reports/FINDINGS_MOCK$SUFFIX.md"
   EXTRA="--allow-synthetic"
 else
-  FIGURES="reports/figures"
-  REPORT="reports/FINDINGS.md"
+  FIGURES="reports/figures$SUFFIX"
+  REPORT="reports/FINDINGS$SUFFIX.md"
   EXTRA=""
 fi
 

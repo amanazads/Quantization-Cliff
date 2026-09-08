@@ -8,7 +8,13 @@ import sys
 from pathlib import Path
 from typing import List, Optional
 
-from .config import ConfigError, load_experiment_config
+from .config import (
+    DEFAULT_CONFIG_SET,
+    ConfigError,
+    config_set_dir,
+    config_set_suffix,
+    load_experiment_config,
+)
 from .backends.base import BackendError
 from .runner import ExperimentRunner
 
@@ -34,6 +40,9 @@ examples
   # a real arm on local Ollama
   python -m ps5.run --precision q4 --backend ollama --suite ps1 ps3
 
+  # the same arm from the smaller config set that fits in 8 GB
+  python -m ps5.run --precision q4 --backend ollama --config-set qwen2.5-1.5b
+
   # FP8 requires a CUDA GPU with compute capability >= 8.9, served by vLLM
   python -m ps5.run --precision fp8 --backend vllm --suite ps1 ps3
 """,
@@ -42,8 +51,13 @@ examples
     p.add_argument("--backend", required=True, choices=BACKENDS)
     p.add_argument("--suite", nargs="+", default=None, choices=["ps1", "ps3"],
                    help="suites to run (default: whatever the config lists)")
+    p.add_argument("--config-set", default=DEFAULT_CONFIG_SET,
+                   help="which four-arm experiment to run: 'default' (Qwen3.5-4B, the "
+                        "specification's candidate) or an alternate such as "
+                        "'qwen2.5-1.5b'. Each set writes to its own results root, so "
+                        "two models can never be aggregated into one comparison.")
     p.add_argument("--config", default=None,
-                   help="override the experiment config path")
+                   help="override the experiment config path (bypasses --config-set)")
     p.add_argument("--results-root", default=None,
                    help="override the results directory root")
     p.add_argument("--limit", type=int, default=None,
@@ -60,7 +74,15 @@ examples
 def main(argv: Optional[List[str]] = None) -> int:
     args = build_parser().parse_args(argv)
     root = _repo_root()
-    config_path = Path(args.config) if args.config else root / "configs" / "experiments" / f"{args.precision}.yaml"
+
+    try:
+        if args.config:
+            config_path = Path(args.config)
+        else:
+            config_path = config_set_dir(root, args.config_set) / f"{args.precision}.yaml"
+    except ConfigError as exc:
+        print(f"\nCONFIGURATION ERROR\n{'-' * 70}\n{exc}\n", file=sys.stderr)
+        return 2
 
     overrides = {}
     if args.repeats is not None:
@@ -73,6 +95,16 @@ def main(argv: Optional[List[str]] = None) -> int:
     except ConfigError as exc:
         print(f"\nCONFIGURATION ERROR\n{'-' * 70}\n{exc}\n", file=sys.stderr)
         return 2
+
+    # Give each config set its own results root, so an alternate model cannot land
+    # on top of the default set's arms. Applied after loading rather than as an
+    # override, so it suffixes whatever base.yaml declares instead of assuming it.
+    # An explicit --results-root or --config means the caller has taken charge of
+    # the destination, and neither is second-guessed.
+    if not args.results_root and not args.config:
+        suffix = config_set_suffix(args.config_set)
+        if suffix:
+            cfg.results_root = cfg.results_root.parent / (cfg.results_root.name + suffix)
 
     if args.host:
         cfg.backend.options["host"] = args.host

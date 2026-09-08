@@ -8,7 +8,15 @@ import json
 
 import pytest
 
-from ps5.config import ConfigError, GenerationConfig, load_experiment_config
+from ps5.config import (
+    DEFAULT_CONFIG_SET,
+    ConfigError,
+    GenerationConfig,
+    available_config_sets,
+    config_set_dir,
+    config_set_suffix,
+    load_experiment_config,
+)
 from ps5.hashing import sha256_json, sha256_text
 from ps5.manifest import ManifestError, build_manifest, case_content_hash, load_suite, verify_manifest
 
@@ -149,6 +157,141 @@ def test_mock_backend_deviation_is_blocking(repo):
     cfg = load_experiment_config(
         repo / "configs" / "experiments" / "q4.yaml", "mock", repo_root=repo)
     assert all(d.severity == "blocking" for d in cfg.backend.deviations)
+
+
+# --------------------------------------------------------------------------- #
+# Config sets
+#
+# A set is one complete four-arm experiment. `default` is Qwen3.5-4B, the model
+# the specification names; `qwen2.5-1.5b` exists because the default's 9.3 GB
+# reference arm does not fit on an 8 GB machine. Everything in this section holds
+# for EVERY set on disk, so a new set cannot be added without meeting the bar.
+# --------------------------------------------------------------------------- #
+
+def test_both_config_sets_are_discoverable(repo):
+    names = available_config_sets(repo)
+    assert DEFAULT_CONFIG_SET in names
+    assert "qwen2.5-1.5b" in names
+
+
+@pytest.mark.parametrize("precision", PRECISIONS)
+def test_every_set_defines_every_precision(precision, repo):
+    """A set missing an arm file would silently shrink the experiment."""
+    for name in available_config_sets(repo):
+        path = config_set_dir(repo, name) / f"{precision}.yaml"
+        assert path.exists(), f"config set {name!r} has no {precision} arm"
+        cfg = load_experiment_config(path, "mock", repo_root=repo)
+        assert cfg.precision.id == precision
+
+
+def test_each_set_holds_its_controlled_variables_constant(repo):
+    """Within a set, only the weights may differ."""
+    for name in available_config_sets(repo):
+        directory = config_set_dir(repo, name)
+        base = load_experiment_config(directory / "bf16.yaml", "mock", repo_root=repo)
+        for precision in PRECISIONS:
+            cfg = load_experiment_config(
+                directory / f"{precision}.yaml", "mock", repo_root=repo)
+            assert cfg.system_prompt_hash == base.system_prompt_hash, (name, precision)
+            assert cfg.tool_schema_hash == base.tool_schema_hash, (name, precision)
+            assert cfg.manifest_hash == base.manifest_hash, (name, precision)
+            assert cfg.generation.hash == base.generation.hash, (name, precision)
+            assert cfg.model_family == base.model_family, (name, precision)
+            assert cfg.model_parameters == base.model_parameters, (name, precision)
+            assert cfg.model_variant == base.model_variant, (name, precision)
+
+
+def test_different_sets_are_different_models(repo):
+    """If two sets served the same model they would not be two experiments."""
+    identities = {}
+    for name in available_config_sets(repo):
+        cfg = load_experiment_config(
+            config_set_dir(repo, name) / "bf16.yaml", "mock", repo_root=repo)
+        identities[name] = (cfg.model_family, cfg.model_parameters, cfg.model_variant)
+    assert len(set(identities.values())) == len(identities), identities
+
+
+def test_every_set_gets_its_own_results_root(repo):
+    """Two models must not be able to write into one directory.
+
+    The aggregator refuses to compare across model families, but that fires after
+    the fact -- by then one run may have overwritten the other's raw JSONL, which
+    is the evidence and is expensive to reproduce.
+    """
+    suffixes = {name: config_set_suffix(name) for name in available_config_sets(repo)}
+    assert suffixes[DEFAULT_CONFIG_SET] == "", "the default set keeps the plain paths"
+    assert len(set(suffixes.values())) == len(suffixes), suffixes
+
+
+def test_an_unknown_set_names_the_real_ones(repo):
+    with pytest.raises(ConfigError) as exc:
+        config_set_dir(repo, "no-such-model")
+    assert "no-such-model" in str(exc.value)
+    assert "qwen2.5-1.5b" in str(exc.value)
+
+
+def test_a_set_name_cannot_escape_the_configs_directory(repo):
+    for evil in ["../secrets", "a/b", ".hidden"]:
+        with pytest.raises(ConfigError):
+            config_set_dir(repo, evil)
+
+
+# -- the small set specifically --------------------------------------------- #
+
+def test_small_set_reference_is_labelled_f16_not_bf16(repo):
+    """It is F16 standing in for BF16. Calling it BF16 would be the quiet lie
+    that invalidates every degradation figure measured against it."""
+    cfg = load_experiment_config(
+        config_set_dir(repo, "qwen2.5-1.5b") / "bf16.yaml", "ollama", repo_root=repo)
+    assert cfg.backend.model_tag == "qwen2.5:1.5b-instruct-fp16"
+    assert cfg.backend.quantization_config["dtype"] == "float16"
+    assert "SUBSTITUTED" in cfg.backend.quantization_format.upper()
+    material = {d.id for d in cfg.backend.deviations if d.severity == "material"}
+    assert "DEV-BF16-OLLAMA-F16" in material
+    dev = next(d for d in cfg.backend.deviations if d.id == "DEV-BF16-OLLAMA-F16")
+    assert dev.impact and dev.remediation, (
+        "a material deviation on the REFERENCE arm must say what it costs and how "
+        "to escape it, not merely that it exists")
+
+
+def test_small_set_fp8_is_absent_not_faked(repo):
+    """Q8_0 is 8-bit integer; FP8 is 8-bit float. Substituting one for the other
+    would collapse the two most interesting rungs into one invented point."""
+    cfg = load_experiment_config(
+        config_set_dir(repo, "qwen2.5-1.5b") / "fp8.yaml", "ollama", repo_root=repo)
+    assert cfg.backend.available is False
+    assert cfg.backend.model_tag is None
+    assert "q8" in (cfg.backend.substitution_policy or "").lower(), (
+        "the policy must name the substitution someone would actually be tempted by")
+    with pytest.raises(ConfigError):
+        cfg.assert_runnable()
+
+
+def test_small_set_q8_and_q4_are_genuine(repo):
+    for precision, tag in [("q8", "qwen2.5:1.5b-instruct-q8_0"),
+                           ("q4", "qwen2.5:1.5b-instruct-q4_K_M")]:
+        cfg = load_experiment_config(
+            config_set_dir(repo, "qwen2.5-1.5b") / f"{precision}.yaml",
+            "ollama", repo_root=repo)
+        assert cfg.backend.available is True
+        assert cfg.backend.model_tag == tag
+        assert not any(d.severity in ("blocking", "material")
+                       for d in cfg.backend.deviations)
+        cfg.assert_runnable()
+
+
+def test_small_set_fits_in_eight_gigabytes(repo):
+    """The entire reason this set exists. If an arm grows past what an 8 GB
+    machine can hold, the honest move is a new set, not a bigger one."""
+    for precision in PRECISIONS:
+        cfg = load_experiment_config(
+            config_set_dir(repo, "qwen2.5-1.5b") / f"{precision}.yaml",
+            "ollama", repo_root=repo)
+        if not cfg.backend.available:
+            continue
+        size = cfg.raw["backends"]["ollama"].get("approx_download_gb")
+        assert size is not None, f"{precision} does not declare its size"
+        assert size <= 6.0, f"{precision} is {size} GB, too large for an 8 GB machine"
 
 
 def test_unknown_backend_is_rejected(repo):

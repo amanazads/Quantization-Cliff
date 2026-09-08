@@ -10,6 +10,7 @@ to close the gaps. It never runs a model and never changes anything.
 
   python scripts/preflight.py --backend ollama
   python scripts/preflight.py --backend vllm
+  python scripts/preflight.py --backend ollama --config-set qwen2.5-1.5b
 
 Exit codes:
   0  every arm that CAN run on this backend is ready
@@ -26,7 +27,13 @@ from typing import Dict, List, Optional, Tuple
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from ps5.config import ConfigError, load_experiment_config  # noqa: E402
+from ps5.config import (  # noqa: E402
+    DEFAULT_CONFIG_SET,
+    ConfigError,
+    available_config_sets,
+    config_set_dir,
+    load_experiment_config,
+)
 
 REPO = Path(__file__).resolve().parents[1]
 PRECISIONS = ["bf16", "fp8", "q8", "q4"]
@@ -60,11 +67,21 @@ def main() -> int:
                         choices=["ollama", "vllm", "openai_compat", "mock"])
     parser.add_argument("--host", default=None)
     parser.add_argument("--base-url", default=None)
+    parser.add_argument("--config-set", default=DEFAULT_CONFIG_SET,
+                        help="which four-arm experiment to check "
+                             f"(available: {', '.join(available_config_sets(REPO)) or 'none'})")
     args = parser.parse_args()
+
+    try:
+        config_dir = config_set_dir(REPO, args.config_set)
+    except ConfigError as exc:
+        print(f"\nCONFIGURATION ERROR\n{'-' * 70}\n{exc}\n", file=sys.stderr)
+        return 2
 
     served, error = _available_models(args.backend, args.host, args.base_url)
 
     print(f"backend: {args.backend}")
+    print(f"config set: {args.config_set}  ({config_dir.relative_to(REPO)})")
     if served is None:
         print(f"\n  UNREACHABLE: {error}\n")
         if args.backend == "ollama":
@@ -82,8 +99,7 @@ def main() -> int:
     for precision in PRECISIONS:
         try:
             cfg = load_experiment_config(
-                REPO / "configs" / "experiments" / f"{precision}.yaml",
-                args.backend, repo_root=REPO)
+                config_dir / f"{precision}.yaml", args.backend, repo_root=REPO)
         except ConfigError as exc:
             blocked.append((precision, str(exc)))
             continue

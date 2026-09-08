@@ -4,7 +4,9 @@ Track 2, PS-5 of the Predixion AI Open-Weight Collections Agent Challenge.
 
 Locates the precision at which quantization actually breaks instruction-following and structured output, by re-running the PS-1 and PS-3 suites at **Q4, Q8, FP8 and BF16** on identical hardware with every other variable held fixed and hash-verified.
 
-> **Status.** The framework is complete, spec-aligned and validated end-to-end against a deterministic mock backend (**223 tests passing**). **No model has been run yet**, so `reports/FINDINGS.md` contains placeholders, not results. §4 gives the exact commands.
+> **Status.** The framework is complete, spec-aligned and validated end-to-end against a deterministic mock backend (**238 tests passing**). **No model has been run yet**, so `reports/FINDINGS.md` contains placeholders, not results. §4 gives the exact commands.
+>
+> Two config sets are provided: `default` (Qwen3.5-4B, the specification's candidate, whose BF16 reference needs more than 8 GB) and `qwen2.5-1.5b` (runs in 8 GB, at the cost of a three-rung curve and an F16 reference). §3 states exactly what the smaller set can and cannot support.
 
 ---
 
@@ -52,7 +54,8 @@ configs/
   base.yaml                  shared, controlled variables (inherited by all arms)
   cliff_criterion.yaml       PRE-REGISTERED thresholds and cliff rule
   guardrail_rules.json       deterministic PS-1 rules (en / hi / hinglish / mr)
-  experiments/{q4,q8,fp8,bf16}.yaml
+  experiments/{q4,q8,fp8,bf16}.yaml              config set "default": Qwen3.5-4B
+  experiments-qwen2.5-1.5b/{q4,q8,fp8,bf16}.yaml config set for an 8 GB machine
 prompts/collections_agent_v2.md    the spec §6.4 baseline prompt (parameterised)
 schemas/tools.json                 the spec §6.3 frozen schemas
 data/
@@ -69,14 +72,23 @@ scripts/
   make_plots.py generate_report.py rescore.py validation_subset.py
   run_all.sh   suite_content/{ps1,ps3}_content.py
 docs/METRICS.md              metric + cliff spec, frozen before any run
-tests/                       223 tests
+tests/                       238 tests
 ```
 
 ---
 
 ## 3. Which precisions run, and where
 
-Model: **Qwen3.5-4B**, the specification's *"turn-loop candidate, smallest viable"*. Qwen3.5-9B is the spec's primary Track 1 candidate and is the stronger choice wherever memory allows — change `model.parameters` in `configs/base.yaml` and all four tags together, never one arm alone.
+An experiment is chosen as a **config set** — one model plus the tag that realises each precision for it. Each set writes to its own results root, report and figure directory, so two models can never be aggregated into one comparison or overwrite each other's raw data.
+
+```bash
+bash scripts/run_all.sh ollama                  # default   — Qwen3.5-4B  (needs >8 GB)
+bash scripts/run_all.sh ollama qwen2.5-1.5b     # small set — Qwen2.5-1.5B (fits in 8 GB)
+```
+
+### 3.1 `default` — Qwen3.5-4B (the intended experiment)
+
+The specification's *"turn-loop candidate, smallest viable"*. Qwen3.5-9B is the spec's primary Track 1 candidate and is stronger wherever memory allows — change `model.parameters` in `configs/base.yaml` and all four tags together, never one arm alone.
 
 | Precision | Ollama tag | Size | vLLM |
 |---|---|---|---|
@@ -90,11 +102,24 @@ All four are **genuine** on Ollama — real bfloat16 for the reference and real 
 - **`DEV-FP8-OLLAMA-MXFP8`** — the Ollama FP8 arm is MXFP8 (block-scaled microscaling FP8), not the per-tensor E4M3 that vLLM serves. Both are genuinely 8-bit floating point; the scaling granularity differs, so the two are not interchangeable and must not be pooled.
 - **`DEV-BF16-OLLAMA-METAL`** — llama.cpp's Metal backend has partial BF16 support and may upcast some operations. Verify the compute path in the server log and record what you see.
 
-> ### Memory: the BF16 reference needs more than 8 GB
->
-> BF16 is 9.3 GB, so **the reference arm cannot run on an 8 GB machine** — and without the reference, no degradation can be computed at all, because every delta is measured against it. The specification's own Track 1 minimum is 16 GB, and PS-5 is a Track 2 problem intended for the provisioned GPU.
->
-> On 8 GB you can run Q4, Q8 and FP8 and confirm the harness end to end, but that is not a PS-5 result. `scripts/preflight.py` reports this before anything runs rather than letting you discover it three arms in.
+> **The BF16 reference needs more than 8 GB.** At 9.3 GB the reference arm cannot load on an 8 GB machine — and without it no degradation can be computed at all, because every delta is measured against it. Running the other three would give three unanchored numbers, not a result. The specification's own Track 1 minimum is 16 GB, and PS-5 is a Track 2 problem intended for the provisioned GPU. `scripts/preflight.py` says so before anything runs.
+
+### 3.2 `qwen2.5-1.5b` — the set that fits in 8 GB
+
+| Precision | Ollama tag | Size | Status |
+|---|---|---|---|
+| **Q4** | `qwen2.5:1.5b-instruct-q4_K_M` | 986 MB | genuine |
+| **Q8** | `qwen2.5:1.5b-instruct-q8_0` | 1.6 GB | genuine |
+| **FP8** | — | — | **NOT RUN** — no FP8 GGUF exists for this model |
+| **BF16** | `qwen2.5:1.5b-instruct-fp16` | 3.1 GB | **F16, not BF16** — `DEV-BF16-OLLAMA-F16` |
+
+This set exists so the harness can produce a real measurement on a machine that cannot hold a 9.3 GB reference. It buys that with three things it is not allowed to hide, all of them declared in the configs and reproduced into the findings report:
+
+- **The reference is IEEE F16, not bfloat16.** Same 16 bits, split differently — F16 has 5 exponent bits to BF16's 8. Qwen2.5 trained in bfloat16, so this file is a converted copy of the weights rather than the weights. At 1.5B the conversion is very unlikely to lose anything measurable, but this is the arm everything else is subtracted from, so it is reported as F16 and never as BF16.
+- **The FP8 rung is missing.** A three-point curve cannot tell a cliff between FP8 and Q8 from one between Q8 and Q4. It is reported as a coverage gap, never as "FP8 looked fine". Substituting Q8_0 — 8-bit *integer* — for FP8 is explicitly forbidden by the config and refused by the runner.
+- **1.5B is not 4B.** Smaller models are generally more fragile under quantization, so a cliff here is not evidence of one at 4B, and a null here is weaker evidence of safety than it looks. The direction of that bias is at least known: this set over-states degradation rather than hiding it.
+
+On vLLM the same set has a genuine bfloat16 reference and a genuine FP8 arm, so both deviations are Ollama-specific. `configs/experiments-qwen2.5-1.5b/README.md` has the full statement.
 
 ---
 
@@ -114,13 +139,14 @@ export PYTHONPATH="$PWD/src:$PYTHONPATH"
 ```bash
 python3 scripts/build_suites.py --check
 python3 scripts/build_manifest.py --check
-python3 -m pytest -q                     # 223 tests
+python3 -m pytest -q                     # 238 tests
 ```
 
 ### 4.3 Check what can run, before running anything
 
 ```bash
 python3 scripts/preflight.py --backend ollama
+python3 scripts/preflight.py --backend ollama --config-set qwen2.5-1.5b
 ```
 
 Reports every arm's readiness in one pass — present, missing (with the exact `ollama pull`), or blocked — instead of failing one arm at a time.
@@ -135,7 +161,11 @@ Output is **fabricated**: watermarked, flagged `synthetic: true` in every record
 
 The separation is enforced, not conventional. A mock run defaults to its own results root, and `run_all.sh` refuses outright to write fabricated arms into a root that already holds measured ones — or the reverse — **before** running anything. Each real arm is a long serial run and its raw JSONL is the primary evidence; a pipeline check that quietly overwrote it would be unrecoverable.
 
+A mock run of an alternate config set gets its own paths too (`results_mock-<set>`, `reports/FINDINGS_MOCK-<set>.md`), so nothing a validation run writes can collide with anything else.
+
 ### 4.5 Option A — local Ollama
+
+**The intended experiment** — 23.6 GB of weights, and the reference arm needs more than 8 GB of RAM to serve:
 
 ```bash
 ollama pull qwen3.5:4b-q4_K_M
@@ -145,6 +175,18 @@ ollama pull qwen3.5:4b-bf16      # 9.3 GB -- needs >8 GB RAM to serve
 
 bash scripts/run_all.sh ollama
 ```
+
+**On an 8 GB machine** — 5.7 GB of weights, largest arm 3.1 GB, three rungs instead of four. Read §3.2 first; the trade is real and stated there:
+
+```bash
+ollama pull qwen2.5:1.5b-instruct-fp16
+ollama pull qwen2.5:1.5b-instruct-q8_0
+ollama pull qwen2.5:1.5b-instruct-q4_K_M
+
+bash scripts/run_all.sh ollama qwen2.5-1.5b
+```
+
+Results land in `results-qwen2.5-1.5b/`, the report in `reports/FINDINGS-qwen2.5-1.5b.md`. The FP8 arm is refused rather than filled with Q8, and appears in the report as a coverage gap.
 
 ### 4.6 Option B — vLLM on CUDA (the spec's Track 2 serving layer)
 
@@ -185,7 +227,7 @@ python3 scripts/make_plots.py
 python3 scripts/generate_report.py     # writes FINDINGS.md (≤4pp) + FINDINGS_FULL.md
 ```
 
-Every number is rendered from `results/aggregate/aggregate.json`. Nothing is typed by hand.
+Every number is rendered from `results/aggregate/aggregate.json`. Nothing is typed by hand. For an alternate config set, point all three at that set's root: `--results-root results-qwen2.5-1.5b` (and `--out reports/FINDINGS-qwen2.5-1.5b.md --figures reports/figures-qwen2.5-1.5b`). `run_all.sh` already does this for you.
 
 ### 4.9 If you fix a scoring bug
 
@@ -254,8 +296,9 @@ Declared in `docs/METRICS.md` §7 before results, not discovered after.
 5. **The FP8-above-Q8 fidelity ordering is an assumption**, not a measurement.
 6. **Determinism is best-effort.** Greedy decoding with a fixed seed is requested, but neither llama.cpp nor vLLM guarantees bit-identical output across batch or thread configurations. Set `repeats > 1` to measure run-to-run variance.
 7. **Free-text arguments (`borrower_statement`, `notes`) are unscored.**
-8. **One model family at one size.** Smaller models are generally *less* robust to quantization, so a cliff here is plausibly pessimistic for a larger deployment model, while a null here says little about one.
+8. **One model family at one size.** Smaller models are generally *less* robust to quantization, so a cliff here is plausibly pessimistic for a larger deployment model, while a null here says little about one. This bites hardest on the `qwen2.5-1.5b` set, which is a quarter the size of the model the specification names.
 9. **The suites are not official** (§1).
+10. **The `qwen2.5-1.5b` set has three rungs, not four, and an F16 reference rather than BF16** (§3.2). A cliff located between FP8 and Q8 is invisible to it, and every delta is measured against a converted copy of the weights rather than the training dtype. Results from that set are labelled with the model and deviations they were produced under, and must not be presented as Qwen3.5-4B results.
 
 ---
 

@@ -1,0 +1,92 @@
+inherits: ../base.yaml
+
+model:
+  family: "qwen2.5"
+  parameters: "1.5b"
+  variant: "instruct"
+
+precision:
+  id: fp8
+  label: "FP8"
+  nominal_bits: 8
+  family: floating_point
+
+backends:
+  ollama:
+    # There is no FP8 or MXFP8 GGUF for Qwen2.5-1.5B. The Qwen3.5 line publishes
+    # mxfp8 tags; the Qwen2.5 line does not, and llama.cpp has no FP8 tensor type
+    # to convert one into. So this rung is genuinely absent from this config set.
+    #
+    # It is declared unavailable rather than quietly filled with Q8. Q8_0 is
+    # 8-bit INTEGER; FP8 is 8-bit FLOATING POINT. Reporting one as the other
+    # would make the two most interesting rungs of the curve a single fabricated
+    # point, and PS-5 turns on whether the number system matters at 8 bits.
+    available: false
+    unavailable_reason: >-
+      Ollama publishes no FP8 or MXFP8 GGUF for Qwen2.5-1.5B-Instruct, and
+      llama.cpp has no FP8 tensor type to convert one into.
+    substitution_policy: >-
+      Do NOT substitute the Q8_0 tag here, and do NOT relabel Q8 as FP8. This arm
+      is reported as NOT RUN -- a documented GAP in precision coverage, never a
+      null result. To close the gap, use configs/experiments/ (Qwen3.5-4B, which
+      has a genuine mxfp8 tag) or serve this model on vLLM with --quantization
+      fp8 on a GPU with compute capability >= 8.9.
+    model_tag: null
+    quantization_format: "FP8 -- unavailable on this backend for this model"
+    quantization_config:
+      method: "n/a"
+    deviations:
+      - id: DEV-FP8-OLLAMA-ABSENT
+        severity: material
+        description: >-
+          The FP8 rung does not exist in this config set on the Ollama backend.
+        impact: >-
+          The degradation curve has three points (F16, Q8, Q4) rather than four.
+          A cliff located between FP8 and Q8 cannot be distinguished from one
+          located between Q8 and Q4, because the intervening measurement was
+          never taken. Do not read the absence of an FP8 point as evidence that
+          FP8 is safe.
+
+  vllm:
+    available: true
+    model_tag: "Qwen/Qwen2.5-1.5B-Instruct"
+    quantization_format: "FP8 E4M3 W8A8 (quantized at load time)"
+    quantization_config:
+      # vLLM quantizes to FP8 at LOAD TIME from the unquantized BF16 checkpoint,
+      # so the weights provably start from the SAME checkpoint as the reference
+      # arm -- a stronger control than sourcing a third-party FP8 upload whose
+      # calibration cannot be verified.
+      method: "vLLM on-the-fly FP8 (--quantization fp8) from the BF16 checkpoint"
+      dtype: "float8_e4m3fn"
+      weight_bits: 8
+      activation_bits: 8
+      scheme: per_tensor_weight_per_token_dynamic_activation
+      launch: >-
+        vllm serve Qwen/Qwen2.5-1.5B-Instruct --quantization fp8
+        --enable-auto-tool-choice --tool-call-parser hermes
+      notes: >-
+        Requires a GPU with native FP8 tensor cores (compute capability >= 8.9:
+        Ada L4/L40S, Hopper H100/H200, Blackwell). On Ampere (A100, cc 8.0) vLLM
+        accepts the checkpoint but emulates FP8 by upcasting, which is a DIFFERENT
+        numerical treatment. The runner records the detected compute capability.
+    deviations:
+      - id: DEV-FP8-VLLM-2
+        severity: material
+        condition: "gpu_compute_capability < 8.9"
+        description: >-
+          FP8 was emulated rather than executed on native FP8 tensor cores. The
+          arm measures the FP8 numerical format but not FP8 hardware execution.
+
+  mock:
+    available: true
+    model_tag: "mock:fp8"
+    quantization_format: "SYNTHETIC -- not a real quantization"
+    quantization_config:
+      method: "none -- fabricated fixture"
+    deviations:
+      - id: DEV-FP8-MOCK-1
+        severity: blocking
+        description: >-
+          Output came from the deterministic mock backend. These numbers are a
+          pipeline-validation fixture, not a measurement of any model, and must
+          never be reported as a PS-5 result.
