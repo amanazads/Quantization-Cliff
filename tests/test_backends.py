@@ -22,6 +22,7 @@ import copy
 import json
 from typing import Any, Dict, List, Optional
 
+import pytest
 import requests
 
 from ps5.backends.base import get_backend
@@ -71,8 +72,10 @@ class FakeResponse:
 #: What `/api/show` returns. Housekeeping, not part of any assertion -- it is
 #: answered generically so that `describe()` can be called inside a test without
 #: perturbing the scripted sequence of generation requests.
+#: Deliberately carries NO "digest" key -- that matches what Ollama's /api/show
+#: actually returns, and is the whole reason the digest has to come from
+#: /api/tags. A fixture that invented one would have hidden the bug.
 SHOW_BODY = {
-    "digest": "sha256:" + "ab" * 32,
     "details": {"parameter_size": "4.0B", "quantization_level": "Q8_0",
                 "family": "qwen3", "format": "gguf"},
     "model_info": {"general.architecture": "qwen3", "qwen3.context_length": 32768},
@@ -403,6 +406,50 @@ def test_transport_failures_are_returned_not_raised(monkeypatch):
 # --------------------------------------------------------------------------- #
 # factory
 # --------------------------------------------------------------------------- #
+
+# --------------------------------------------------------------------------- #
+# weights provenance
+# --------------------------------------------------------------------------- #
+
+def test_the_weights_digest_is_captured_from_the_tags_endpoint(monkeypatch):
+    """The README claims the exact weights are pinned into metadata. They were not.
+
+    Only /api/tags returns the manifest digest; /api/show does not. Resolving
+    identity from /api/show alone recorded `digest: null` on every real run
+    while the documentation said otherwise -- an asserted control rather than a
+    verified one, which is the failure mode this repository exists to avoid.
+    """
+    import ps5.backends.ollama as mod
+
+    digest = "sha256:" + "cd" * 32
+    tags = {"models": [{"name": "qwen2.5:1.5b-instruct-q8_0",
+                        "digest": digest, "size": 1646315}]}
+
+    monkeypatch.setattr(mod.requests, "get", lambda *a, **k: FakeResponse(200, tags))
+    monkeypatch.setattr(mod.requests, "post", Recorder([]))
+
+    b = OllamaBackend("qwen2.5:1.5b-instruct-q8_0")
+    b.health_check()
+
+    resolved = b.describe()["resolved"]
+    assert resolved["digest"] == digest, "the digest must reach metadata.json"
+    assert resolved["quantization_level"] == "Q8_0", (
+        "the GGUF header's own quantization level is the load-bearing check: it "
+        "reports what was loaded, not what the tag was named")
+
+
+def test_a_missing_tag_is_refused_before_anything_runs(monkeypatch):
+    import ps5.backends.ollama as mod
+    from ps5.backends.base import BackendError
+
+    monkeypatch.setattr(mod.requests, "get", lambda *a, **k: FakeResponse(
+        200, {"models": [{"name": "some:other-tag", "digest": "sha256:00"}]}))
+
+    with pytest.raises(BackendError) as exc:
+        OllamaBackend("qwen2.5:1.5b-instruct-q8_0").health_check()
+    assert "not present on this Ollama host" in str(exc.value)
+    assert "invalidate the experiment" in str(exc.value)
+
 
 def test_only_the_mock_backend_is_marked_synthetic():
     """`synthetic` gates findings-report generation, so it must not be wrong."""

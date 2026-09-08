@@ -1,0 +1,208 @@
+{
+  "experiment_id": "q8-ollama-2518c838-20260908T162756Z",
+  "created_at_utc": "2026-09-08T17:18:54.822892+00:00",
+  "precision": {
+    "id": "q8",
+    "label": "Q8",
+    "nominal_bits": 8,
+    "family": "integer_block_quantization",
+    "is_reference": false
+  },
+  "model": {
+    "id": "qwen2.5-1.5b-instruct",
+    "family": "qwen2.5",
+    "parameters": "1.5b",
+    "variant": "instruct",
+    "tag": "qwen2.5:1.5b-instruct-q8_0",
+    "quantization_format": "GGUF Q8_0",
+    "quantization_config": {
+      "method": "llama.cpp legacy block quant",
+      "bits": 8,
+      "block_size": 32,
+      "mixed_precision_tensors": false,
+      "notes": "Uniform 8-bit INTEGER block quantization with one FP16 scale per 32-weight block, weights only. Genuine for this model -- no substitution."
+    },
+    "resolved": {
+      "digest": null,
+      "parameter_size": "1.5B",
+      "quantization_level": "Q8_0",
+      "family": "qwen2",
+      "format": "gguf",
+      "architecture": "qwen2",
+      "file_type": 7,
+      "context_length": 32768
+    }
+  },
+  "backend": {
+    "name": "ollama",
+    "synthetic": false,
+    "info": {
+      "backend": "ollama",
+      "model_tag": "qwen2.5:1.5b-instruct-q8_0",
+      "host": "http://127.0.0.1:11434",
+      "synthetic": false,
+      "resolved": {
+        "digest": null,
+        "parameter_size": "1.5B",
+        "quantization_level": "Q8_0",
+        "family": "qwen2",
+        "format": "gguf",
+        "architecture": "qwen2",
+        "file_type": 7,
+        "context_length": 32768
+      },
+      "thinking_disable_requested": true,
+      "thinking_disable_sent": true,
+      "thinking_unsupported_by_model": false,
+      "thinking_status": "think:false sent and accepted"
+    }
+  },
+  "generation_config": {
+    "temperature": 0.0,
+    "top_p": 1.0,
+    "top_k": 1,
+    "seed": 20260907,
+    "max_tokens": 512,
+    "stop": [],
+    "transport_retries": 2,
+    "transport_retry_backoff_s": 2.0,
+    "request_timeout_s": 180
+  },
+  "generation_config_hash": "sha256:68b14e8fb303989e6038e7fde76b828bec2228da3cbb0b3ebeea99f4483dcdc2",
+  "concurrency": {
+    "max_parallel": 1
+  },
+  "system_prompt_path": "prompts/collections_agent_v2.md",
+  "system_prompt_version": "2.0.0-spec-6.4",
+  "system_prompt_hash": "sha256:ae927c4fa18d91b7040f539cc2dc6b55be9dbf96114bded6d29da4c37deebc36",
+  "tool_schema_path": "schemas/tools.json",
+  "tool_schema_hash": "sha256:1c3f97bf0b2be804e3fceb6d6d07cb434a7dd31e7f8ade784c4c56f83a906189",
+  "manifest_path": "data/evaluation_manifest.json",
+  "manifest_hash": "sha256:2518c8386729fb3ea22237d03f111901584dca406a0d8a2903c5548b1de165cc",
+  "cliff_criterion_hash": "sha256:208c2e69142064343ea51c021130608f1e77d11e567b40bbec243f61aa5f8260",
+  "guardrail_rules_hash": "sha256:724c1d454a80952b236c38cb8c1df7c2e9264baa06571f6eb15c859600dd118b",
+  "metric_spec_version": "2.0.0-spec-6.4",
+  "scorer_versions": {
+    "ps1": "ps1-scorer/1.0.0",
+    "ps3": "ps3-scorer/2.0.0"
+  },
+  "suites_run": [
+    "ps1",
+    "ps3"
+  ],
+  "case_counts": {
+    "ps1": 192,
+    "ps3": 200
+  },
+  "repeats": 1,
+  "case_limit_applied": null,
+  "environment": {
+    "captured_at_utc": "2026-09-08T17:18:54.669750+00:00",
+    "os": {
+      "system": "Darwin",
+      "release": "25.5.0",
+      "version": "Darwin Kernel Version 25.5.0: Mon Apr 27 20:38:00 PDT 2026; root:xnu-12377.121.6~2/RELEASE_ARM64_T8103",
+      "platform": "macOS-26.5-arm64-arm-64bit-Mach-O"
+    },
+    "python": {
+      "version": "3.14.7",
+      "implementation": "CPython",
+      "executable": "/Users/aman/Downloads/Quantization Cliff/.venv/bin/python"
+    },
+    "cpu": {
+      "arch": "arm64",
+      "processor": "arm",
+      "logical_cores": 8,
+      "model": "Apple M1",
+      "physical_cores": 8
+    },
+    "memory": {
+      "total_bytes": 8589934592,
+      "total_gb": 8.0
+    },
+    "accelerator": {
+      "kind": "metal",
+      "name": "Apple M1",
+      "memory_total_mb": null,
+      "memory_note": "Apple silicon uses unified memory; there is no discrete VRAM figure. GPU-addressable memory is bounded by system RAM and the Metal working-set limit.",
+      "driver_version": null,
+      "cuda_version": null,
+      "compute_capability": null,
+      "fp8_native_supported": false
+    },
+    "packages": {
+      "ollama": null,
+      "openai": null,
+      "httpx": null,
+      "requests": "2.34.2",
+      "vllm": null,
+      "torch": null,
+      "transformers": null,
+      "numpy": "2.5.3",
+      "matplotlib": "3.11.1",
+      "pyyaml": "6.0.3",
+      "jsonschema": null,
+      "pytest": "9.1.1"
+    },
+    "git": {
+      "commit": "6d03ce3e47bf23663437199cfd71144ac8ee4d90",
+      "branch": "main",
+      "is_repo": true,
+      "dirty": true,
+      "dirty_files": [
+        "?? results-qwen2.5-1.5b/"
+      ]
+    },
+    "hostname": "Amans-MacBook-Air.local",
+    "hardware_fingerprint": "sha256:7e8a83e234c408251ee4d09539a0f18df83f3117dd8f2b27ca76f0c958bd5eb8"
+  },
+  "hardware_fingerprint": "sha256:7e8a83e234c408251ee4d09539a0f18df83f3117dd8f2b27ca76f0c958bd5eb8",
+  "deviations": [],
+  "controls_held_constant": [
+    "system prompt (hash recorded; identical across arms)",
+    "tool schemas (hash recorded; frozen)",
+    "evaluation manifest (hash recorded; identical case set and order)",
+    "decoding parameters (hash recorded; greedy, fixed seed)",
+    "scorer versions and guardrail rule set (hashes recorded)",
+    "case presentation order (manifest order, never shuffled)",
+    "concurrency (serial by default, to avoid batch-dependent numerics)",
+    "context window (num_ctx pinned in the backend)"
+  ],
+  "controls_NOT_held_constant": [
+    "wall-clock time and machine thermal state across arms",
+    "any OS-level background load during the run",
+    "llama.cpp / vLLM kernel selection, which can differ per quantization format by design -- this is inherent to the treatment, not a flaw in the control"
+  ],
+  "suite_summaries": [
+    {
+      "suite": "ps1",
+      "path": "/Users/aman/Downloads/Quantization Cliff/results-qwen2.5-1.5b/q8/ps1_results.jsonl",
+      "n_records": 192,
+      "n_cases": 192,
+      "repeats": 1,
+      "elapsed_s": 1311.14,
+      "outcome_counts": {
+        "ok": 180,
+        "violation": 12
+      },
+      "n_generation_failures": 0
+    },
+    {
+      "suite": "ps3",
+      "path": "/Users/aman/Downloads/Quantization Cliff/results-qwen2.5-1.5b/q8/ps3_results.jsonl",
+      "n_records": 200,
+      "n_cases": 200,
+      "repeats": 1,
+      "elapsed_s": 1746.36,
+      "outcome_counts": {
+        "generation_failure": 3,
+        "missed_call": 121,
+        "wrong_tool": 3,
+        "pass": 70,
+        "wrong_arguments": 2,
+        "spurious_call": 1
+      },
+      "n_generation_failures": 3
+    }
+  ]
+}

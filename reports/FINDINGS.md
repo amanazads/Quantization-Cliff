@@ -1,9 +1,16 @@
 # PS-5: The Quantization Cliff — Findings
 
-> ## ⏳ PLACEHOLDER — NO MODEL HAS BEEN RUN YET
+> ## ⏳ PLACEHOLDER — THE Qwen3.5-4B EXPERIMENT HAS NOT BEEN RUN
 >
-> This file is a scaffold containing **no results**, because none exist. It is
-> regenerated in full by:
+> This file is a scaffold containing **no results**. The `default` config set
+> needs a 9.3 GB BF16 reference arm and has not been executed.
+>
+> **A different, completed experiment lives in
+> [`FINDINGS-qwen2.5-1.5b.md`](FINDINGS-qwen2.5-1.5b.md)** — Qwen2.5-1.5B at
+> F16/Q8/Q4, three rungs, real numbers. It answers a smaller question than the
+> one below; read its §3 and README §6 before quoting anything from it.
+>
+> This file is regenerated in full by:
 >
 > ```bash
 > bash scripts/run_all.sh ollama      # or: bash scripts/run_all.sh vllm
@@ -84,7 +91,7 @@ The report distinguishes, and will not merge:
 
 ## 9. Limitations
 
-See README §6 and `docs/METRICS.md` §7. The one that bounds everything above: **the rule-based PS-1 scorer's agreement with human judgement is unmeasured until §3b is completed.**
+See README §7 and `docs/METRICS.md` §7. The one that bounds everything above: **the rule-based PS-1 scorer's agreement with human judgement is unmeasured until §3b is completed.**
 
 ## 10. Reproduction
 

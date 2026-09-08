@@ -32,6 +32,9 @@ class OllamaBackend(Backend):
         super().__init__("ollama", model_tag, options)
         self.host = (self.options.get("host") or DEFAULT_HOST).rstrip("/")
         self._resolved: Optional[Dict[str, Any]] = None
+        #: Filled by health_check from /api/tags, the only endpoint that has them.
+        self._tag_digest: Optional[str] = None
+        self._tag_size_bytes: Optional[int] = None
         #: Whether `think: false` was sent and accepted. Ollama rejects the
         #: parameter outright on models with no thinking mode, so this is
         #: negotiated once on the first request and then held for the whole arm.
@@ -51,7 +54,19 @@ class OllamaBackend(Backend):
                 "Start it with `ollama serve`, or set backend option `host`."
             ) from exc
 
-        tags = {m.get("name") for m in resp.json().get("models", [])}
+        models = resp.json().get("models", []) or []
+        # /api/tags is the ONLY endpoint that returns the manifest digest;
+        # /api/show does not, so a run relying on /api/show alone recorded
+        # `digest: null` while the README claimed the weights were pinned by it.
+        # Captured here, where it is available, and merged in below.
+        self._tag_digest = next(
+            (m.get("digest") for m in models if m.get("name") == self.model_tag), None
+        )
+        self._tag_size_bytes = next(
+            (m.get("size") for m in models if m.get("name") == self.model_tag), None
+        )
+
+        tags = {m.get("name") for m in models}
         if self.model_tag not in tags:
             raise BackendError(
                 f"Model tag '{self.model_tag}' is not present on this Ollama host.\n"
@@ -67,7 +82,11 @@ class OllamaBackend(Backend):
         """Pin the exact weights in use: digest, parameter count, real quant type.
 
         This is what lets a reader verify that the Q4 arm really was Q4, rather
-        than trusting the filename.
+        than trusting the filename. `quantization_level` is the load-bearing
+        field -- it comes from the GGUF header, so it reports what was actually
+        loaded rather than what the tag was called. The digest pins the exact
+        manifest on top of that, and is fetched from /api/tags because /api/show
+        does not return one.
         """
         try:
             resp = requests.post(
@@ -82,7 +101,10 @@ class OllamaBackend(Backend):
         details = body.get("details", {}) or {}
         info = body.get("model_info", {}) or {}
         self._resolved = {
-            "digest": body.get("digest"),
+            # /api/show first (some builds do return it), then the digest
+            # /api/tags gave us during health_check.
+            "digest": body.get("digest") or getattr(self, "_tag_digest", None),
+            "size_bytes": getattr(self, "_tag_size_bytes", None),
             "parameter_size": details.get("parameter_size"),
             "quantization_level": details.get("quantization_level"),
             "family": details.get("family"),

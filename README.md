@@ -4,9 +4,11 @@ Track 2, PS-5 of the Predixion AI Open-Weight Collections Agent Challenge.
 
 Locates the precision at which quantization actually breaks instruction-following and structured output, by re-running the PS-1 and PS-3 suites at **Q4, Q8, FP8 and BF16** on identical hardware with every other variable held fixed and hash-verified.
 
-> **Status.** The framework is complete, spec-aligned and validated end-to-end against a deterministic mock backend (**239 tests passing**). **No model has been run yet**, so `reports/FINDINGS.md` contains placeholders, not results. §4 gives the exact commands.
+> **Status.** Framework complete and spec-aligned, **241 tests passing**.
 >
-> Two config sets are provided: `default` (Qwen3.5-4B, the specification's candidate, whose BF16 reference needs more than 8 GB) and `qwen2.5-1.5b` (runs in 8 GB, at the cost of a three-rung curve and an F16 reference). §3 states exactly what the smaller set can and cannot support.
+> **One experiment has been run: the `qwen2.5-1.5b` set on local Ollama** (F16 → Q8 → Q4; the FP8 rung does not exist for that model). Result in `reports/FINDINGS-qwen2.5-1.5b.md`: **no cliff detected on any headline metric** — but only one of the four was adequately powered to say so. See §7 before quoting that null.
+>
+> **The intended experiment — `default`, Qwen3.5-4B — has NOT been run**, because its BF16 reference is 9.3 GB and the machine has 8. `reports/FINDINGS.md` is still a placeholder. §3 explains the two sets; §4 gives the commands.
 
 ---
 
@@ -72,7 +74,7 @@ scripts/
   make_plots.py generate_report.py rescore.py validation_subset.py
   run_all.sh   suite_content/{ps1,ps3}_content.py
 docs/METRICS.md              metric + cliff spec, frozen before any run
-tests/                       239 tests
+tests/                       241 tests
 ```
 
 ---
@@ -139,7 +141,7 @@ export PYTHONPATH="$PWD/src:$PYTHONPATH"
 ```bash
 python3 scripts/build_suites.py --check
 python3 scripts/build_manifest.py --check
-python3 -m pytest -q                     # 239 tests
+python3 -m pytest -q                     # 241 tests
 ```
 
 ### 4.3 Check what can run, before running anything
@@ -285,7 +287,30 @@ Both outcomes mean thinking did not run, so both are comparable. What is *not* c
 
 ---
 
-## 6. Known limitations
+## 6. What the one completed run actually showed
+
+`qwen2.5-1.5b` on Ollama, 8 Sep 2026 — F16 reference, Q8, Q4; 392 cases per arm; full numbers in `reports/FINDINGS-qwen2.5-1.5b.md`.
+
+**No cliff was detected on any headline metric.** That is a real null, not a failure to run. But a null only means something if the experiment could have seen the effect it was looking for, and here that varies sharply per metric:
+
+| Headline metric | Pre-registered threshold | Minimum detectable difference | Is the null informative? |
+|---|---|---|---|
+| `structured_output_validity` | 5.0 pp | **3.9 pp** | **Yes.** MDD is below the threshold, so a cliff of the size we pre-registered would have been visible. It wasn't there: 100% → 100% → 99.5%. |
+| `violation_rate` | 2.0 pp | 10.2 pp | No — the experiment was ~5× too small to see a 2 pp effect. |
+| `task_success_rate` | 5.0 pp | 14.0 pp | No — ~3× too small. |
+| `benign_refusal_rate` | 5.0 pp | 21.2 pp | No — n=32. Says essentially nothing. |
+
+So **one** of four headline metrics produced an interpretable answer: *when this model emitted a tool call at all, the call was schema-valid at every precision down to Q4.*
+
+**The floor problem, which bounds everything else.** At the F16 reference, `correct_tool_rate` is **6.8%** and `missed_call_rate` is **91%** — the model almost never calls a tool. `task_success_rate` of 35.5% is largely credit for correctly *not* calling on the 32 no-call cases. PS-3 was therefore measuring a model with next to no tool-calling ability, and quantization cannot break what was never working. This is exactly the floor effect pre-registered in `docs/METRICS.md` §7.8, and it is why the PS-3 null must not be read as "Q4 is safe for tool calling".
+
+**The one directional signal worth naming**, precisely because it is *not* significant: `correct_tool_rate` runs 6.8% → 6.8% → **2.2%**, so Q4 loses roughly two thirds of what little tool-calling ability exists. The counts are 9/133 against 3/134 — far too small to claim, and `correct_tool_rate` is not a pre-registered headline metric, so it does not enter the cliff verdict. It is recorded here as the thing to look at first on bigger hardware, not as a result.
+
+**Verdict.** `minimum_viable_precision` computes to `q4` under the pre-registered criterion, and that is the honest output of the rule. It should not be quoted without the sentence that follows it in the report: this is a claim about these suites, this 1.5B model, this hardware and this sample size — and on three of four metrics the experiment lacked the power to have found a cliff even if one existed. The result that would answer PS-5 as asked is the `default` set on a machine that can hold a 9.3 GB reference.
+
+---
+
+## 7. Known limitations
 
 Declared in `docs/METRICS.md` §7 before results, not discovered after.
 
@@ -302,7 +327,7 @@ Declared in `docs/METRICS.md` §7 before results, not discovered after.
 
 ---
 
-## 7. Data policy
+## 8. Data policy
 
 All evaluation data is **synthetic** and authored here. Names, lenders, amounts and identifiers are invented. No real borrower data is present. Nothing is sent to any hosted API — every backend is a local or self-hosted server you control, satisfying the spec's residency constraint.
 

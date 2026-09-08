@@ -292,10 +292,26 @@ def aggregate(
         for dev in run.metadata.get("deviations", []) or []:
             all_deviations.append({"precision": precision, **dev})
 
+    # Two DIFFERENT versions, previously conflated under one name. The aggregate
+    # reported the cliff criterion's version (1.0.0) while labelling it "metric
+    # spec", and the comparability check compared the runs' actual metric spec
+    # version (2.0.0-spec-6.4) under that same key -- so the report asserted a
+    # version it had not verified, and verified one it did not report. In a
+    # repository whose claim is "recorded, not asserted", that is the wrong way
+    # round. Both are now reported, each from its own source.
+    spec_versions = {r.metadata.get("metric_spec_version") for r in runs.values()}
+    spec_versions.discard(None)
+
     return {
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
         "aggregate_version": "1.0.0",
-        "metric_spec_version": criterion.spec_version,
+        # From the runs themselves. Comparability has already refused the
+        # aggregate if the arms disagreed, so at most one value survives here.
+        "metric_spec_version": (
+            sorted(spec_versions)[0] if len(spec_versions) == 1
+            else sorted(spec_versions) or None
+        ),
+        "cliff_criterion_version": criterion.spec_version,
         # Sticky: if ANY arm is synthetic the whole aggregate is marked synthetic,
         # because a mixed comparison is not a real measurement either.
         "synthetic": any(r.synthetic for r in runs.values()),
@@ -426,7 +442,9 @@ def render_markdown_summary(agg: Dict[str, Any], criterion: CliffCriterion) -> s
 
     lines += [
         f"- generated: `{agg.get('generated_at_utc')}`",
-        f"- metric spec: `{agg.get('metric_spec_version')}`",
+        f"- metric spec: `{agg.get('metric_spec_version')}` "
+        f"(recorded by every arm and verified equal across them)",
+        f"- cliff criterion: `{agg.get('cliff_criterion_version')}`",
         f"- reference precision: `{criterion.reference_precision}`",
         f"- arms present: {', '.join(f'`{a}`' for a in sorted(agg.get('arms', {}))) or 'none'}",
     ]
