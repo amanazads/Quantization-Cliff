@@ -1,0 +1,56 @@
+inherits: ../base.yaml
+
+# F16 is the REFERENCE arm for this local setup.
+# F16 is used as the local reference because the Qwen2.5-1.5B Ollama artifact
+# available for this setup is F16 rather than BF16.
+
+model:
+  family: "qwen2.5"
+  parameters: "1.5b"
+  variant: "instruct"
+
+precision:
+  id: f16
+  label: "F16"
+  nominal_bits: 16
+  family: floating_point
+  is_reference: true
+
+backends:
+  ollama:
+    available: true
+    model_tag: "qwen2.5:1.5b-instruct-fp16"
+    quantization_format: "GGUF F16 (IEEE half)"
+    approx_download_gb: 3.1
+    quantization_config:
+      method: "none (unquantized half-precision reference)"
+      dtype: "float16"
+      bits: 16
+      notes: >-
+        IEEE binary16: 5 exponent bits, 10 mantissa bits. Ollama publishes
+        no BF16 GGUF for Qwen2.5-1.5B; F16 is used as the reference arm.
+    deviations:
+      - id: DEV-F16-OLLAMA-REF
+        severity: material
+        description: >-
+          F16 is used as the local reference because the Qwen2.5-1.5B Ollama artifact
+          available for this setup is F16 rather than BF16.
+        impact: >-
+          Qwen2.5 was trained in bfloat16, so this file is a format conversion of the
+          training weights rather than the training weights themselves. At 1.5B
+          parameters this difference is unlikely to produce measurable divergence,
+          but it is recorded as a deviation from the challenge's ideal BF16 reference.
+
+  mock:
+    available: true
+    model_tag: "mock:f16"
+    quantization_format: "SYNTHETIC -- not a real quantization"
+    quantization_config:
+      method: "none -- fabricated fixture"
+    deviations:
+      - id: DEV-F16-MOCK-1
+        severity: blocking
+        description: >-
+          Output came from the deterministic mock backend. These numbers are a
+          pipeline-validation fixture, not a measurement of any model, and must
+          never be reported as a PS-5 result.

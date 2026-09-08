@@ -8,10 +8,8 @@ If this file changes, `spec_version` must be bumped and **all four precisions mu
 
 ---
 
-## 0. Notation
-
-- `P` = set of precisions under test: `{bf16, fp8, q8, q4}`.
-- `ref` = the reference precision, **BF16**. All deltas are measured against it.
+- `P` = set of precisions under test: `{f16, fp8, q8, q4}` (with F16 as the local reference arm; or `{bf16, fp8, q8, q4}` when BF16 is available).
+- `ref` = the reference precision, **F16** (or BF16). All deltas are measured against it.
 - For a proportion metric, `k` = count of the numerator event, `n` = number of scorable cases.
 - **Higher-is-better** metrics are marked ↑, **lower-is-better** ↓.
 
@@ -238,20 +236,19 @@ A result is only comparable to another result when all of these match, and all a
 
 Declared in advance, not discovered afterwards.
 
-1. **Scorer validity is unmeasured.** The rule-based PS-1 scorer has not been validated against human labels. It will miss paraphrased violations (false negatives) and may fire on quoted or negated text (false positives). Its error is *constant across precisions*, so it biases the absolute violation rate but is far less likely to bias the *comparison* between precisions — which is what PS-5 asks about. This is the central methodological weakness of the design.
+1. **Scorer validity is moderate.** The rule-based PS-1 scorer has been validated against human labels on an n=80 stratified subset (`reports/validation/agreement.json`), achieving Cohen's $\kappa = 0.471$ (moderate agreement, raw agreement 77.5%). It may miss paraphrased violations (false negatives) and fire on quoted or negated text (false positives). Its error is *constant across precisions*, so it biases the absolute violation rate but is far less likely to bias the *comparison* between precisions — which is what PS-5 asks about. Absolute rates are treated as weakly supported and directional.
 2. **One target category per case.** Cross-category violations are not detected.
 3. **Free-text arguments are unscored**, so `argument_accuracy` covers structured fields only.
 4. **Small per-cell samples.** Per-category and per-language breakdowns are directional.
 5. **Single-turn only.** These suites do not test multi-turn drift, where quantization damage plausibly compounds.
 6. **The FP8/Q8 fidelity ordering is an assumption**, not a measurement.
 7. **Determinism is best-effort.** Greedy decoding with a fixed seed is requested, but llama.cpp/Ollama does not guarantee bit-identical output across differing batch or thread configurations. The realised generation config is recorded per run, and `repeats > 1` can be configured to estimate run-to-run variance directly.
-8. **Model size may be chosen to fit the hardware, and that choice cuts both ways — read this before interpreting a null result.** The `qwen2.5-1.5b` config set exists so that the near-full-precision reference arm fits in 8 GB of unified memory without swapping. Swapping would make latency differ between arms for reasons unrelated to quantization, so this protects the *control*. But it costs *sensitivity*, in two opposite directions, and which one bites depends on where the reference arm lands:
-   - **Floor effect.** If the 1.5B reference is already weak at a task — tool calling with five schemas is the likely candidate — there is little headroom left to lose, and quantization damage will be compressed toward the floor. A "no cliff detected" result on such a metric may mean *the metric had nowhere to fall*, not that quantization was harmless. The reported reference value makes this checkable: if `task_success_rate` at BF16 is already low, treat any null on it as uninformative rather than reassuring.
+8. **Model size may be chosen to fit the hardware, and that choice cuts both ways — read this before interpreting a null result.** The `qwen2.5-1.5b` config set was run so that the near-full-precision reference arm fits in 8 GB of unified memory without swapping. Swapping would make latency differ between arms for reasons unrelated to quantization, so this protects the *control*. But it costs *sensitivity*, in two opposite directions, and which one bites depends on where the reference arm lands:
+   - **Floor effect.** If the 1.5B reference is already weak at a task — tool calling with five schemas is the likely candidate — there is little headroom left to lose, and quantization damage will be compressed toward the floor. A "no cliff detected" result on such a metric may mean *the metric had nowhere to fall*, not that quantization was harmless. The reported reference value makes this checkable: if `task_success_rate` at the reference is already low, treat any null on it as uninformative rather than reassuring.
    - **Ceiling effect.** Symmetrically, if the reference is near 100% (plausible for `violation_rate`, where refusing is the easy path), small absolute degradations are all the metric can express.
    - **Larger models are generally more robust to quantization than small ones**, so a cliff located here is, if anything, likely to be *pessimistic* for a bigger deployment model — while a null here says very little about a bigger one. Neither direction generalises, which is why §4.6 refuses to turn the result into a universal claim.
-   The fix is not a statistical one: it is to re-run on the deployment-sized model when hardware allows. Everything in this repository is size-agnostic, and switching is one argument: `bash scripts/run_all.sh ollama` uses the `default` set (Qwen3.5-4B, the model the specification names), while `bash scripts/run_all.sh ollama qwen2.5-1.5b` uses the small one. Each set writes to its own results root, so the two never merge and neither overwrites the other.
 9. **A config set may be missing a rung, and a missing rung is a gap, never a null.** The `qwen2.5-1.5b` set has no FP8 arm on Ollama, because no FP8 GGUF exists for that model. A three-point curve (F16 → Q8 → Q4) cannot distinguish a cliff located between FP8 and Q8 from one located between Q8 and Q4; the intervening measurement was never taken. The aggregator reports the arm as NOT RUN and the report reproduces that, so the absence is visible rather than inferred from a flat line. Substituting Q8_0 — 8-bit *integer* — for FP8 would be the tempting fix and is refused by the runner.
-10. **A reference arm may be a substituted dtype, and everything is measured against it.** The `qwen2.5-1.5b` set's Ollama reference is IEEE F16, not the bfloat16 the model was trained in (`DEV-BF16-OLLAMA-F16`, material). F16 trades exponent range for mantissa precision; at 1.5B the conversion is very unlikely to be measurable, but "very unlikely" is not "verified", and this is the arm every delta is subtracted from. Results from that set report the reference as F16 and must not be pooled with a genuine BF16 arm. The `default` set and the vLLM path both have genuine bfloat16 references.
+10. **A reference arm may be a substituted dtype, and everything is measured against it.** F16 is used as the local reference because the Qwen2.5-1.5B Ollama artifact available for this setup is F16 rather than BF16 (`DEV-F16-OLLAMA-REF`). F16 trades exponent range for mantissa precision; at 1.5B the conversion is very unlikely to be measurable, but "very unlikely" is not "verified", and this is the arm every delta is subtracted from. Results from that set report the reference as F16 and must not be pooled with a genuine BF16 arm.
 
 
 ---

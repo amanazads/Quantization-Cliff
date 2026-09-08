@@ -1,6 +1,6 @@
 # PS-5 aggregate summary
 
-- generated: `2026-09-08T20:33:39.515052+00:00`
+- generated: `2026-09-08T20:57:38.533437+00:00`
 - metric spec: `2.0.0-spec-6.4` (recorded by every arm and verified equal across them)
 - cliff criterion: `1.0.0`
 - reference precision: `F16`
@@ -70,5 +70,5 @@ _'Minimum precision supported by this experiment' and 'universally safe producti
 
 ## Recorded deviations
 
-- **[material] DEV-BF16-OLLAMA-F16** (bf16): THIS ARM IS F16, NOT BF16. Qwen2.5 was trained in bfloat16, so this file is a format conversion of the training weights rather than the training weights themselves. F16 trades exponent range for mantissa precision.
+- **[material] DEV-F16-OLLAMA-REF** (f16): F16 is used as the local reference because the Qwen2.5-1.5B Ollama artifact available for this setup is F16 rather than BF16.
 

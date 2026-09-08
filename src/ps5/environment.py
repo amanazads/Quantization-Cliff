@@ -44,8 +44,7 @@ def _run(cmd: List[str]) -> Optional[str]:
 def _package_versions() -> Dict[str, Optional[str]]:
     """Versions of libraries whose numerics or parsing could affect results."""
     names = [
-        "ollama", "openai", "httpx", "requests", "vllm", "torch",
-        "transformers", "numpy", "matplotlib", "pyyaml", "jsonschema", "pytest",
+        "ollama", "requests", "numpy", "matplotlib", "pyyaml", "jsonschema", "pytest",
     ]
     try:
         from importlib.metadata import version, PackageNotFoundError

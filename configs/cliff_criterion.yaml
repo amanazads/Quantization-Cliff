@@ -9,8 +9,8 @@ challenge_defined: false   # these thresholds are an experimental convention, NO
 
 # Descending numerical fidelity. Assumption, declared: FP8 is ranked above Q8
 # because it retains an exponent field and therefore per-tensor dynamic range.
-precision_order: [bf16, fp8, q8, q4]
-reference_precision: bf16
+precision_order: [f16, fp8, q8, q4]
+reference_precision: f16
 
 confidence_level: 0.95
 interval_method: newcombe        # difference of two independent proportions
@@ -20,7 +20,7 @@ proportion_interval_method: wilson
 # significance is never claimed for it.
 small_sample_threshold: 30
 
-# Relative degradation is suppressed when the BF16 baseline is below this,
+# Relative degradation is suppressed when the F16 baseline is below this,
 # because relative change on a near-zero base is unstable.
 relative_degradation_min_base: 0.10
 

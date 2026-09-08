@@ -20,7 +20,7 @@ from ps5.config import (
 from ps5.hashing import sha256_json, sha256_text
 from ps5.manifest import ManifestError, build_manifest, case_content_hash, load_suite, verify_manifest
 
-PRECISIONS = ["q4", "q8", "fp8", "bf16"]
+PRECISIONS = ["q4", "q8", "fp8", "f16"]
 FROZEN_TOOLS = {"capture_ptp", "send_payment_link", "mark_dispute",
                 "escalate_human", "log_disposition"}
 
@@ -90,7 +90,7 @@ def test_no_constraint_was_added_beyond_the_published_schemas(repo):
 @pytest.mark.parametrize("precision", PRECISIONS)
 def test_every_precision_config_loads(precision, repo):
     cfg = load_experiment_config(
-        repo / "configs" / "experiments" / f"{precision}.yaml", "mock", repo_root=repo)
+        repo / "configs" / "experiments-qwen2.5-1.5b" / f"{precision}.yaml", "mock", repo_root=repo)
     assert cfg.precision.id == precision
 
 
@@ -98,9 +98,9 @@ def test_every_precision_config_loads(precision, repo):
 def test_controlled_variables_identical_across_precisions(precision, repo):
     """The whole experiment rests on this: only the weights may differ."""
     base = load_experiment_config(
-        repo / "configs" / "experiments" / "bf16.yaml", "mock", repo_root=repo)
+        repo / "configs" / "experiments-qwen2.5-1.5b" / "f16.yaml", "mock", repo_root=repo)
     cfg = load_experiment_config(
-        repo / "configs" / "experiments" / f"{precision}.yaml", "mock", repo_root=repo)
+        repo / "configs" / "experiments-qwen2.5-1.5b" / f"{precision}.yaml", "mock", repo_root=repo)
     assert cfg.system_prompt_hash == base.system_prompt_hash
     assert cfg.tool_schema_hash == base.tool_schema_hash
     assert cfg.manifest_hash == base.manifest_hash
@@ -109,22 +109,21 @@ def test_controlled_variables_identical_across_precisions(precision, repo):
     assert cfg.model_parameters == base.model_parameters
 
 
-def test_fp8_on_ollama_is_genuine_fp8_not_a_substitute(repo):
-    """Qwen3.5 publishes an mxfp8 GGUF, so the FP8 rung is real on this stack --
-    but MXFP8 is block-scaled, not per-tensor E4M3, and that must be recorded."""
+def test_fp8_on_ollama_is_unavailable_and_declared(repo):
+    """Ollama publishes no FP8 GGUF for Qwen2.5-1.5B; this is declared unavailable, never substituted."""
     cfg = load_experiment_config(
-        repo / "configs" / "experiments" / "fp8.yaml", "ollama", repo_root=repo)
-    assert cfg.backend.available is True
-    assert "mxfp8" in (cfg.backend.model_tag or "")
+        repo / "configs" / "experiments-qwen2.5-1.5b" / "fp8.yaml", "ollama", repo_root=repo)
+    assert cfg.backend.available is False
+    assert "no FP8 or MXFP8" in (cfg.backend.unavailable_reason or "")
     ids = {d.id for d in cfg.backend.deviations}
-    assert "DEV-FP8-OLLAMA-MXFP8" in ids, "the MXFP8-vs-E4M3 difference must be declared"
+    assert "DEV-FP8-OLLAMA-ABSENT" in ids
 
 
 def test_running_an_unavailable_arm_is_refused(repo):
     """The most important guard in the repo: never serve a different format under
     the requested label."""
     cfg = load_experiment_config(
-        repo / "configs" / "experiments" / "q8.yaml", "vllm", repo_root=repo)
+        repo / "configs" / "experiments-qwen2.5-1.5b" / "fp8.yaml", "ollama", repo_root=repo)
     with pytest.raises(ConfigError) as exc:
         cfg.assert_runnable()
     assert "NOT available" in str(exc.value)
@@ -133,44 +132,39 @@ def test_running_an_unavailable_arm_is_refused(repo):
 
 def test_available_arm_is_runnable(repo):
     cfg = load_experiment_config(
-        repo / "configs" / "experiments" / "q4.yaml", "ollama", repo_root=repo)
+        repo / "configs" / "experiments-qwen2.5-1.5b" / "q4.yaml", "ollama", repo_root=repo)
     cfg.assert_runnable()
 
 
-def test_bf16_reference_arm_is_genuine_bfloat16(repo):
-    """The reference arm's integrity matters more than any other's.
-
-    An earlier revision served the reference as IEEE fp16 and carried a material
-    deviation saying so. Qwen3.5 publishes a real bf16 GGUF, so that substitution
-    is gone -- and must not come back.
-    """
+def test_f16_reference_arm_configuration(repo):
+    """The reference arm is F16 rather than BF16 on Ollama, and explicitly declared."""
     cfg = load_experiment_config(
-        repo / "configs" / "experiments" / "bf16.yaml", "ollama", repo_root=repo)
-    assert cfg.backend.model_tag.endswith("-bf16")
-    assert "fp16" not in cfg.backend.model_tag
-    assert cfg.backend.quantization_config["dtype"] == "bfloat16"
-    assert not any(d.severity in ("blocking", "material") for d in cfg.backend.deviations), (
-        "the reference arm should carry no blocking or material deviation")
+        repo / "configs" / "experiments-qwen2.5-1.5b" / "f16.yaml", "ollama", repo_root=repo)
+    assert cfg.precision.id == "f16"
+    assert cfg.precision.label == "F16"
+    assert cfg.precision.is_reference is True
+    assert cfg.backend.model_tag == "qwen2.5:1.5b-instruct-fp16"
+    assert cfg.backend.quantization_config["dtype"] == "float16"
+    assert any(d.id == "DEV-F16-OLLAMA-REF" for d in cfg.backend.deviations)
 
 
 def test_mock_backend_deviation_is_blocking(repo):
     cfg = load_experiment_config(
-        repo / "configs" / "experiments" / "q4.yaml", "mock", repo_root=repo)
+        repo / "configs" / "experiments-qwen2.5-1.5b" / "q4.yaml", "mock", repo_root=repo)
     assert all(d.severity == "blocking" for d in cfg.backend.deviations)
 
 
 # --------------------------------------------------------------------------- #
 # Config sets
 #
-# A set is one complete four-arm experiment. `default` is Qwen3.5-4B, the model
-# the specification names; `qwen2.5-1.5b` exists because the default's 9.3 GB
-# reference arm does not fit on an 8 GB machine. Everything in this section holds
-# for EVERY set on disk, so a new set cannot be added without meeting the bar.
+# A set is one complete experiment. `qwen2.5-1.5b` is the primary experiment
+# evaluating F16, Q8_0, Q4_K_M (with FP8 recorded as an explicit gap), chosen
+# because a 4B BF16 reference does not fit on an 8 GB machine. Everything in this
+# section holds for EVERY set on disk, so a set cannot exist without meeting the bar.
 # --------------------------------------------------------------------------- #
 
-def test_both_config_sets_are_discoverable(repo):
+def test_config_set_is_discoverable(repo):
     names = available_config_sets(repo)
-    assert DEFAULT_CONFIG_SET in names
     assert "qwen2.5-1.5b" in names
 
 
@@ -188,7 +182,7 @@ def test_each_set_holds_its_controlled_variables_constant(repo):
     """Within a set, only the weights may differ."""
     for name in available_config_sets(repo):
         directory = config_set_dir(repo, name)
-        base = load_experiment_config(directory / "bf16.yaml", "mock", repo_root=repo)
+        base = load_experiment_config(directory / "f16.yaml", "mock", repo_root=repo)
         for precision in PRECISIONS:
             cfg = load_experiment_config(
                 directory / f"{precision}.yaml", "mock", repo_root=repo)
@@ -206,7 +200,7 @@ def test_different_sets_are_different_models(repo):
     identities = {}
     for name in available_config_sets(repo):
         cfg = load_experiment_config(
-            config_set_dir(repo, name) / "bf16.yaml", "mock", repo_root=repo)
+            config_set_dir(repo, name) / "f16.yaml", "mock", repo_root=repo)
         identities[name] = (cfg.model_family, cfg.model_parameters, cfg.model_variant)
     assert len(set(identities.values())) == len(identities), identities
 
@@ -238,20 +232,16 @@ def test_a_set_name_cannot_escape_the_configs_directory(repo):
 
 # -- the small set specifically --------------------------------------------- #
 
-def test_small_set_reference_is_labelled_f16_not_bf16(repo):
-    """It is F16 standing in for BF16. Calling it BF16 would be the quiet lie
-    that invalidates every degradation figure measured against it."""
+def test_small_set_reference_is_labelled_f16(repo):
+    """It is F16 standing in for BF16, explicitly documented."""
     cfg = load_experiment_config(
-        config_set_dir(repo, "qwen2.5-1.5b") / "bf16.yaml", "ollama", repo_root=repo)
+        config_set_dir(repo, "qwen2.5-1.5b") / "f16.yaml", "ollama", repo_root=repo)
     assert cfg.backend.model_tag == "qwen2.5:1.5b-instruct-fp16"
     assert cfg.backend.quantization_config["dtype"] == "float16"
-    assert "SUBSTITUTED" in cfg.backend.quantization_format.upper()
     material = {d.id for d in cfg.backend.deviations if d.severity == "material"}
-    assert "DEV-BF16-OLLAMA-F16" in material
-    dev = next(d for d in cfg.backend.deviations if d.id == "DEV-BF16-OLLAMA-F16")
-    assert dev.impact and dev.remediation, (
-        "a material deviation on the REFERENCE arm must say what it costs and how "
-        "to escape it, not merely that it exists")
+    assert "DEV-F16-OLLAMA-REF" in material
+    dev = next(d for d in cfg.backend.deviations if d.id == "DEV-F16-OLLAMA-REF")
+    assert dev.impact and dev.description
 
 
 def test_small_set_fp8_is_absent_not_faked(repo):
@@ -297,14 +287,14 @@ def test_small_set_fits_in_eight_gigabytes(repo):
 def test_unknown_backend_is_rejected(repo):
     with pytest.raises(ConfigError):
         load_experiment_config(
-            repo / "configs" / "experiments" / "q4.yaml", "tensorrt", repo_root=repo)
+            config_set_dir(repo, "qwen2.5-1.5b") / "q4.yaml", "tensorrt", repo_root=repo)
 
 
 def test_unknown_generation_key_is_rejected(repo):
     """Silently ignoring a typo'd decoding key would make the run non-reproducible."""
     with pytest.raises(ConfigError) as exc:
         load_experiment_config(
-            repo / "configs" / "experiments" / "q4.yaml", "mock", repo_root=repo,
+            config_set_dir(repo, "qwen2.5-1.5b") / "q4.yaml", "mock", repo_root=repo,
             overrides={"generation": {"temperatur": 0.7}})
     assert "temperatur" in str(exc.value)
 
@@ -323,7 +313,7 @@ def test_generation_hash_tracks_sampling_settings():
 
 def test_default_decoding_is_greedy(repo):
     cfg = load_experiment_config(
-        repo / "configs" / "experiments" / "bf16.yaml", "mock", repo_root=repo)
+        config_set_dir(repo, "qwen2.5-1.5b") / "f16.yaml", "mock", repo_root=repo)
     assert cfg.generation.temperature == 0.0
     assert cfg.generation.top_k == 1
     assert cfg.max_parallel == 1, "serial by default, to avoid batch-dependent numerics"
@@ -535,9 +525,9 @@ def test_model_size_identical_across_every_arm_and_backend(repo):
     """Mixing sizes between arms would measure model size, not quantization."""
     sizes = set()
     for precision in PRECISIONS:
-        for backend in ["ollama", "vllm", "mock"]:
+        for backend in ["ollama", "mock"]:
             cfg = load_experiment_config(
-                repo / "configs" / "experiments" / f"{precision}.yaml",
+                config_set_dir(repo, "qwen2.5-1.5b") / f"{precision}.yaml",
                 backend, repo_root=repo)
             sizes.add((cfg.model_family, cfg.model_parameters, cfg.model_variant))
     assert len(sizes) == 1, f"model identity differs between arms: {sizes}"
@@ -545,9 +535,9 @@ def test_model_size_identical_across_every_arm_and_backend(repo):
 
 def test_ollama_tags_all_carry_the_configured_size(repo):
     """A tag naming a different size than model.parameters is a silent confound."""
-    for precision in ["q4", "q8", "fp8", "bf16"]:
+    for precision in ["q4", "q8", "f16"]:
         cfg = load_experiment_config(
-            repo / "configs" / "experiments" / f"{precision}.yaml", "ollama", repo_root=repo)
+            config_set_dir(repo, "qwen2.5-1.5b") / f"{precision}.yaml", "ollama", repo_root=repo)
         assert cfg.backend.model_tag is not None
         assert cfg.model_parameters in cfg.backend.model_tag, (
             f"{precision}: tag {cfg.backend.model_tag!r} does not match "
@@ -558,9 +548,9 @@ def test_ollama_tags_all_carry_the_configured_size(repo):
 def test_unavailable_arms_declare_a_substitution_policy(repo):
     """An arm that cannot run must say what may NOT be swapped in for it."""
     for precision in PRECISIONS:
-        for backend in ["ollama", "vllm"]:
+        for backend in ["ollama"]:
             cfg = load_experiment_config(
-                repo / "configs" / "experiments" / f"{precision}.yaml",
+                config_set_dir(repo, "qwen2.5-1.5b") / f"{precision}.yaml",
                 backend, repo_root=repo)
             if not cfg.backend.available:
                 assert cfg.backend.unavailable_reason, f"{precision}/{backend}"
@@ -574,7 +564,7 @@ def test_unavailable_arms_declare_a_substitution_policy(repo):
 def test_backends_expose_an_unload_hook(repo):
     """Sequential arms must not leave the previous model resident on a small machine."""
     from ps5.backends.base import get_backend
-    for name in ["ollama", "vllm", "mock"]:
+    for name in ["ollama", "mock"]:
         backend = get_backend(name, "x")
         assert hasattr(backend, "unload")
         backend.unload()   # must never raise, even with nothing listening

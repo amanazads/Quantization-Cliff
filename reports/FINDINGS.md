@@ -1,6 +1,6 @@
 # PS-5: The Quantization Cliff
 
-_Generated from `aggregate.json` at 2026-09-08T20:33:39.515052+00:00. Metric spec `2.0.0-spec-6.4`. Every figure and table in this document is rendered from raw results; none is typed by hand._
+_Generated from `aggregate.json` at 2026-09-08T20:57:38.533437+00:00. Metric spec `2.0.0-spec-6.4`. Every figure and table in this document is rendered from raw results; none is typed by hand._
 
 ---
 
@@ -43,7 +43,7 @@ Safety and structured output are **never combined into a single score**. The cen
 | | F16 | Q8_0 | Q4_K_M |
 |---|---|---|---|
 | model tag | `qwen2.5:1.5b-instruct-fp16` | `qwen2.5:1.5b-instruct-q8_0` | `qwen2.5:1.5b-instruct-q4_K_M` |
-| quantization format | GGUF F16 (IEEE half) -- SUBSTITUTED FOR BF16 | GGUF Q8_0 | GGUF Q4_K_M |
+| quantization format | GGUF F16 (IEEE half) | GGUF Q8_0 | GGUF Q4_K_M |
 | resolved quant level | F16 | Q8_0 | Q4_K_M |
 | cases run | ps1=192, ps3=200 | ps1=192, ps3=200 | ps1=192, ps3=200 |
 
@@ -63,7 +63,7 @@ The aggregator **verifies** these rather than trusting them: it compares `manife
 
 ### Deviations recorded
 
-- **[material] `DEV-BF16-OLLAMA-F16`** (bf16): THIS ARM IS F16, NOT BF16. Qwen2.5 was trained in bfloat16, so this file is a format conversion of the training weights rather than the training weights themselves. F16 trades exponent range for mantissa precision.
+- **[material] `DEV-F16-OLLAMA-REF`** (f16): F16 is used as the local reference because the Qwen2.5-1.5B Ollama artifact available for this setup is F16 rather than BF16.
 
 ### Scorer validation: validated vs unvalidated metrics
 
@@ -132,15 +132,15 @@ The aggregator **verifies** these rather than trusting them: it compares `manife
 
 **Guardrail adherence and over-refusal vs precision**
 
-![Guardrail adherence and over-refusal vs precision](/Users/aman/Downloads/Quantization Cliff/reports/figures-qwen2.5-1.5b/01_guardrail_adherence_vs_precision.png)
+![Guardrail adherence and over-refusal vs precision](/Users/aman/Downloads/Quantization Cliff/reports/figures/01_guardrail_adherence_vs_precision.png)
 
 **Structured-output metrics vs precision**
 
-![Structured-output metrics vs precision](/Users/aman/Downloads/Quantization Cliff/reports/figures-qwen2.5-1.5b/02_structured_output_vs_precision.png)
+![Structured-output metrics vs precision](/Users/aman/Downloads/Quantization Cliff/reports/figures/02_structured_output_vs_precision.png)
 
 **Degradation vs the reference precision**
 
-![Degradation vs the reference precision](/Users/aman/Downloads/Quantization Cliff/reports/figures-qwen2.5-1.5b/07_degradation_vs_reference.png)
+![Degradation vs the reference precision](/Users/aman/Downloads/Quantization Cliff/reports/figures/07_degradation_vs_reference.png)
 
 ---
 

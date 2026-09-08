@@ -53,7 +53,7 @@ class ConfigError(RuntimeError):
 # parameter, and collision is prevented rather than detected.
 # --------------------------------------------------------------------------- #
 
-DEFAULT_CONFIG_SET = "default"
+DEFAULT_CONFIG_SET = "qwen2.5-1.5b"
 _CONFIG_SET_PREFIX = "experiments"
 
 
@@ -61,8 +61,10 @@ def config_set_dir(repo_root: str | Path, name: str = DEFAULT_CONFIG_SET) -> Pat
     """Directory holding one set's per-precision configs. Raises if it is absent."""
     root = Path(repo_root)
     name = (name or DEFAULT_CONFIG_SET).strip()
-    if name in ("", DEFAULT_CONFIG_SET):
-        path = root / "configs" / _CONFIG_SET_PREFIX
+    if name in ("", DEFAULT_CONFIG_SET, "default"):
+        path = root / "configs" / f"{_CONFIG_SET_PREFIX}-{DEFAULT_CONFIG_SET}"
+        if not path.is_dir():
+            path = root / "configs" / _CONFIG_SET_PREFIX
     else:
         if "/" in name or "\\" in name or name.startswith("."):
             raise ConfigError(f"Invalid config set name {name!r}: it is a name, not a path.")
@@ -79,7 +81,7 @@ def config_set_dir(repo_root: str | Path, name: str = DEFAULT_CONFIG_SET) -> Pat
 def config_set_suffix(name: str = DEFAULT_CONFIG_SET) -> str:
     """Suffix appended to results roots so two sets cannot share a directory."""
     name = (name or DEFAULT_CONFIG_SET).strip()
-    return "" if name in ("", DEFAULT_CONFIG_SET) else f"-{name}"
+    return "" if name in ("", DEFAULT_CONFIG_SET, "default") else f"-{name}"
 
 
 def available_config_sets(repo_root: str | Path) -> List[str]:

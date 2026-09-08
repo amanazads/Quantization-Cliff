@@ -132,12 +132,9 @@ def get_backend(name: str, model_tag: str, options: Optional[Dict[str, Any]] = N
     if name == "ollama":
         from .ollama import OllamaBackend
         return OllamaBackend(model_tag, options)
-    if name in {"vllm", "openai_compat"}:
-        from .openai_compat import OpenAICompatBackend
-        return OpenAICompatBackend(model_tag, options, name=name)
     if name == "mock":
         from .mock import MockBackend
         return MockBackend(model_tag, options)
     raise BackendError(
-        f"Unknown backend '{name}'. Known backends: ollama, vllm, openai_compat, mock."
+        f"Unknown backend '{name}'. Known backends: ollama, mock."
     )

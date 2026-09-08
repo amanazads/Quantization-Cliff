@@ -1,7 +1,7 @@
 """Ollama backend (llama.cpp / GGUF).
 
-Serves Q4 and Q8 genuinely. Serves the reference arm as F16, which is NOT BF16 --
-see DEV-BF16-OLLAMA-1 in configs/experiments/bf16.yaml. Cannot serve FP8 at all;
+Serves Q4 and Q8 genuinely. Serves the reference arm as F16 (see DEV-F16-OLLAMA-REF
+in configs/experiments-qwen2.5-1.5b/f16.yaml). Cannot serve FP8 at all;
 the config marks that arm unavailable and the runner refuses it.
 
 Uses the /api/chat endpoint with native `tools`, so tool calls come back as

@@ -25,19 +25,12 @@ REPO = Path(__file__).resolve().parents[1]
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--results-root", default="results")
+    parser.add_argument("--results-root", default="results-qwen2.5-1.5b")
     parser.add_argument("--out", default="reports/figures")
     args = parser.parse_args()
 
     aggregate_path = REPO / args.results_root / "aggregate" / "aggregate.json"
     out_dir = REPO / args.out
-    if not aggregate_path.exists() and args.results_root == "results":
-        fallback_agg = REPO / "results-qwen2.5-1.5b" / "aggregate" / "aggregate.json"
-        if fallback_agg.exists():
-            print(f"[info] '{aggregate_path.relative_to(REPO)}' not found; defaulting to '{fallback_agg.relative_to(REPO)}'", file=sys.stderr)
-            aggregate_path = fallback_agg
-            if args.out == "reports/figures":
-                out_dir = REPO / "reports" / "figures-qwen2.5-1.5b"
 
     if not aggregate_path.exists():
         print(f"{aggregate_path} not found. Run scripts/aggregate_results.py first.",

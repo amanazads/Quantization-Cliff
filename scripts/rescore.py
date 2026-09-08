@@ -54,7 +54,7 @@ def _rebuild_result(record: Dict[str, Any]) -> GenerationResult:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--results-root", default="results")
+    parser.add_argument("--results-root", default="results-qwen2.5-1.5b")
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--no-backup", action="store_true")
     args = parser.parse_args()

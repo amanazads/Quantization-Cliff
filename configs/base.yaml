@@ -9,8 +9,8 @@
 
 experiment:
   suite_ids: [ps1, ps3]
-  repeats: 1                 # raise to estimate run-to-run variance; recorded per case
-  results_root: results
+  repeats: 1
+  results_root: results-qwen2.5-1.5b
 
 # ---- Controlled: identical across all precisions ----------------------------
 prompt:
@@ -49,16 +49,6 @@ scoring:
 # ---- Model identity: held constant in FAMILY across precisions --------------
 # Only the quantization of these weights may differ between experiment configs.
 model:
-  # Model family and size are CONTROLLED variables: identical across every arm.
-  # Qwen3.5-4B is the specification's "turn-loop candidate, smallest viable"
-  # (Section 5, Models in scope). Qwen3.5-9B is the specification's primary
-  # Track 1 candidate and is the stronger choice wherever memory allows -- change
-  # `parameters` to "9b" and the four Ollama tags together, never one arm alone.
-  #
-  # Memory needed by the Ollama arms at 4B: Q4 3.4 GB, Q8 5.3 GB, FP8 5.6 GB,
-  # BF16 9.3 GB. The BF16 REFERENCE arm therefore needs more than 8 GB of unified
-  # memory; the specification's own Track 1 minimum is 16 GB.
-  family: "qwen3.5"
-  parameters: "4b"
-  variant: "base"
-  # Concrete per-backend tag is set in each experiment config.
+  family: "qwen2.5"
+  parameters: "1.5b"
+  variant: "instruct"

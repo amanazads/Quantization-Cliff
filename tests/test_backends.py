@@ -27,7 +27,6 @@ import requests
 
 from ps5.backends.base import get_backend
 from ps5.backends.ollama import OllamaBackend
-from ps5.backends.openai_compat import OpenAICompatBackend
 from ps5.config import GenerationConfig
 
 from conftest import PTP_CASE
@@ -152,12 +151,6 @@ def ollama_post(monkeypatch, recorder: Recorder) -> Recorder:
     return recorder
 
 
-def openai_post(monkeypatch, recorder: Recorder) -> Recorder:
-    import ps5.backends.openai_compat as mod
-    monkeypatch.setattr(mod.requests, "post", recorder)
-    return recorder
-
-
 # --------------------------------------------------------------------------- #
 # the expected answer must not reach the wire
 # --------------------------------------------------------------------------- #
@@ -186,24 +179,6 @@ def test_ollama_ignores_the_case_metadata_entirely(monkeypatch):
     assert "capture_ptp" in wire, "sanity: the tool schema itself is legitimately present"
     assert "2026-09-12" not in wire
     assert "promised_date" not in wire
-
-
-def test_openai_compat_ignores_the_case_metadata_entirely(monkeypatch):
-    def completion():
-        return FakeResponse(200, {
-            "choices": [{"message": {"role": "assistant", "content": "Noted."},
-                         "finish_reason": "stop"}],
-            "usage": {"prompt_tokens": 100, "completion_tokens": 10},
-        })
-
-    rec_without = openai_post(monkeypatch, Recorder([completion()]))
-    OpenAICompatBackend("qwen3.5-4b").generate(SYSTEM, USER, TOOLS, GEN, case=None)
-
-    rec_with = openai_post(monkeypatch, Recorder([completion()]))
-    OpenAICompatBackend("qwen3.5-4b").generate(SYSTEM, USER, TOOLS, GEN, case=PTP_CASE)
-
-    assert rec_without.payloads == rec_with.payloads
-    assert "2026-09-12" not in json.dumps(rec_with.payloads[0])
 
 
 def test_the_prompt_reaches_the_wire_unmodified(monkeypatch):
@@ -454,5 +429,4 @@ def test_a_missing_tag_is_refused_before_anything_runs(monkeypatch):
 def test_only_the_mock_backend_is_marked_synthetic():
     """`synthetic` gates findings-report generation, so it must not be wrong."""
     assert get_backend("ollama", "m").synthetic is False
-    assert get_backend("vllm", "m").synthetic is False
     assert get_backend("mock", "m").synthetic is True

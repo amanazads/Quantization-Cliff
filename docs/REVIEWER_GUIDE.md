@@ -25,11 +25,11 @@ the practical local experiment and is labelled as such everywhere.
 
 | # | File | Why |
 |---|---|---|
-| 1 | **`reports/FINDINGS-qwen2.5-1.5b.pdf`** | The submission document. 3 pages. §7 is the part that matters: the power table saying which nulls are worth anything. |
+| 1 | **`reports/FINDINGS.pdf`** | The submission document. 3 pages. §7 is the part that matters: the power table saying which nulls are worth anything. |
 | 2 | **`docs/METRICS.md`** | Every metric and the cliff rule, frozen before any run. §8 is a changelog of what was wrong in v1 and why. |
 | 3 | **`README.md` §6** | What the completed run actually showed, including the floor effect that limits it. |
 
-`reports/FINDINGS-qwen2.5-1.5b_FULL.md` is the appendix — per-category, per-language
+`reports/FINDINGS_FULL.md` is the appendix — per-category, per-language
 and failure-mode breakdowns, rendered from the same aggregate so it cannot disagree.
 
 ---
@@ -49,18 +49,17 @@ deterministically and the manifest is hashed.
 ```bash
 python3 scripts/build_suites.py --check      # suites match their generator
 python3 scripts/build_manifest.py --check    # manifest matches the suites
-python3 -m pytest -q                         # 241 tests, ~5 s
+python3 -m pytest -q                         # 239 tests, ~3 s
 ```
 
 **2 — The report's numbers come from the raw data, not from prose.** Delete the
 report, regenerate it, and diff:
 
 ```bash
-cp reports/FINDINGS-qwen2.5-1.5b.md /tmp/before.md
-python3 scripts/aggregate_results.py  --results-root results-qwen2.5-1.5b
-python3 scripts/generate_report.py    --results-root results-qwen2.5-1.5b \
-        --figures reports/figures-qwen2.5-1.5b --out reports/FINDINGS-qwen2.5-1.5b.md
-diff /tmp/before.md reports/FINDINGS-qwen2.5-1.5b.md   # only the timestamp differs
+cp reports/FINDINGS.md /tmp/before.md
+python3 scripts/aggregate_results.py
+python3 scripts/generate_report.py
+diff /tmp/before.md reports/FINDINGS.md   # only the timestamp differs
 ```
 
 **3 — The controls are enforced, not asserted.** Corrupt one control hash and the
@@ -102,8 +101,8 @@ bash scripts/run_all.sh mock          # ~30 s, writes only to results_mock/
 |---|---|
 | **Methodological rigour** (35%) | `docs/METRICS.md` and `configs/cliff_criterion.yaml` — thresholds fixed before any run, and the code cannot lower them. `src/ps5/aggregate.py::check_comparability` refuses an invalid comparison. Verify with step 3 above. |
 | **Reproducibility** (25%) | Deterministic suites with drift checks; greedy decoding at a fixed seed; environment, GGUF quantization level and control hashes captured per run into `metadata.json`; 241 tests; every report number rendered from raw JSONL. Verify with steps 1–2. |
-| **Insight** (20%) | `reports/FINDINGS-qwen2.5-1.5b.pdf` §7 — the power table. The interesting finding here is *which* of four nulls survives scrutiny, and why the other three do not. |
-| **Intellectual honesty** (15%) | The deviation `DEV-BF16-OLLAMA-F16` on the reference arm, printed in the report rather than buried; FP8 reported as a refused gap with its reason; the scorer-validation gap stated in the report's own §3b; `docs/METRICS.md` §8 listing nine things v1 got wrong. |
+| **Insight** (20%) | `reports/FINDINGS.pdf` §7 — the power table. The interesting finding here is *which* of four nulls survives scrutiny, and why the other three do not. |
+| **Intellectual honesty** (15%) | The deviation `DEV-F16-OLLAMA-REF` on the reference arm, printed in the report rather than buried; FP8 reported as a refused gap with its reason; the scorer-validation gap stated in the report's own §3b; `docs/METRICS.md` §8 listing nine things v1 got wrong. |
 | **Craft** (5%) | `scripts/run_all.sh` refuses to mix fabricated and measured arms before running; `scripts/export_pdf.sh` fails the build if the findings document exceeds the four-page cap. |
 
 ---

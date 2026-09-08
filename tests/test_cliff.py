@@ -220,5 +220,5 @@ def test_safety_threshold_is_tighter_than_structured_output(criterion):
 
 
 def test_precision_order_is_descending_fidelity(criterion):
-    assert criterion.precision_order == ["bf16", "fp8", "q8", "q4"]
-    assert criterion.reference_precision == "bf16"
+    assert criterion.precision_order == ["f16", "fp8", "q8", "q4"]
+    assert criterion.reference_precision == "f16"

@@ -30,7 +30,7 @@ def test_mock_backend_is_flagged_synthetic():
 
 
 def test_real_backends_are_not_flagged_synthetic():
-    for name in ["ollama", "vllm"]:
+    for name in ["ollama"]:
         assert get_backend(name, "x").synthetic is False
 
 
@@ -51,7 +51,7 @@ def test_mock_backend_degrades_with_precision(tools):
               "expected_arguments": {"borrower_id": "B", "amount": 5000,
                                      "promise_date": "2026-09-12"}} for i in range(200)]
     rates = {}
-    for precision in ["bf16", "q4"]:
+    for precision in ["f16", "q4"]:
         backend = get_backend("mock", f"mock:{precision}", {"precision_id": precision})
         good = sum(
             1 for c in cases
@@ -59,13 +59,12 @@ def test_mock_backend_degrades_with_precision(tools):
             and r.tool_calls[0].arguments == c["expected_arguments"]
         )
         rates[precision] = good / len(cases)
-    assert rates["bf16"] > rates["q4"]
+    assert rates["f16"] > rates["q4"]
 
 
-@pytest.mark.parametrize("backend_name", ["ollama", "vllm"])
-def test_real_backends_ignore_the_case_argument(backend_name, tools):
+def test_real_backends_ignore_the_case_argument(tools):
     """A real backend conditioning on the expected answer would be cheating."""
-    backend = get_backend(backend_name, "some-model")
+    backend = get_backend("ollama", "some-model")
     gen = GenerationConfig(transport_retries=0, request_timeout_s=1)
     captured = []
 
@@ -229,9 +228,9 @@ def test_unrecorded_thinking_status_warns_rather_than_asserting():
 @pytest.fixture(scope="module")
 def pipeline(repo, tmp_path_factory):
     out = tmp_path_factory.mktemp("results")
-    for precision in ["bf16", "fp8", "q8", "q4"]:
+    for precision in ["f16", "fp8", "q8", "q4"]:
         cfg = load_experiment_config(
-            repo / "configs" / "experiments" / f"{precision}.yaml", "mock",
+            repo / "configs" / "experiments-qwen2.5-1.5b" / f"{precision}.yaml", "mock",
             repo_root=repo, overrides={"experiment": {"results_root": str(out)}})
         ExperimentRunner(cfg, verbose=False).run(["ps1", "ps3"])
     criterion = load_criterion(str(repo / "configs" / "cliff_criterion.yaml"))
@@ -265,7 +264,7 @@ def test_each_case_is_on_disk_before_the_next_one_starts(repo, tmp_path):
             return super().generate(*args, **kwargs)
 
     cfg = load_experiment_config(
-        repo / "configs" / "experiments" / "q4.yaml", "mock", repo_root=repo,
+        repo / "configs" / "experiments-qwen2.5-1.5b" / "q4.yaml", "mock", repo_root=repo,
         overrides={"experiment": {"results_root": str(tmp_path)}})
     ExperimentRunner(cfg, backend=WatchingBackend("mock:q4", {"precision_id": "q4"}),
                      limit=5, verbose=False).run(["ps1"])
@@ -276,8 +275,8 @@ def test_each_case_is_on_disk_before_the_next_one_starts(repo, tmp_path):
 
 def test_all_four_arms_produce_results(pipeline):
     out, _criterion, agg = pipeline
-    assert set(agg["arms"]) == {"bf16", "fp8", "q8", "q4"}
-    for precision in ["bf16", "fp8", "q8", "q4"]:
+    assert set(agg["arms"]) == {"f16", "fp8", "q8", "q4"}
+    for precision in ["f16", "fp8", "q8", "q4"]:
         assert (out / precision / "metadata.json").exists()
         assert (out / precision / "ps1_results.jsonl").exists()
         assert (out / precision / "ps3_results.jsonl").exists()
@@ -286,11 +285,11 @@ def test_all_four_arms_produce_results(pipeline):
 def test_every_arm_saw_the_identical_case_set(pipeline):
     out, _criterion, _agg = pipeline
     ids = {}
-    for precision in ["bf16", "fp8", "q8", "q4"]:
+    for precision in ["f16", "fp8", "q8", "q4"]:
         rows = [json.loads(l) for l in
                 (out / precision / "ps3_results.jsonl").read_text(encoding="utf-8").splitlines() if l]
         ids[precision] = [r["case_id"] for r in rows]
-    reference = ids["bf16"]
+    reference = ids["f16"]
     for precision, seen in ids.items():
         assert seen == reference, f"{precision} saw a different case set or order"
 
@@ -421,7 +420,7 @@ def test_mock_run_defaults_to_its_own_results_root(repo):
     """
     script = (repo / "scripts" / "run_all.sh").read_text(encoding="utf-8")
     assert 'RESULTS_ROOT="${3:-results_mock$SUFFIX}"' in script
-    assert 'RESULTS_ROOT="${3:-results$SUFFIX}"' in script
+    assert 'RESULTS_ROOT="${3:-results-qwen2.5-1.5b}"' in script
 
 
 def test_mock_refuses_to_write_into_a_root_holding_measured_arms(repo, tmp_path):
@@ -429,13 +428,13 @@ def test_mock_refuses_to_write_into_a_root_holding_measured_arms(repo, tmp_path)
     (tmp_path / "q4" / "metadata.json").write_text(
         json.dumps({"backend": {"name": "ollama", "synthetic": False}}), encoding="utf-8")
 
-    proc = _run_all(repo, ["mock", "default", str(tmp_path)])
+    proc = _run_all(repo, ["mock", "qwen2.5-1.5b", str(tmp_path)])
     assert proc.returncode == 1
     assert "ABORT" in proc.stdout
     assert "q4  (real)" in proc.stdout
     # And it refused BEFORE running anything, so the evidence is untouched.
     assert json.loads((tmp_path / "q4" / "metadata.json").read_text())["backend"]["synthetic"] is False
-    assert not (tmp_path / "bf16").exists()
+    assert not (tmp_path / "f16").exists()
 
 
 def test_a_real_run_refuses_to_aggregate_alongside_fabricated_arms(repo, tmp_path):
@@ -444,14 +443,14 @@ def test_a_real_run_refuses_to_aggregate_alongside_fabricated_arms(repo, tmp_pat
     (tmp_path / "q8" / "metadata.json").write_text(
         json.dumps({"backend": {"name": "mock", "synthetic": True}}), encoding="utf-8")
 
-    proc = _run_all(repo, ["ollama", "default", str(tmp_path)])
+    proc = _run_all(repo, ["ollama", "qwen2.5-1.5b", str(tmp_path)])
     assert proc.returncode == 1
     assert "q8  (synthetic)" in proc.stdout
-    assert "invented numbers" in proc.stdout
+    assert "already holds arms of the other kind" in proc.stdout
 
 
 def test_an_unknown_config_set_lists_the_real_ones(repo):
     proc = _run_all(repo, ["ollama", "no-such-model"])
     assert proc.returncode == 1
     assert "no config set named 'no-such-model'" in proc.stdout
-    assert "default" in proc.stdout and "qwen2.5-1.5b" in proc.stdout
+    assert "qwen2.5-1.5b" in proc.stdout

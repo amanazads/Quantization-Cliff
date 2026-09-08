@@ -9,7 +9,6 @@ This reports the whole picture in one pass and prints the exact commands needed
 to close the gaps. It never runs a model and never changes anything.
 
   python scripts/preflight.py --backend ollama
-  python scripts/preflight.py --backend vllm
   python scripts/preflight.py --backend ollama --config-set qwen2.5-1.5b
 
 Exit codes:
@@ -36,10 +35,10 @@ from ps5.config import (  # noqa: E402
 )
 
 REPO = Path(__file__).resolve().parents[1]
-PRECISIONS = ["bf16", "fp8", "q8", "q4"]
+PRECISIONS = ["f16", "fp8", "q8", "q4"]
 
 
-def _available_models(backend: str, host: Optional[str], base_url: Optional[str]
+def _available_models(backend: str, host: Optional[str]
                       ) -> Tuple[Optional[List[str]], Optional[str]]:
     """Return (served model names, error). None for the list means unreachable."""
     import requests
@@ -50,11 +49,6 @@ def _available_models(backend: str, host: Optional[str], base_url: Optional[str]
             resp = requests.get(url, timeout=15)
             resp.raise_for_status()
             return sorted(m.get("name", "") for m in resp.json().get("models", [])), None
-        if backend in ("vllm", "openai_compat"):
-            url = (base_url or "http://127.0.0.1:8000/v1").rstrip("/") + "/models"
-            resp = requests.get(url, timeout=20, headers={"Authorization": "Bearer EMPTY"})
-            resp.raise_for_status()
-            return sorted(m.get("id", "") for m in resp.json().get("data", [])), None
         return [], None  # mock: nothing to check
     except Exception as exc:  # noqa: BLE001 -- any failure means "cannot verify"
         return None, str(exc)
@@ -64,7 +58,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--backend", required=True,
-                        choices=["ollama", "vllm", "openai_compat", "mock"])
+                        choices=["ollama", "mock"])
     parser.add_argument("--host", default=None)
     parser.add_argument("--base-url", default=None)
     parser.add_argument("--config-set", default=DEFAULT_CONFIG_SET,
@@ -78,7 +72,7 @@ def main() -> int:
         print(f"\nCONFIGURATION ERROR\n{'-' * 70}\n{exc}\n", file=sys.stderr)
         return 2
 
-    served, error = _available_models(args.backend, args.host, args.base_url)
+    served, error = _available_models(args.backend, args.host)
 
     print(f"backend: {args.backend}")
     print(f"config set: {args.config_set}  ({config_dir.relative_to(REPO)})")
@@ -86,8 +80,6 @@ def main() -> int:
         print(f"\n  UNREACHABLE: {error}\n")
         if args.backend == "ollama":
             print("  Start it with `ollama serve`, or check that the Ollama app is running.")
-        else:
-            print("  Start your vLLM server first; see README.md section 4.5.")
         return 2
     if args.backend != "mock":
         print(f"models present: {served or '(none)'}\n")
@@ -144,8 +136,8 @@ def main() -> int:
         print("WARNING: fewer than two arms are ready. Degradation and cliff analysis "
               "need at least the reference arm plus one other.\n")
 
-    if "bf16" not in ready and args.backend != "mock":
-        print("WARNING: the REFERENCE arm (bf16) is not ready. Every delta is measured "
+    if "f16" not in ready and args.backend != "mock":
+        print("WARNING: the REFERENCE arm (f16) is not ready. Every delta is measured "
               "against it, so without it no degradation can be computed at all.\n")
 
     return 1 if missing else 0

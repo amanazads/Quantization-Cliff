@@ -19,8 +19,8 @@ from .config import (
 from .backends.base import BackendError
 from .runner import ExperimentRunner
 
-PRECISIONS = ["q4", "q8", "fp8", "bf16"]
-BACKENDS = ["ollama", "vllm", "openai_compat", "mock"]
+PRECISIONS = ["f16", "q4", "q8", "fp8", "bf16"]
+BACKENDS = ["ollama", "mock"]
 
 
 def _repo_root() -> Path:
@@ -66,17 +66,13 @@ def build_parser() -> argparse.ArgumentParser:
         epilog="""\
 examples
 --------
-  # validate the whole pipeline with no GPU and no model (FABRICATED output)
-  python -m ps5.run --precision bf16 --backend mock --suite ps1 ps3
+  # dry-run with mock backend
+  python -m ps5.run --precision f16 --backend mock --suite ps1 ps3
 
-  # a real arm on local Ollama
-  python -m ps5.run --precision q4 --backend ollama --suite ps1 ps3
-
-  # the same arm from the smaller config set that fits in 8 GB
+  # run on local Ollama
+  python -m ps5.run --precision f16 --backend ollama --config-set qwen2.5-1.5b
+  python -m ps5.run --precision q8 --backend ollama --config-set qwen2.5-1.5b
   python -m ps5.run --precision q4 --backend ollama --config-set qwen2.5-1.5b
-
-  # FP8 requires a CUDA GPU with compute capability >= 8.9, served by vLLM
-  python -m ps5.run --precision fp8 --backend vllm --suite ps1 ps3
 """,
     )
     p.add_argument("--precision", required=True, choices=PRECISIONS)
@@ -84,10 +80,9 @@ examples
     p.add_argument("--suite", nargs="+", default=None, choices=["ps1", "ps3"],
                    help="suites to run (default: whatever the config lists)")
     p.add_argument("--config-set", default=DEFAULT_CONFIG_SET,
-                   help="which four-arm experiment to run: 'default' (Qwen3.5-4B, the "
-                        "specification's candidate) or an alternate such as "
-                        "'qwen2.5-1.5b'. Each set writes to its own results root, so "
-                        "two models can never be aggregated into one comparison.")
+                   help="which experiment to run (default: 'qwen2.5-1.5b'). Each "
+                        "set writes to its own results root, so two models can never "
+                        "be aggregated into one comparison.")
     p.add_argument("--config", default=None,
                    help="override the experiment config path (bypasses --config-set)")
     p.add_argument("--results-root", default=None,
@@ -146,7 +141,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     # the destination, and neither is second-guessed.
     if not args.results_root and not args.config:
         suffix = config_set_suffix(args.config_set)
-        if suffix:
+        if suffix and not cfg.results_root.name.endswith(suffix):
             cfg.results_root = cfg.results_root.parent / (cfg.results_root.name + suffix)
 
     if args.host:

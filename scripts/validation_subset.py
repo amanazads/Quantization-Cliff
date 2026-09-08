@@ -234,7 +234,7 @@ def main() -> int:
     sub = parser.add_subparsers(dest="command", required=True)
 
     export = sub.add_parser("export", help="export a blind stratified subset to label")
-    export.add_argument("--results-root", default="results")
+    export.add_argument("--results-root", default="results-qwen2.5-1.5b")
     export.add_argument("--n", type=int, default=80)
     export.add_argument("--seed", type=int, default=20260907)
     export.set_defaults(func=do_export)

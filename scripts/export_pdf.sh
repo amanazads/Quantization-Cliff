@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Render a findings document to PDF and ENFORCE the specification's page cap.
 #
-#   bash scripts/export_pdf.sh reports/FINDINGS-qwen2.5-1.5b.md
-#   bash scripts/export_pdf.sh reports/FINDINGS-qwen2.5-1.5b.md 4
+#   bash scripts/export_pdf.sh reports/FINDINGS.md
+#   bash scripts/export_pdf.sh reports/FINDINGS.md 4
 #
 #   $1 markdown file   $2 max pages (default 4, the specification's cap)
 #

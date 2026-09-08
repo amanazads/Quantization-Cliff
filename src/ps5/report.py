@@ -24,7 +24,7 @@ class SyntheticReportRefused(RuntimeError):
     """Raised when asked to write a findings report from fabricated data."""
 
 
-PRECISION_LABEL = {"bf16": "BF16", "fp8": "FP8", "q8": "Q8", "q4": "Q4"}
+PRECISION_LABEL = {"f16": "F16", "bf16": "BF16", "fp8": "FP8", "q8": "Q8", "q4": "Q4"}
 
 FIGURES = [
     ("01_guardrail_adherence_vs_precision.png", "Guardrail adherence and over-refusal vs precision"),
@@ -47,7 +47,7 @@ def _arm_label(p: Optional[str], arms: Optional[Dict[str, Any]] = None) -> str:
         return str(level)
     fmt = (arm.get("model") or {}).get("quantization_format") or ""
     tag = str((arm.get("model") or {}).get("tag", "")).lower()
-    if "F16" in fmt or "fp16" in tag:
+    if p == "f16" or "F16" in fmt or "fp16" in tag:
         return "F16"
     if p == "bf16":
         return "F16" if ("F16" in fmt or "fp16" in tag) else "BF16"

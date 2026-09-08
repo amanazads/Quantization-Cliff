@@ -3,15 +3,15 @@
 # kept small and the installed versions are recorded in each run's metadata.json.
 
 PyYAML>=6.0,<7          # configuration and the cliff criterion
-requests>=2.31,<3       # HTTP to Ollama / vLLM
+requests>=2.31,<3       # HTTP to Ollama
 matplotlib>=3.7,<4      # figures
 
 # Testing only.
 pytest>=7.4
 
 # NOT required:
-#   - no torch, transformers or vllm: this repository is a CLIENT of a serving
-#     stack, not a serving stack. Model weights are loaded by Ollama or vLLM.
+#   - no torch, transformers or vllm: this repository is a client of Ollama,
+#     not a serving stack. Model weights are loaded by Ollama.
 #   - no numpy: the statistics here (Wilson, Newcombe) are implemented directly
 #     in src/ps5/metrics.py so that the interval arithmetic is auditable in one
 #     file rather than delegated.

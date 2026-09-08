@@ -23,39 +23,9 @@ backends:
       block_size: 32
       mixed_precision_tensors: true
       notes: >-
-        Q4_K_M is NOT uniformly 4-bit. llama.cpp promotes a subset of tensors
-        (attn_v and part of ffn_down) to Q6_K, so the effective bits-per-weight is
-        roughly 4.85 rather than 4.0. Recorded because calling it "4-bit"
-        overstates the compression actually under test. This is also the precision
-        the specification says Track 1 runs at, and the one PS-5 exists to put an
-        asterisk on.
+        Q4_K_M is not uniformly 4-bit; llama.cpp promotes a subset of tensors
+        (attn_v and part of ffn_down) to Q6_K, yielding an effective ~4.85 bits-per-weight.
     deviations: []
-
-  vllm:
-    available: false
-    unavailable_reason: >-
-      No verified off-the-shelf 4-bit (AWQ or GPTQ) checkpoint for
-      Qwen2.5-1.5B-Instruct was confirmed at the time this config was written.
-    substitution_policy: >-
-      Do NOT substitute a different model's AWQ build or the FP8 checkpoint.
-      Produce or verify a 4-bit checkpoint, set model_tag, and flip available to
-      true. Until then this arm is NOT RUN on vLLM. Q4 runs genuinely on Ollama,
-      so the Q4 rung is not lost overall.
-    model_tag: null
-    quantization_format: "AWQ W4A16"
-    quantization_config:
-      method: "AWQ"
-      weight_bits: 4
-      activation_bits: 16
-      group_size: 128
-    deviations:
-      - id: DEV-Q4-VLLM-1
-        severity: material
-        description: >-
-          AWQ W4A16 and GGUF Q4_K_M are different 4-bit algorithms with different
-          calibration and different mixed-precision policies. Q4 measured on vLLM
-          is not interchangeable with Q4 measured on Ollama, and the two must not
-          be pooled.
 
   mock:
     available: true

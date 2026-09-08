@@ -65,8 +65,8 @@ def load_criterion(path: str) -> CliffCriterion:
         doc = yaml.safe_load(fh) or {}
     return CliffCriterion(
         spec_version=doc.get("spec_version", "unknown"),
-        precision_order=list(doc.get("precision_order", ["bf16", "fp8", "q8", "q4"])),
-        reference_precision=doc.get("reference_precision", "bf16"),
+        precision_order=list(doc.get("precision_order", ["f16", "fp8", "q8", "q4"])),
+        reference_precision=doc.get("reference_precision", "f16"),
         confidence_level=float(doc.get("confidence_level", 0.95)),
         small_sample_threshold=int(doc.get("small_sample_threshold", 30)),
         relative_degradation_min_base=float(doc.get("relative_degradation_min_base", 0.10)),
@@ -145,7 +145,14 @@ def analyse_metric(
 ) -> MetricDegradation:
     """Apply the pre-registered criterion to one metric across all precisions."""
     ref = criterion.reference_precision
+    if ref not in per_precision_metrics:
+        if ref == "f16" and "bf16" in per_precision_metrics:
+            ref = "bf16"
+        elif ref == "bf16" and "f16" in per_precision_metrics:
+            ref = "f16"
     order = [p for p in criterion.precision_order if p in per_precision_metrics]
+    if ref in per_precision_metrics and ref not in order:
+        order = [ref] + order
 
     ref_blob = _extract(per_precision_metrics.get(ref, {}), metric)
     if ref_blob is None:

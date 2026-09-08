@@ -32,16 +32,12 @@ from matplotlib.patches import Patch  # noqa: E402
 
 __all__ = ["render_all", "PRECISION_ORDER"]
 
-PRECISION_ORDER = ["bf16", "fp8", "q8", "q4"]
-PRECISION_LABEL = {"bf16": "BF16", "fp8": "FP8", "q8": "Q8", "q4": "Q4"}
+PRECISION_ORDER = ["f16", "fp8", "q8", "q4"]
+PRECISION_LABEL = {"f16": "F16", "bf16": "BF16", "fp8": "FP8", "q8": "Q8", "q4": "Q4"}
 
 
 def _plot_label(p: str, arms: Optional[Dict[str, Any]] = None) -> str:
-    """Return the accurate display label for a precision arm.
-
-    If an arm is substituted with F16 (e.g. DEV-BF16-OLLAMA-F16 or resolved to F16),
-    it is labelled 'F16', never 'BF16'.
-    """
+    """Return the accurate display label for a precision arm."""
     if arms and p in arms:
         arm = arms[p]
         resolved = (arm.get("model") or {}).get("resolved") or {}
@@ -49,12 +45,12 @@ def _plot_label(p: str, arms: Optional[Dict[str, Any]] = None) -> str:
         if q_level:
             return q_level
         deviations = arm.get("deviations") or []
-        if any(d.get("id") == "DEV-BF16-OLLAMA-F16" for d in deviations):
+        if any(d.get("id") in ("DEV-F16-OLLAMA-REF", "DEV-BF16-OLLAMA-F16") for d in deviations):
             return "F16"
         prec = arm.get("precision") or {}
         if prec.get("label"):
             return prec["label"]
-    if p == "bf16" and arms:
+    if p in ("f16", "bf16") and arms:
         for a in arms.values():
             if "fp16" in (a.get("model") or {}).get("tag", "").lower():
                 return "F16"
@@ -419,7 +415,7 @@ def fig_degradation_bars(agg: Dict[str, Any], out_dir: Path, synthetic: bool) ->
                         textcoords="offset points", xytext=(0, 5 if value >= 0 else -5),
                         ha="center", va="bottom" if value >= 0 else "top",
                         fontsize=8, color=INK)
-        ref_prec = agg.get("degradation", {}).get("reference_precision", "bf16")
+        ref_prec = agg.get("degradation", {}).get("reference_precision", "f16")
         ref_label = _plot_label(ref_prec, arms)
         ax.set_title(f"{suite.upper()} · {metric} — degradation vs {ref_label}", loc="left")
         ax.set_ylabel("worse  →  (pp)")

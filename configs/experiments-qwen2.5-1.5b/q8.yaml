@@ -24,33 +24,8 @@ backends:
       mixed_precision_tensors: false
       notes: >-
         Uniform 8-bit INTEGER block quantization with one FP16 scale per 32-weight
-        block, weights only. Genuine for this model -- no substitution.
+        block, weights only.
     deviations: []
-
-  vllm:
-    available: false
-    unavailable_reason: >-
-      No verified off-the-shelf INT8 W8A8 checkpoint exists for
-      Qwen2.5-1.5B-Instruct, and vLLM cannot quantize to INT8 W8A8 at load time
-      the way it can for FP8.
-    substitution_policy: >-
-      Do NOT substitute the FP8 or unquantized checkpoint here. Produce a genuine
-      INT8 W8A8 checkpoint with llm-compressor, set model_tag to it, and flip
-      available to true. Until then this arm is NOT RUN on vLLM. On Ollama the Q8
-      rung runs genuinely, so it is not lost overall.
-    model_tag: null
-    quantization_format: "INT8 W8A8 (compressed-tensors)"
-    quantization_config:
-      method: "llm-compressor INT8"
-      weight_bits: 8
-      activation_bits: 8
-    deviations:
-      - id: DEV-Q8-VLLM-1
-        severity: material
-        description: >-
-          vLLM INT8 W8A8 also quantizes ACTIVATIONS to 8-bit, whereas GGUF Q8_0
-          quantizes weights only and computes in higher precision. These are not
-          the same treatment. Do not pool Q8 across backends.
 
   mock:
     available: true

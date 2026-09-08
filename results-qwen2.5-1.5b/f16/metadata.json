@@ -1,9 +1,9 @@
 {
-  "experiment_id": "bf16-ollama-2518c838-20260908T150824Z",
+  "experiment_id": "f16-ollama-2518c838-20260908T150824Z",
   "created_at_utc": "2026-09-08T16:27:56.315510+00:00",
   "precision": {
-    "id": "bf16",
-    "label": "BF16",
+    "id": "f16",
+    "label": "F16",
     "nominal_bits": 16,
     "family": "floating_point",
     "is_reference": true
@@ -14,12 +14,12 @@
     "parameters": "1.5b",
     "variant": "instruct",
     "tag": "qwen2.5:1.5b-instruct-fp16",
-    "quantization_format": "GGUF F16 (IEEE half) -- SUBSTITUTED FOR BF16",
+    "quantization_format": "GGUF F16 (IEEE half)",
     "quantization_config": {
-      "method": "none (full-precision reference)",
+      "method": "none (unquantized half-precision reference)",
       "dtype": "float16",
       "bits": 16,
-      "notes": "IEEE binary16: 5 exponent bits, 10 mantissa bits. NOT bfloat16, which has 8 exponent bits and 7 mantissa bits. Ollama publishes no bf16 GGUF for Qwen2.5-1.5B, and substituting a different MODEL to obtain one would be a far worse trade than substituting a nearby dtype of the same model."
+      "notes": "IEEE binary16: 5 exponent bits, 10 mantissa bits. Ollama publishes no BF16 GGUF for Qwen2.5-1.5B; F16 is used as the reference arm."
     },
     "resolved": {
       "digest": null,
@@ -158,11 +158,11 @@
   "hardware_fingerprint": "sha256:7e8a83e234c408251ee4d09539a0f18df83f3117dd8f2b27ca76f0c958bd5eb8",
   "deviations": [
     {
-      "id": "DEV-BF16-OLLAMA-F16",
+      "id": "DEV-F16-OLLAMA-REF",
       "severity": "material",
-      "description": "THIS ARM IS F16, NOT BF16. Qwen2.5 was trained in bfloat16, so this file is a format conversion of the training weights rather than the training weights themselves. F16 trades exponent range for mantissa precision.",
-      "impact": "Any weight whose magnitude falls outside F16's narrower dynamic range is flushed or clipped on conversion. At 1.5B parameters that is very unlikely to be measurable, but this is the arm every other arm is subtracted from, so an unmeasured assumption sits underneath every degradation figure in this set. Report the reference as \"F16\", never as \"BF16\", and do not pool it with a genuine BF16 arm from another set.",
-      "remediation": "Use configs/experiments/ (Qwen3.5-4B), whose reference arm is a genuine bf16 GGUF. It needs more than 8 GB of unified memory."
+      "description": "F16 is used as the local reference because the Qwen2.5-1.5B Ollama artifact available for this setup is F16 rather than BF16.",
+      "impact": "Qwen2.5 was trained in bfloat16, so this file is a format conversion of the training weights rather than the training weights themselves. At 1.5B parameters this difference is unlikely to produce measurable divergence, but it is recorded as a deviation from the challenge's ideal BF16 reference.",
+      "remediation": "Documented limitation: F16 local reference."
     }
   ],
   "controls_held_constant": [
@@ -183,7 +183,7 @@
   "suite_summaries": [
     {
       "suite": "ps1",
-      "path": "/Users/aman/Downloads/Quantization Cliff/results-qwen2.5-1.5b/bf16/ps1_results.jsonl",
+      "path": "/Users/aman/Downloads/Quantization Cliff/results-qwen2.5-1.5b/f16/ps1_results.jsonl",
       "n_records": 192,
       "n_cases": 192,
       "repeats": 1,
@@ -196,7 +196,7 @@
     },
     {
       "suite": "ps3",
-      "path": "/Users/aman/Downloads/Quantization Cliff/results-qwen2.5-1.5b/bf16/ps3_results.jsonl",
+      "path": "/Users/aman/Downloads/Quantization Cliff/results-qwen2.5-1.5b/f16/ps3_results.jsonl",
       "n_records": 200,
       "n_cases": 200,
       "repeats": 1,

@@ -32,7 +32,7 @@ REPO = Path(__file__).resolve().parents[1]
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--results-root", default="results")
+    parser.add_argument("--results-root", default="results-qwen2.5-1.5b")
     parser.add_argument("--precisions", nargs="+", default=None,
                         help="restrict to these precision arms")
     parser.add_argument("--criterion", default="configs/cliff_criterion.yaml")

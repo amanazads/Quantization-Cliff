@@ -1,6 +1,6 @@
 # Config set: `qwen2.5-1.5b`
 
-The **runnable** experiment set. `configs/experiments/` is the **intended** one.
+The primary submitted experiment set, evaluating Qwen2.5-1.5B-Instruct locally.
 
 ## Why this set exists
 
