@@ -1,0 +1,198 @@
+{
+  "experiment_id": "bf16-mock-2518c838-20260908T043535Z",
+  "created_at_utc": "2026-09-08T04:35:36.255338+00:00",
+  "precision": {
+    "id": "bf16",
+    "label": "BF16",
+    "nominal_bits": 16,
+    "family": "floating_point",
+    "is_reference": true
+  },
+  "model": {
+    "id": "qwen3.5-4b-base",
+    "family": "qwen3.5",
+    "parameters": "4b",
+    "variant": "base",
+    "tag": "mock:bf16",
+    "quantization_format": "SYNTHETIC -- not a real quantization",
+    "quantization_config": {
+      "method": "none -- fabricated fixture"
+    },
+    "resolved": {}
+  },
+  "backend": {
+    "name": "mock",
+    "synthetic": true,
+    "info": {
+      "backend": "mock",
+      "model_tag": "mock:bf16",
+      "synthetic": true,
+      "WARNING": "FABRICATED OUTPUT -- pipeline validation only, never a result",
+      "precision_id": "bf16",
+      "profile": {
+        "ps1_violation": 0.04,
+        "ps1_benign_refusal": 0.02,
+        "ps3_wrong_arg": 0.04,
+        "ps3_wrong_tool": 0.02,
+        "ps3_malformed": 0.01,
+        "ps3_missed": 0.02,
+        "ps3_spurious": 0.02,
+        "gen_failure": 0.0
+      },
+      "salt": "ps5-mock-v1"
+    }
+  },
+  "generation_config": {
+    "temperature": 0.0,
+    "top_p": 1.0,
+    "top_k": 1,
+    "seed": 20260907,
+    "max_tokens": 512,
+    "stop": [],
+    "transport_retries": 2,
+    "transport_retry_backoff_s": 2.0,
+    "request_timeout_s": 180
+  },
+  "generation_config_hash": "sha256:68b14e8fb303989e6038e7fde76b828bec2228da3cbb0b3ebeea99f4483dcdc2",
+  "concurrency": {
+    "max_parallel": 1
+  },
+  "system_prompt_path": "prompts/collections_agent_v2.md",
+  "system_prompt_version": "2.0.0-spec-6.4",
+  "system_prompt_hash": "sha256:ae927c4fa18d91b7040f539cc2dc6b55be9dbf96114bded6d29da4c37deebc36",
+  "tool_schema_path": "schemas/tools.json",
+  "tool_schema_hash": "sha256:1c3f97bf0b2be804e3fceb6d6d07cb434a7dd31e7f8ade784c4c56f83a906189",
+  "manifest_path": "data/evaluation_manifest.json",
+  "manifest_hash": "sha256:2518c8386729fb3ea22237d03f111901584dca406a0d8a2903c5548b1de165cc",
+  "cliff_criterion_hash": "sha256:208c2e69142064343ea51c021130608f1e77d11e567b40bbec243f61aa5f8260",
+  "guardrail_rules_hash": "sha256:724c1d454a80952b236c38cb8c1df7c2e9264baa06571f6eb15c859600dd118b",
+  "metric_spec_version": "2.0.0-spec-6.4",
+  "scorer_versions": {
+    "ps1": "ps1-scorer/1.0.0",
+    "ps3": "ps3-scorer/2.0.0"
+  },
+  "suites_run": [
+    "ps1",
+    "ps3"
+  ],
+  "case_counts": {
+    "ps1": 192,
+    "ps3": 200
+  },
+  "repeats": 1,
+  "case_limit_applied": null,
+  "environment": {
+    "captured_at_utc": "2026-09-08T04:35:36.223557+00:00",
+    "os": {
+      "system": "Linux",
+      "release": "6.8.0-136-generic",
+      "version": "#136~22.04.1-Ubuntu SMP PREEMPT_DYNAMIC Fri Jul  3 15:42:07 UTC ",
+      "platform": "Linux-6.8.0-136-generic-aarch64-with-glibc2.35"
+    },
+    "python": {
+      "version": "3.10.12",
+      "implementation": "CPython",
+      "executable": "/usr/bin/python3"
+    },
+    "cpu": {
+      "arch": "aarch64",
+      "processor": "aarch64",
+      "logical_cores": 4,
+      "model": null,
+      "physical_cores": null
+    },
+    "memory": {
+      "total_bytes": 4096499712,
+      "total_gb": 3.82
+    },
+    "accelerator": {
+      "kind": null,
+      "name": null,
+      "memory_total_mb": null,
+      "memory_note": null,
+      "driver_version": null,
+      "cuda_version": null,
+      "compute_capability": null,
+      "fp8_native_supported": null
+    },
+    "packages": {
+      "ollama": null,
+      "openai": null,
+      "httpx": null,
+      "requests": "2.34.2",
+      "vllm": null,
+      "torch": null,
+      "transformers": null,
+      "numpy": "2.2.6",
+      "matplotlib": "3.10.9",
+      "pyyaml": "6.0.3",
+      "jsonschema": "3.2.0",
+      "pytest": "9.1.1"
+    },
+    "git": {
+      "commit": null,
+      "branch": null,
+      "is_repo": false,
+      "dirty": null,
+      "dirty_files": []
+    },
+    "hostname": "claude",
+    "hardware_fingerprint": "sha256:83402de9a7e0792ff1425d2bc580b2e5b5adc67b80056b4222713c730d0b0dfd"
+  },
+  "hardware_fingerprint": "sha256:83402de9a7e0792ff1425d2bc580b2e5b5adc67b80056b4222713c730d0b0dfd",
+  "deviations": [
+    {
+      "id": "DEV-BF16-MOCK-1",
+      "severity": "blocking",
+      "description": "Output came from the deterministic mock backend. These numbers are a pipeline-validation fixture, not a measurement of any model, and must never be reported as a PS-5 result."
+    }
+  ],
+  "controls_held_constant": [
+    "system prompt (hash recorded; identical across arms)",
+    "tool schemas (hash recorded; frozen)",
+    "evaluation manifest (hash recorded; identical case set and order)",
+    "decoding parameters (hash recorded; greedy, fixed seed)",
+    "scorer versions and guardrail rule set (hashes recorded)",
+    "case presentation order (manifest order, never shuffled)",
+    "concurrency (serial by default, to avoid batch-dependent numerics)",
+    "context window (num_ctx pinned in the backend)"
+  ],
+  "controls_NOT_held_constant": [
+    "wall-clock time and machine thermal state across arms",
+    "any OS-level background load during the run",
+    "llama.cpp / vLLM kernel selection, which can differ per quantization format by design -- this is inherent to the treatment, not a flaw in the control"
+  ],
+  "suite_summaries": [
+    {
+      "suite": "ps1",
+      "path": "/sessions/rcw-015ty7kbl8nchhm62ajxjpz7/mnt/Quantization Cliff/results_mock/bf16/ps1_results.jsonl",
+      "n_records": 192,
+      "n_cases": 192,
+      "repeats": 1,
+      "elapsed_s": 0.1,
+      "outcome_counts": {
+        "ok": 186,
+        "violation": 5,
+        "benign_refusal": 1
+      },
+      "n_generation_failures": 0
+    },
+    {
+      "suite": "ps3",
+      "path": "/sessions/rcw-015ty7kbl8nchhm62ajxjpz7/mnt/Quantization Cliff/results_mock/bf16/ps3_results.jsonl",
+      "n_records": 200,
+      "n_cases": 200,
+      "repeats": 1,
+      "elapsed_s": 0.11,
+      "outcome_counts": {
+        "pass": 185,
+        "spurious_call": 5,
+        "wrong_arguments": 1,
+        "wrong_tool": 3,
+        "malformed": 3,
+        "missed_call": 3
+      },
+      "n_generation_failures": 0
+    }
+  ]
+}

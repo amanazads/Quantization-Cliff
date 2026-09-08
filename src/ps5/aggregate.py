@@ -1,0 +1,458 @@
+"""Aggregate raw per-case results into comparable, machine-readable metrics.
+
+Two jobs, and the first matters more than the second:
+
+  1. VERIFY that the arms being compared are actually comparable. If the prompt,
+     schemas, manifest, decoding parameters, scorer, model family or hardware
+     differ between arms, the comparison does not measure quantization -- it
+     measures whatever else changed. Such a comparison is refused unless the
+     caller passes --allow-deviation, and the deviation is then carried into the
+     findings report rather than quietly dropped.
+
+  2. Compute the metrics and run the pre-registered cliff criterion.
+
+Nothing here is ever typed by hand into a report: reports/FINDINGS.md is rendered
+from this module's JSON output.
+"""
+
+from __future__ import annotations
+
+import csv
+import json
+from collections import OrderedDict
+from dataclasses import dataclass, field
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Sequence, Tuple
+
+from .cliff import CliffCriterion, detect_cliffs, load_criterion
+from .metrics import compute_ps1_metrics, compute_ps3_metrics
+
+__all__ = [
+    "load_run",
+    "discover_runs",
+    "check_comparability",
+    "aggregate",
+    "write_outputs",
+    "ComparabilityError",
+]
+
+
+class ComparabilityError(RuntimeError):
+    """Raised when arms differ in a way that invalidates the comparison."""
+
+
+#: Fields that MUST match across arms for a comparison to mean "quantization did this".
+CONTROL_FIELDS: List[Tuple[str, str]] = [
+    ("manifest_hash", "the evaluation cases themselves"),
+    ("system_prompt_hash", "the system prompt"),
+    ("tool_schema_hash", "the tool schemas"),
+    ("generation_config_hash", "the decoding parameters"),
+    ("metric_spec_version", "the metric specification"),
+    ("guardrail_rules_hash", "the PS-1 guardrail rule set"),
+    ("hardware_fingerprint", "the hardware"),
+]
+
+#: Differ legitimately between arms (that IS the treatment), so never checked.
+TREATMENT_FIELDS = ["precision", "model.tag", "model.quantization_format", "backend.name"]
+
+
+@dataclass
+class Run:
+    precision: str
+    directory: Path
+    metadata: Dict[str, Any]
+    records: Dict[str, List[Dict[str, Any]]] = field(default_factory=dict)
+
+    @property
+    def synthetic(self) -> bool:
+        return bool(self.metadata.get("backend", {}).get("synthetic", False))
+
+    def control_value(self, field_name: str) -> Any:
+        return self.metadata.get(field_name)
+
+
+def _read_jsonl(path: Path) -> List[Dict[str, Any]]:
+    out: List[Dict[str, Any]] = []
+    for lineno, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            out.append(json.loads(line))
+        except json.JSONDecodeError as exc:
+            raise ComparabilityError(f"{path}:{lineno}: invalid JSON: {exc}") from exc
+    return out
+
+
+def load_run(directory: Path) -> Run:
+    meta_path = directory / "metadata.json"
+    if not meta_path.exists():
+        raise ComparabilityError(
+            f"{directory} has no metadata.json. A results directory without metadata "
+            "cannot be verified as comparable and is therefore not usable."
+        )
+    metadata = json.loads(meta_path.read_text(encoding="utf-8"))
+    run = Run(
+        precision=metadata.get("precision", {}).get("id", directory.name),
+        directory=directory,
+        metadata=metadata,
+    )
+    for suite_file in sorted(directory.glob("*_results.jsonl")):
+        suite_id = suite_file.name.replace("_results.jsonl", "")
+        run.records[suite_id] = _read_jsonl(suite_file)
+    return run
+
+
+def discover_runs(results_root: Path, precisions: Optional[Sequence[str]] = None) -> Dict[str, Run]:
+    runs: "OrderedDict[str, Run]" = OrderedDict()
+    for child in sorted(results_root.iterdir() if results_root.exists() else []):
+        if not child.is_dir() or child.name == "aggregate":
+            continue
+        if precisions and child.name not in precisions:
+            continue
+        if not (child / "metadata.json").exists():
+            continue
+        run = load_run(child)
+        runs[run.precision] = run
+    return runs
+
+
+def check_comparability(runs: Dict[str, Run], allow_deviation: bool = False) -> Dict[str, Any]:
+    """Verify that the arms differ ONLY in precision."""
+    report: Dict[str, Any] = {
+        "checked_fields": [f for f, _ in CONTROL_FIELDS],
+        "arms": sorted(runs),
+        "divergences": [],
+        "warnings": [],
+        "comparable": True,
+        "allow_deviation": allow_deviation,
+    }
+    if len(runs) < 2:
+        report["warnings"].append(
+            "Fewer than two arms are present; nothing to compare. Metrics are still "
+            "computed, but no degradation or cliff analysis is meaningful."
+        )
+        return report
+
+    for field_name, human in CONTROL_FIELDS:
+        values = {p: r.control_value(field_name) for p, r in runs.items()}
+        distinct = {v for v in values.values() if v is not None}
+        if len(distinct) > 1:
+            report["comparable"] = False
+            report["divergences"].append({
+                "field": field_name,
+                "describes": human,
+                "values": values,
+                "consequence": (
+                    f"Arms differ in {human}. Any measured difference between them "
+                    "cannot be attributed to quantization alone."
+                ),
+            })
+        missing = [p for p, v in values.items() if v is None]
+        if missing:
+            report["warnings"].append(
+                f"Field '{field_name}' is missing for arms {missing}; it could not be verified."
+            )
+
+    # Model family must match; the tag legitimately differs (it IS the treatment).
+    families = {p: r.metadata.get("model", {}).get("family") for p, r in runs.items()}
+    if len({f for f in families.values() if f}) > 1:
+        report["comparable"] = False
+        report["divergences"].append({
+            "field": "model.family",
+            "describes": "the model family",
+            "values": families,
+            "consequence": (
+                "Arms use DIFFERENT MODEL FAMILIES. This measures model choice, not "
+                "quantization, and must not be presented as a quantization result."
+            ),
+        })
+
+    # Mixing backends is not automatically fatal, but Q4-on-AWQ and Q4-on-GGUF are
+    # different algorithms, so pooling them would be.
+    backends = {p: r.metadata.get("backend", {}).get("name") for p, r in runs.items()}
+    if len({b for b in backends.values() if b}) > 1:
+        report["warnings"].append(
+            f"Arms were served by different backends: {backends}. Quantization "
+            "algorithms differ between serving stacks (e.g. GGUF Q4_K_M vs AWQ "
+            "W4A16), so cross-backend deltas confound the algorithm with the "
+            "bit-width. Treat this comparison as indicative only."
+        )
+
+    synthetic = [p for p, r in runs.items() if r.synthetic]
+    if synthetic:
+        report["warnings"].append(
+            f"Arms {synthetic} were produced by the SYNTHETIC mock backend. Their "
+            "numbers are FABRICATED pipeline-validation fixtures and are not "
+            "measurements of any model."
+        )
+
+    if not report["comparable"] and not allow_deviation:
+        lines = [
+            "COMPARABILITY CHECK FAILED. These arms differ in more than precision, so "
+            "comparing them would not measure quantization.\n"
+        ]
+        for d in report["divergences"]:
+            lines.append(f"  * {d['field']} ({d['describes']}):")
+            for arm, value in d["values"].items():
+                lines.append(f"      {arm:>6}: {value}")
+            lines.append(f"      -> {d['consequence']}\n")
+        lines.append(
+            "Re-run the affected arms with matching configuration, or pass "
+            "--allow-deviation to proceed. Proceeding records every divergence in the "
+            "aggregate output and reproduces it in the findings report's Limitations "
+            "section -- it does not make the comparison valid."
+        )
+        raise ComparabilityError("\n".join(lines))
+
+    return report
+
+
+def aggregate(
+    runs: Dict[str, Run],
+    criterion: CliffCriterion,
+    allow_deviation: bool = False,
+) -> Dict[str, Any]:
+    comparability = check_comparability(runs, allow_deviation=allow_deviation)
+
+    per_suite: Dict[str, Dict[str, Dict[str, Any]]] = {}
+    suite_ids = sorted({s for r in runs.values() for s in r.records})
+
+    for suite_id in suite_ids:
+        per_precision: Dict[str, Dict[str, Any]] = {}
+        for precision, run in runs.items():
+            records = run.records.get(suite_id)
+            if not records:
+                continue
+            compute = compute_ps1_metrics if suite_id == "ps1" else compute_ps3_metrics
+            per_precision[precision] = compute(
+                records,
+                confidence=criterion.confidence_level,
+                small_sample_threshold=criterion.small_sample_threshold,
+            )
+        if per_precision:
+            per_suite[suite_id] = per_precision
+
+    degradation = detect_cliffs(per_suite, criterion)
+
+    all_deviations = []
+    for precision, run in runs.items():
+        for dev in run.metadata.get("deviations", []) or []:
+            all_deviations.append({"precision": precision, **dev})
+
+    return {
+        "generated_at_utc": datetime.now(timezone.utc).isoformat(),
+        "aggregate_version": "1.0.0",
+        "metric_spec_version": criterion.spec_version,
+        # Sticky: if ANY arm is synthetic the whole aggregate is marked synthetic,
+        # because a mixed comparison is not a real measurement either.
+        "synthetic": any(r.synthetic for r in runs.values()),
+        "arms": {
+            precision: {
+                "experiment_id": run.metadata.get("experiment_id"),
+                "model": run.metadata.get("model", {}),
+                "backend": run.metadata.get("backend", {}).get("name"),
+                "synthetic": run.synthetic,
+                "precision": run.metadata.get("precision", {}),
+                "hardware_fingerprint": run.metadata.get("hardware_fingerprint"),
+                "environment_summary": _environment_summary(run.metadata),
+                "generation_config": run.metadata.get("generation_config", {}),
+                "case_counts": run.metadata.get("case_counts", {}),
+                "repeats": run.metadata.get("repeats"),
+                "deviations": run.metadata.get("deviations", []),
+            }
+            for precision, run in runs.items()
+        },
+        "missing_arms": [p for p in criterion.precision_order if p not in runs],
+        "comparability": comparability,
+        "deviations": all_deviations,
+        "metrics": per_suite,
+        "degradation": degradation,
+    }
+
+
+def _environment_summary(metadata: Dict[str, Any]) -> Dict[str, Any]:
+    env = metadata.get("environment", {}) or {}
+    acc = env.get("accelerator", {}) or {}
+    return {
+        "os": (env.get("os", {}) or {}).get("platform"),
+        "cpu": (env.get("cpu", {}) or {}).get("model"),
+        "ram_gb": (env.get("memory", {}) or {}).get("total_gb"),
+        "accelerator": acc.get("name"),
+        "accelerator_kind": acc.get("kind"),
+        "cuda_version": acc.get("cuda_version"),
+        "compute_capability": acc.get("compute_capability"),
+        "python": (env.get("python", {}) or {}).get("version"),
+        "git_commit": (env.get("git", {}) or {}).get("commit"),
+        "git_dirty": (env.get("git", {}) or {}).get("dirty"),
+    }
+
+
+# --------------------------------------------------------------------------- #
+# Flat outputs
+# --------------------------------------------------------------------------- #
+
+_FLAT_PS1 = ["violation_rate", "compliance_rate", "benign_refusal_rate", "generation_failure_rate"]
+_FLAT_PS3 = ["task_success_rate", "structured_output_validity", "correct_tool_rate",
+             "argument_accuracy", "malformed_argument_rate", "spurious_call_rate",
+             "missed_call_rate", "wrong_tool_rate", "generation_failure_rate"]
+
+
+def _flat_rows(agg: Dict[str, Any], criterion: CliffCriterion) -> List[Dict[str, Any]]:
+    """One tidy row per (suite, metric, precision). The CSV every table derives from."""
+    rows: List[Dict[str, Any]] = []
+    ref = criterion.reference_precision
+
+    for suite_id, per_precision in (agg.get("metrics") or {}).items():
+        names = _FLAT_PS1 if suite_id == "ps1" else _FLAT_PS3
+        for metric in names:
+            ref_blob = (per_precision.get(ref) or {}).get(metric) or {}
+            ref_value = ref_blob.get("value")
+            for precision in criterion.precision_order:
+                blob = (per_precision.get(precision) or {}).get(metric)
+                if not blob:
+                    continue
+                value = blob.get("value")
+                delta = (value - ref_value) if (value is not None and ref_value is not None
+                                                and precision != ref) else None
+                rows.append({
+                    "suite": suite_id,
+                    "metric": metric,
+                    "precision": precision,
+                    "value": value,
+                    "numerator": blob.get("numerator"),
+                    "denominator": blob.get("denominator"),
+                    "ci_low": blob.get("ci_low"),
+                    "ci_high": blob.get("ci_high"),
+                    "small_sample": blob.get("small_sample"),
+                    "delta_vs_reference": delta,
+                    "reference_precision": ref,
+                    "synthetic": agg.get("synthetic"),
+                })
+    return rows
+
+
+def write_outputs(agg: Dict[str, Any], criterion: CliffCriterion, out_dir: Path) -> Dict[str, Path]:
+    out_dir.mkdir(parents=True, exist_ok=True)
+    written: Dict[str, Path] = {}
+
+    json_path = out_dir / "aggregate.json"
+    json_path.write_text(json.dumps(agg, indent=2, ensure_ascii=False, default=str), encoding="utf-8")
+    written["json"] = json_path
+
+    rows = _flat_rows(agg, criterion)
+    csv_path = out_dir / "summary.csv"
+    if rows:
+        with csv_path.open("w", encoding="utf-8", newline="") as fh:
+            writer = csv.DictWriter(fh, fieldnames=list(rows[0]))
+            writer.writeheader()
+            writer.writerows(rows)
+        written["csv"] = csv_path
+
+    md_path = out_dir / "summary.md"
+    md_path.write_text(render_markdown_summary(agg, criterion), encoding="utf-8")
+    written["markdown"] = md_path
+    return written
+
+
+def _fmt(value: Optional[float], as_pct: bool = True) -> str:
+    if value is None:
+        return "n/a"
+    return f"{value * 100:.1f}%" if as_pct else f"{value:.4f}"
+
+
+def render_markdown_summary(agg: Dict[str, Any], criterion: CliffCriterion) -> str:
+    lines: List[str] = ["# PS-5 aggregate summary", ""]
+
+    if agg.get("synthetic"):
+        lines += [
+            "> ## SYNTHETIC DATA -- NOT A RESULT",
+            "> At least one arm came from the mock backend. Every number below is a "
+            "FABRICATED pipeline-validation fixture and must not be cited as a "
+            "measurement of any model.", "",
+        ]
+
+    lines += [
+        f"- generated: `{agg.get('generated_at_utc')}`",
+        f"- metric spec: `{agg.get('metric_spec_version')}`",
+        f"- reference precision: `{criterion.reference_precision}`",
+        f"- arms present: {', '.join(f'`{a}`' for a in sorted(agg.get('arms', {}))) or 'none'}",
+    ]
+    if agg.get("missing_arms"):
+        lines.append(
+            f"- **arms NOT run: {', '.join(f'`{a}`' for a in agg['missing_arms'])}** "
+            "(see Limitations -- these are gaps, not null results)"
+        )
+    lines.append("")
+
+    comparability = agg.get("comparability", {})
+    lines += ["## Comparability", ""]
+    if comparability.get("comparable"):
+        lines.append("All control fields matched across arms: "
+                     + ", ".join(f"`{f}`" for f in comparability.get("checked_fields", [])) + ".")
+    else:
+        lines.append("**Control fields DIVERGED across arms. This comparison is compromised.**")
+        lines.append("")
+        for d in comparability.get("divergences", []):
+            lines.append(f"- `{d['field']}` ({d['describes']}): {d['consequence']}")
+    for warning in comparability.get("warnings", []):
+        lines.append(f"- WARNING: {warning}")
+    lines.append("")
+
+    for suite_id, per_precision in (agg.get("metrics") or {}).items():
+        names = _FLAT_PS1 if suite_id == "ps1" else _FLAT_PS3
+        order = [p for p in criterion.precision_order if p in per_precision]
+        lines += [f"## {suite_id.upper()} metrics", ""]
+        lines.append("| metric | " + " | ".join(order) + " |")
+        lines.append("|---|" + "---|" * len(order))
+        for metric in names:
+            cells = []
+            for precision in order:
+                blob = (per_precision.get(precision) or {}).get(metric) or {}
+                value = blob.get("value")
+                lo, hi = blob.get("ci_low"), blob.get("ci_high")
+                cell = _fmt(value)
+                if value is not None and lo is not None:
+                    cell += f"<br><sub>{_fmt(lo)}–{_fmt(hi)}, n={blob.get('denominator')}</sub>"
+                if blob.get("small_sample"):
+                    cell += "<br><sub>⚠ small n</sub>"
+                cells.append(cell)
+            lines.append(f"| `{metric}` | " + " | ".join(cells) + " |")
+        lines.append("")
+
+    lines += ["## Degradation and cliff detection", ""]
+    degradation = agg.get("degradation", {})
+    lines.append(
+        f"Thresholds are {'CHALLENGE-DEFINED' if degradation.get('challenge_defined_thresholds') else 'an experimental convention of this repository, pre-registered before any result was observed'}."
+    )
+    lines.append("")
+    for suite_id, analyses in (degradation.get("analyses") or {}).items():
+        lines += [f"### {suite_id.upper()}", ""]
+        for analysis in analyses:
+            lines.append(f"**`{analysis['metric']}`** (threshold {analysis['threshold']:.1%}, "
+                         f"pattern: `{analysis['pattern']}`)")
+            lines.append("")
+            lines.append(analysis["statement"])
+            lines.append("")
+            for note in analysis.get("notes", []):
+                lines.append(f"- {note}")
+            if analysis.get("notes"):
+                lines.append("")
+
+    mvp = degradation.get("minimum_viable_precision", {})
+    lines += [
+        "## Minimum viable precision", "",
+        f"**{mvp.get('precision') or 'none of the tested precisions'}**", "",
+        mvp.get("rationale", ""), "",
+        f"_{mvp.get('caveat', '')}_", "",
+    ]
+
+    if agg.get("deviations"):
+        lines += ["## Recorded deviations", ""]
+        for dev in agg["deviations"]:
+            lines.append(f"- **[{dev.get('severity')}] {dev.get('id')}** ({dev.get('precision')}): "
+                         f"{(dev.get('description') or '').strip()}")
+        lines.append("")
+
+    return "\n".join(lines) + "\n"

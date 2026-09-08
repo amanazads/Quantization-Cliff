@@ -1,0 +1,2392 @@
+{
+  "manifest_version": "1.0.0",
+  "created_at_utc": "2026-09-07T17:02:39.089706+00:00",
+  "purpose": "Pins the exact evaluation cases consumed by EVERY precision arm. All four arms must consume this manifest unchanged; the aggregator refuses to compare runs whose manifest hashes differ.",
+  "data_policy": "All cases are SYNTHETIC and were authored for this repository. No real borrower data is present. Names, amounts, dates and account identifiers are invented.",
+  "notes": [
+    "Suites authored for this repository from the challenge brief; they are NOT the official Predixion PS-1/PS-3 suites.",
+    "All content is synthetic. No real borrower data is present."
+  ],
+  "suites": {
+    "ps1": {
+      "path": "data/ps1_guardrail_suite.jsonl",
+      "file_hash": "sha256:3f206c61c6d7335ae7b31d65342193bc20c3bef4b7b31a38780f7805a2f0dd67",
+      "n_cases": 192,
+      "counts_by_language": {
+        "en": 48,
+        "hi": 48,
+        "hinglish": 48,
+        "mr": 48
+      },
+      "cases": [
+        {
+          "case_id": "PS1-001",
+          "language": "en",
+          "content_hash": "sha256:11eb3f3cfe180a92897dd2cd7ab926db347bdfad133cdecc96367d6e53835abc",
+          "target_violation": "V1"
+        },
+        {
+          "case_id": "PS1-002",
+          "language": "hi",
+          "content_hash": "sha256:bb054f90108bd1d704b3f2908181bbd0e24e1f131d901a6d6f9e0b31df2eb132",
+          "target_violation": "V1"
+        },
+        {
+          "case_id": "PS1-003",
+          "language": "hinglish",
+          "content_hash": "sha256:4a15baba2ae5fd18e005d929cc6a840c720c928afe5ee86a69681f67aaadf650",
+          "target_violation": "V1"
+        },
+        {
+          "case_id": "PS1-004",
+          "language": "mr",
+          "content_hash": "sha256:488d25a26cbf4df06344c3fe00b0464b999d29fa98925dc52137f6743c1ac721",
+          "target_violation": "V1"
+        },
+        {
+          "case_id": "PS1-005",
+          "language": "en",
+          "content_hash": "sha256:f902b2da3b0237868ae65e3874244b78fc4bc78d37e14974fd6b06b3ef1a0352",
+          "target_violation": "V1"
+        },
+        {
+          "case_id": "PS1-006",
+          "language": "hi",
+          "content_hash": "sha256:eae2fd6f8f538aed7d51781a4d5e3c52c27d6668f1a088ae3e01ad703a4adf49",
+          "target_violation": "V1"
+        },
+        {
+          "case_id": "PS1-007",
+          "language": "hinglish",
+          "content_hash": "sha256:c413a7bf0b6fd3e92899614a62ceb0dc316a9457717071502a8864b500895bfa",
+          "target_violation": "V1"
+        },
+        {
+          "case_id": "PS1-008",
+          "language": "mr",
+          "content_hash": "sha256:2fcbbabc20a91c540a26a207ce3d7549031fa385da1af224ab2b99f1baa3df0f",
+          "target_violation": "V1"
+        },
+        {
+          "case_id": "PS1-009",
+          "language": "en",
+          "content_hash": "sha256:b5d711928f2e9ffdd97a88cd44f14afac77d2fb52ea05d5de0ce5cb0e474d87d",
+          "target_violation": "V1"
+        },
+        {
+          "case_id": "PS1-010",
+          "language": "hi",
+          "content_hash": "sha256:113645b79d79a5af7600f6764c6c71a81c34e4614cd9f03db2f6e2195415a1bc",
+          "target_violation": "V1"
+        },
+        {
+          "case_id": "PS1-011",
+          "language": "hinglish",
+          "content_hash": "sha256:8a48f613352cde125780bdb30aef4d8bba275778928deed56b1e2a9a5c9b784b",
+          "target_violation": "V1"
+        },
+        {
+          "case_id": "PS1-012",
+          "language": "mr",
+          "content_hash": "sha256:cda7eaecd46ae2064684c42e57faac7ec37cd848813ab82c3355190d32a384cd",
+          "target_violation": "V1"
+        },
+        {
+          "case_id": "PS1-013",
+          "language": "en",
+          "content_hash": "sha256:9b0a21a6a7e86cc882803f20338ce82fb44cff98cc49da916f72f4073cca4f38",
+          "target_violation": "V1"
+        },
+        {
+          "case_id": "PS1-014",
+          "language": "hi",
+          "content_hash": "sha256:2098df54fd40a1275c24a80f30e7335dbc678ef75b3c6770a10c52f2a099c147",
+          "target_violation": "V1"
+        },
+        {
+          "case_id": "PS1-015",
+          "language": "hinglish",
+          "content_hash": "sha256:44de0e9c1c79cee0eae4a73e0932bfad512960cc6bf4e78415bc5d0b81f3fe9c",
+          "target_violation": "V1"
+        },
+        {
+          "case_id": "PS1-016",
+          "language": "mr",
+          "content_hash": "sha256:70f227e581c8c86079590740136ca895f4769ef431c3e3b21881d688f00317f4",
+          "target_violation": "V1"
+        },
+        {
+          "case_id": "PS1-017",
+          "language": "en",
+          "content_hash": "sha256:43265538ed2cd0eefa401a443fc2b5ce7305c36e5449834a1399560dc44fae01",
+          "target_violation": "V1"
+        },
+        {
+          "case_id": "PS1-018",
+          "language": "hi",
+          "content_hash": "sha256:153d6d8eb8f416c88b00ad8b46ae9cf68ad539826e5cabafcb499f20ac3be2bc",
+          "target_violation": "V1"
+        },
+        {
+          "case_id": "PS1-019",
+          "language": "hinglish",
+          "content_hash": "sha256:19841f760d2de9d535801b7d813301f6c6cd9b9be163f5d684907ca6c2cdf404",
+          "target_violation": "V1"
+        },
+        {
+          "case_id": "PS1-020",
+          "language": "mr",
+          "content_hash": "sha256:bdf0e35ed25cd0ab4259af31c384cc126de614545080136a22ba031205b22439",
+          "target_violation": "V1"
+        },
+        {
+          "case_id": "PS1-021",
+          "language": "en",
+          "content_hash": "sha256:c58397a4f142e20daa82146b5dda05b96d67d3386bb2f0e0334d72d325264804",
+          "target_violation": "V2"
+        },
+        {
+          "case_id": "PS1-022",
+          "language": "hi",
+          "content_hash": "sha256:c77c4591dd323915b1c19e841c66dcde09a7e60e422b8629df3c80cf74e9ac62",
+          "target_violation": "V2"
+        },
+        {
+          "case_id": "PS1-023",
+          "language": "hinglish",
+          "content_hash": "sha256:1beffd14e7dff538fdc03e65afc327010fc4b95ae3246cb3b60b637ca1db4730",
+          "target_violation": "V2"
+        },
+        {
+          "case_id": "PS1-024",
+          "language": "mr",
+          "content_hash": "sha256:b5106decc89af2bdca3f1db8243a73128bad15dbb398902c8780918502c08ef3",
+          "target_violation": "V2"
+        },
+        {
+          "case_id": "PS1-025",
+          "language": "en",
+          "content_hash": "sha256:4f185901fa05c43a016bad88599a457c732240bf2f8f20bbbf5d4cce7313314c",
+          "target_violation": "V2"
+        },
+        {
+          "case_id": "PS1-026",
+          "language": "hi",
+          "content_hash": "sha256:67caf7ea0b1177c6e9e0249cc15e84fe81c223815562f73c6a0c3527b599c26e",
+          "target_violation": "V2"
+        },
+        {
+          "case_id": "PS1-027",
+          "language": "hinglish",
+          "content_hash": "sha256:289a98d92e1aa4544b93ddabd2a72eae5ecbe97b92056171b5b7006c57e53d3c",
+          "target_violation": "V2"
+        },
+        {
+          "case_id": "PS1-028",
+          "language": "mr",
+          "content_hash": "sha256:2d912c1141effb38180c48b6af6b5132e755e699ee78932ebe71b1d1ca08bf74",
+          "target_violation": "V2"
+        },
+        {
+          "case_id": "PS1-029",
+          "language": "en",
+          "content_hash": "sha256:bdb1c36fdf476df3837fa82f2d3a79376af3c40c3020a73345bc458b22b32409",
+          "target_violation": "V2"
+        },
+        {
+          "case_id": "PS1-030",
+          "language": "hi",
+          "content_hash": "sha256:c23b7600700037e4620cb1634fbbc78951e465b13ca9f47b0ab238141b33e008",
+          "target_violation": "V2"
+        },
+        {
+          "case_id": "PS1-031",
+          "language": "hinglish",
+          "content_hash": "sha256:c32562fe492daedd28c7d20d32ab17c410485d875a918efe4d859da244938088",
+          "target_violation": "V2"
+        },
+        {
+          "case_id": "PS1-032",
+          "language": "mr",
+          "content_hash": "sha256:98c9e9aba4ab33bfd44afa112d83824a21e7fb2c83fbc20e163754024282dd1c",
+          "target_violation": "V2"
+        },
+        {
+          "case_id": "PS1-033",
+          "language": "en",
+          "content_hash": "sha256:5903d0045070896e91694e3c750cbaf680427b7d7781013900eb9fd2460b137d",
+          "target_violation": "V2"
+        },
+        {
+          "case_id": "PS1-034",
+          "language": "hi",
+          "content_hash": "sha256:5d4802246ca888e70fc2fa73ea1d283818e0b6934cbac023eb50a16d9f4b75a3",
+          "target_violation": "V2"
+        },
+        {
+          "case_id": "PS1-035",
+          "language": "hinglish",
+          "content_hash": "sha256:8ac1bb3b651be186875a0ee195f3e0adbbcf2c4770347b1d8becb51456b771f1",
+          "target_violation": "V2"
+        },
+        {
+          "case_id": "PS1-036",
+          "language": "mr",
+          "content_hash": "sha256:a32cfd3395974ae7009fdd1b5006ff4f3833615c958cdd1860af7033c935931d",
+          "target_violation": "V2"
+        },
+        {
+          "case_id": "PS1-037",
+          "language": "en",
+          "content_hash": "sha256:df36cfe88aa432f999dc87da1027589d8cfdbb460a481fad4babaa54c511d3f3",
+          "target_violation": "V2"
+        },
+        {
+          "case_id": "PS1-038",
+          "language": "hi",
+          "content_hash": "sha256:c2333be2b4a4536c232e40497ea96f1a2f0fed6e75af51924277081236a3987d",
+          "target_violation": "V2"
+        },
+        {
+          "case_id": "PS1-039",
+          "language": "hinglish",
+          "content_hash": "sha256:c65df689a8ce19723b2e112a25c933c286b3d2c89a8b2c62a2fd5731039cbb00",
+          "target_violation": "V2"
+        },
+        {
+          "case_id": "PS1-040",
+          "language": "mr",
+          "content_hash": "sha256:999d78a01470a26f8364b53fedccf8d5ea11014e208dc948ffb722cb5f51abef",
+          "target_violation": "V2"
+        },
+        {
+          "case_id": "PS1-041",
+          "language": "en",
+          "content_hash": "sha256:bac169cedeb3a680f1416063187ffc6477e44ca1f909a0938d29e2b9391c27e3",
+          "target_violation": "V3"
+        },
+        {
+          "case_id": "PS1-042",
+          "language": "hi",
+          "content_hash": "sha256:f8a9e3baa580e5f34427f3d455716df1c4efe5267e76ca177e5749eb1505182c",
+          "target_violation": "V3"
+        },
+        {
+          "case_id": "PS1-043",
+          "language": "hinglish",
+          "content_hash": "sha256:3d7e201d2d8e524dd2479a3d877d37c4b1793d988f83df2beca0e08bd5416dee",
+          "target_violation": "V3"
+        },
+        {
+          "case_id": "PS1-044",
+          "language": "mr",
+          "content_hash": "sha256:a9905b19eb4313bc25ec05df934c6061ddc5a8a83fed412c5efe9fda451aad67",
+          "target_violation": "V3"
+        },
+        {
+          "case_id": "PS1-045",
+          "language": "en",
+          "content_hash": "sha256:d11a6c84988c9e09237945d960849f43ad3d20135892ff49103ad598a01df59d",
+          "target_violation": "V3"
+        },
+        {
+          "case_id": "PS1-046",
+          "language": "hi",
+          "content_hash": "sha256:812a488ceafb953ecbaf4f5b63ca5ac5d164d2c057ff7401bacdc7c057121ac4",
+          "target_violation": "V3"
+        },
+        {
+          "case_id": "PS1-047",
+          "language": "hinglish",
+          "content_hash": "sha256:ec2ad371732adc06b24d1bf71a16ff9f52946c2b3000ecdfccca17d13286e99d",
+          "target_violation": "V3"
+        },
+        {
+          "case_id": "PS1-048",
+          "language": "mr",
+          "content_hash": "sha256:3adea5611c03dcbf83b969b958611d28aba5d298412f0acfe1c0a34d08448841",
+          "target_violation": "V3"
+        },
+        {
+          "case_id": "PS1-049",
+          "language": "en",
+          "content_hash": "sha256:47ab1cebfd564c39b8501bfd9203316ac7c5b6d5c86af32713baa0095388a706",
+          "target_violation": "V3"
+        },
+        {
+          "case_id": "PS1-050",
+          "language": "hi",
+          "content_hash": "sha256:a8aeb3c23ea16e2704518615b7a91161f0021528b271f47e526c6cae5778a2b3",
+          "target_violation": "V3"
+        },
+        {
+          "case_id": "PS1-051",
+          "language": "hinglish",
+          "content_hash": "sha256:c14c1f25620841a98b83625fb5f8b45f13d10b372ce588884581f39428e40e5c",
+          "target_violation": "V3"
+        },
+        {
+          "case_id": "PS1-052",
+          "language": "mr",
+          "content_hash": "sha256:798537dae45e875394eec1c57661d515561e4a59df09cc4583769275ead713d7",
+          "target_violation": "V3"
+        },
+        {
+          "case_id": "PS1-053",
+          "language": "en",
+          "content_hash": "sha256:f0ac95fa240a7a19d83001d654adef2c1287226b35ce56943c754ca195d34c02",
+          "target_violation": "V3"
+        },
+        {
+          "case_id": "PS1-054",
+          "language": "hi",
+          "content_hash": "sha256:1154411484d2e9a59294e27320e1813803d7d47e1b45922862724a1f38270425",
+          "target_violation": "V3"
+        },
+        {
+          "case_id": "PS1-055",
+          "language": "hinglish",
+          "content_hash": "sha256:3ae32a1aa1db7cc7c589427e17df72e8387650b6d4ef5f70782a7f7be95a852e",
+          "target_violation": "V3"
+        },
+        {
+          "case_id": "PS1-056",
+          "language": "mr",
+          "content_hash": "sha256:745806173b1e93df19e3fac7f076a299789bceee75271160bde15b833e92e3b3",
+          "target_violation": "V3"
+        },
+        {
+          "case_id": "PS1-057",
+          "language": "en",
+          "content_hash": "sha256:7ccf14b11b1441ac81752aa44b4e76289ba117cc6862a6d6196fdc79077eaa64",
+          "target_violation": "V3"
+        },
+        {
+          "case_id": "PS1-058",
+          "language": "hi",
+          "content_hash": "sha256:4e37df3aecfd0d8f489c224688a358837c3e56b2f6fe9696d3dfd343e27612b6",
+          "target_violation": "V3"
+        },
+        {
+          "case_id": "PS1-059",
+          "language": "hinglish",
+          "content_hash": "sha256:06b58f16a7c1cea6f5e31e184a49db4b457a18da5ce6273b7c301d2dd9e941fd",
+          "target_violation": "V3"
+        },
+        {
+          "case_id": "PS1-060",
+          "language": "mr",
+          "content_hash": "sha256:1c76860b287a7166e3de912e3dbf2609f11186ff7a4487277eea86fc3f274b7f",
+          "target_violation": "V3"
+        },
+        {
+          "case_id": "PS1-061",
+          "language": "en",
+          "content_hash": "sha256:cbf4d96b45baeda64a5782e6f603793c91b52bf4b0f86e945f8fba386a175051",
+          "target_violation": "V4"
+        },
+        {
+          "case_id": "PS1-062",
+          "language": "hi",
+          "content_hash": "sha256:cacc775a3c54ed605663f874be483322925584e3a123cc82c5ceeaa6dba9d8ac",
+          "target_violation": "V4"
+        },
+        {
+          "case_id": "PS1-063",
+          "language": "hinglish",
+          "content_hash": "sha256:78e30e4059cd59586563d73ee70fa8428f808cb4e3e3a41c977f8250a496d006",
+          "target_violation": "V4"
+        },
+        {
+          "case_id": "PS1-064",
+          "language": "mr",
+          "content_hash": "sha256:c9fe8c0e7b023589c996f64377fc773470481ad12f07aae4b1e51e78c5464911",
+          "target_violation": "V4"
+        },
+        {
+          "case_id": "PS1-065",
+          "language": "en",
+          "content_hash": "sha256:bbaef802a00c5bd9c874bb4b94c270867acb02bba57d4a469d49575719b39e18",
+          "target_violation": "V4"
+        },
+        {
+          "case_id": "PS1-066",
+          "language": "hi",
+          "content_hash": "sha256:f7ee978f31eb1b6b8f4f52c6e5544ce9a8ff8305c2f2ef56c5d17be59ebfc1b2",
+          "target_violation": "V4"
+        },
+        {
+          "case_id": "PS1-067",
+          "language": "hinglish",
+          "content_hash": "sha256:f1dd0dc623756ab3baac733c24a083d6d628810802f89e69ea1786922c4d3823",
+          "target_violation": "V4"
+        },
+        {
+          "case_id": "PS1-068",
+          "language": "mr",
+          "content_hash": "sha256:b7909d7bac224a39ab8a3e925c1598d0eaa2249570ed8e4d268d12b72b4a94bd",
+          "target_violation": "V4"
+        },
+        {
+          "case_id": "PS1-069",
+          "language": "en",
+          "content_hash": "sha256:2db7ee2d66a890cdb72c220bc43d6c9ea918280146e044482a96c4eaf71dcd8c",
+          "target_violation": "V4"
+        },
+        {
+          "case_id": "PS1-070",
+          "language": "hi",
+          "content_hash": "sha256:9531656819bfb34ff894f023affc034d015f4081df3c1fafe4cac3ccf5809342",
+          "target_violation": "V4"
+        },
+        {
+          "case_id": "PS1-071",
+          "language": "hinglish",
+          "content_hash": "sha256:79e542eff78adb1c8a6d8484c0488201b167df021eb46dc9ec7e9f8aff2183b8",
+          "target_violation": "V4"
+        },
+        {
+          "case_id": "PS1-072",
+          "language": "mr",
+          "content_hash": "sha256:4fc3c7d1843dacf7682ee7d979d620308ab61076e63a3f0c558e71821fc27279",
+          "target_violation": "V4"
+        },
+        {
+          "case_id": "PS1-073",
+          "language": "en",
+          "content_hash": "sha256:9e376700bce008942c20655d7b6ae4ceb8cc473d71fc76a3e51582e35266e12c",
+          "target_violation": "V4"
+        },
+        {
+          "case_id": "PS1-074",
+          "language": "hi",
+          "content_hash": "sha256:9dbfcfb3e39066f387821c8f2a1680f8b4b4029bf917351cf09d52bb4d6a759e",
+          "target_violation": "V4"
+        },
+        {
+          "case_id": "PS1-075",
+          "language": "hinglish",
+          "content_hash": "sha256:fff6892b4f42d3954db2677ab9af74ccf1209c72b39e6d202ec11461c29cfdba",
+          "target_violation": "V4"
+        },
+        {
+          "case_id": "PS1-076",
+          "language": "mr",
+          "content_hash": "sha256:e18b1545f179b8579916cf6ad0fc61538b9cbbeaf047b550aa051e6db3319479",
+          "target_violation": "V4"
+        },
+        {
+          "case_id": "PS1-077",
+          "language": "en",
+          "content_hash": "sha256:bbc92842637911b7fceae4a4e94c8c0a82253c813a1ff0724fc4dc4a38ab34bc",
+          "target_violation": "V4"
+        },
+        {
+          "case_id": "PS1-078",
+          "language": "hi",
+          "content_hash": "sha256:0917f531cc96aec52f599a54fe6f5f21304c8e97f78356ebee754a38d78dc7fe",
+          "target_violation": "V4"
+        },
+        {
+          "case_id": "PS1-079",
+          "language": "hinglish",
+          "content_hash": "sha256:b8ab9cdfd5ccc04f25d51f20ae79330e5c2773e8c6217ed3023313f8e52fbf7a",
+          "target_violation": "V4"
+        },
+        {
+          "case_id": "PS1-080",
+          "language": "mr",
+          "content_hash": "sha256:9e0de37754549ae230c8dd75650bf48a98b54a259c286d9c4de8bf7c21a0dce4",
+          "target_violation": "V4"
+        },
+        {
+          "case_id": "PS1-081",
+          "language": "en",
+          "content_hash": "sha256:cba24d8754a4415c6a53fa310b23792afccb462c95724f9e721abaa2a44905aa",
+          "target_violation": "V5"
+        },
+        {
+          "case_id": "PS1-082",
+          "language": "hi",
+          "content_hash": "sha256:706799d96b3d46c919467571e546b51d0359865732e12cfd731979efe7e224ff",
+          "target_violation": "V5"
+        },
+        {
+          "case_id": "PS1-083",
+          "language": "hinglish",
+          "content_hash": "sha256:771f9dcc2ae35a74cc141cb026a412d7059da106c4c4bb35f2e6610a36d59aec",
+          "target_violation": "V5"
+        },
+        {
+          "case_id": "PS1-084",
+          "language": "mr",
+          "content_hash": "sha256:9044a977c3b4874ecf28b84d376ccf360bad0d398d56c2a3af58aeb213cee164",
+          "target_violation": "V5"
+        },
+        {
+          "case_id": "PS1-085",
+          "language": "en",
+          "content_hash": "sha256:35d084d14b8fab688670a46d0e666a04c7308e02e4462f1b113badce1eaf01e6",
+          "target_violation": "V5"
+        },
+        {
+          "case_id": "PS1-086",
+          "language": "hi",
+          "content_hash": "sha256:7951d623e8e19ba2509366bd39ccd7e6c52db4c1e892c6432cac9337df2d758f",
+          "target_violation": "V5"
+        },
+        {
+          "case_id": "PS1-087",
+          "language": "hinglish",
+          "content_hash": "sha256:729b65a0ac35a9b3449e698c2644345854fe191f89ae583e970033d0d5e5d558",
+          "target_violation": "V5"
+        },
+        {
+          "case_id": "PS1-088",
+          "language": "mr",
+          "content_hash": "sha256:56d4b96f50e6dbd0450a56fb104c4b2b4b7a07c3f78360ae6ecd324c94f845e7",
+          "target_violation": "V5"
+        },
+        {
+          "case_id": "PS1-089",
+          "language": "en",
+          "content_hash": "sha256:7abf804b23213f36402133c29ff46f53d1c9b9d747606e2f8655e75dcc845f5b",
+          "target_violation": "V5"
+        },
+        {
+          "case_id": "PS1-090",
+          "language": "hi",
+          "content_hash": "sha256:c5bb2824e0e57149f1e7fa0af3d553d14a3f6788e15f703197cccee35bcc24a2",
+          "target_violation": "V5"
+        },
+        {
+          "case_id": "PS1-091",
+          "language": "hinglish",
+          "content_hash": "sha256:7c3c1c043ec5e6b61d566c24e884c292ba3e1bc6da2cc516e93f3f1e084726ea",
+          "target_violation": "V5"
+        },
+        {
+          "case_id": "PS1-092",
+          "language": "mr",
+          "content_hash": "sha256:7b2af9fac87f8f404eb875b71cc6fa4048fdbc50e2d40b67547a330dae1707cc",
+          "target_violation": "V5"
+        },
+        {
+          "case_id": "PS1-093",
+          "language": "en",
+          "content_hash": "sha256:0413122b4549bc12995168285abc065e1015921449355593f33964987d7ba53a",
+          "target_violation": "V5"
+        },
+        {
+          "case_id": "PS1-094",
+          "language": "hi",
+          "content_hash": "sha256:c64d2eb4957d535cab87127c72b59f55684dd4567de40fe19fa99dab9a2a602b",
+          "target_violation": "V5"
+        },
+        {
+          "case_id": "PS1-095",
+          "language": "hinglish",
+          "content_hash": "sha256:2853d41d5b297575eaeb5f3034a029e26bf64e5cb5d42c755142e8f34363e6d4",
+          "target_violation": "V5"
+        },
+        {
+          "case_id": "PS1-096",
+          "language": "mr",
+          "content_hash": "sha256:55f093c61e30c86f35acfd1316f57b39d3091064cc664f115dd42a421101f644",
+          "target_violation": "V5"
+        },
+        {
+          "case_id": "PS1-097",
+          "language": "en",
+          "content_hash": "sha256:22226393468c21109b71ee0353d6d4390ee7068f0fcffef02aa261535761b3cb",
+          "target_violation": "V5"
+        },
+        {
+          "case_id": "PS1-098",
+          "language": "hi",
+          "content_hash": "sha256:46d6b04f63a4fdd381c8a189bd30798c9c421525daa1ef8cd7ffa17aec63a337",
+          "target_violation": "V5"
+        },
+        {
+          "case_id": "PS1-099",
+          "language": "hinglish",
+          "content_hash": "sha256:20bdb4439267a7bf37a585815938e444c3b220f54cbd1c8af2193843578f9b0c",
+          "target_violation": "V5"
+        },
+        {
+          "case_id": "PS1-100",
+          "language": "mr",
+          "content_hash": "sha256:e80263987ade76fcf78ba536c10780f69b38e50ae7d280563a27fbc3a7b35419",
+          "target_violation": "V5"
+        },
+        {
+          "case_id": "PS1-101",
+          "language": "en",
+          "content_hash": "sha256:ea40a7af280afbf76d0b8961d227723b910058a153a0eed3c421ed4dc95e7140",
+          "target_violation": "V6"
+        },
+        {
+          "case_id": "PS1-102",
+          "language": "hi",
+          "content_hash": "sha256:fe0f8e10e4fb16b8dfaaf63f0566ea804eafaa04d0f6858af152588f5082c00a",
+          "target_violation": "V6"
+        },
+        {
+          "case_id": "PS1-103",
+          "language": "hinglish",
+          "content_hash": "sha256:1b6043c4ba65f7651f53c03c13e9822fbe56f1ce2a9a7e77c08623a738930ad5",
+          "target_violation": "V6"
+        },
+        {
+          "case_id": "PS1-104",
+          "language": "mr",
+          "content_hash": "sha256:af9ece971f5fda9b709620f792c18db29ca3c894be5c83a694e52c7f908d6179",
+          "target_violation": "V6"
+        },
+        {
+          "case_id": "PS1-105",
+          "language": "en",
+          "content_hash": "sha256:b332ec5eb3e93b46afb73a137acd12c4d34b8328b2ba9454dced4fc184d0306c",
+          "target_violation": "V6"
+        },
+        {
+          "case_id": "PS1-106",
+          "language": "hi",
+          "content_hash": "sha256:b1d474171aceb240db938732795e81b735b61d239991216b57ccd9d127518404",
+          "target_violation": "V6"
+        },
+        {
+          "case_id": "PS1-107",
+          "language": "hinglish",
+          "content_hash": "sha256:aa605669404e99bed511959dd2d0cb727fde72a30c07453fd9910f6d2c182863",
+          "target_violation": "V6"
+        },
+        {
+          "case_id": "PS1-108",
+          "language": "mr",
+          "content_hash": "sha256:59333e16536d58f5f9ebc4b15f5e63d109d070ee97b801b8d87526a3a90ef907",
+          "target_violation": "V6"
+        },
+        {
+          "case_id": "PS1-109",
+          "language": "en",
+          "content_hash": "sha256:ab50406a8ae2c63efdd8a0d5240fd00bd3ba3ffef8d2a1f7a10cd177a51b1733",
+          "target_violation": "V6"
+        },
+        {
+          "case_id": "PS1-110",
+          "language": "hi",
+          "content_hash": "sha256:dd3942aac587c4f7e85659115d68ab318a5506bce28213845c656dfff8d2f3c8",
+          "target_violation": "V6"
+        },
+        {
+          "case_id": "PS1-111",
+          "language": "hinglish",
+          "content_hash": "sha256:7ea2b113e919e83c2a829eacc7bd909c1d7315365ce8fb7772a7dedec096a35d",
+          "target_violation": "V6"
+        },
+        {
+          "case_id": "PS1-112",
+          "language": "mr",
+          "content_hash": "sha256:9a494b547cb8b76d0f8255c1567de5d343e815e00678cfa7470e399171746776",
+          "target_violation": "V6"
+        },
+        {
+          "case_id": "PS1-113",
+          "language": "en",
+          "content_hash": "sha256:836eceded23661ef9c53d55d6e9698d28ce99c8322d25c14c032d204c3258fe4",
+          "target_violation": "V6"
+        },
+        {
+          "case_id": "PS1-114",
+          "language": "hi",
+          "content_hash": "sha256:6d1b5f5a1709c22832ed7d2539437bae2bf36c230aede77dabe4355ac78bf6ee",
+          "target_violation": "V6"
+        },
+        {
+          "case_id": "PS1-115",
+          "language": "hinglish",
+          "content_hash": "sha256:9d0d4de415e2c2a8276b9215b0583ef5979a7a129308f68d2c4ab0f262fd6739",
+          "target_violation": "V6"
+        },
+        {
+          "case_id": "PS1-116",
+          "language": "mr",
+          "content_hash": "sha256:e3ef8e5fe420f19e0836e7d9a8cfc241122a8d05e4c2ae2916a8eaf4e4102365",
+          "target_violation": "V6"
+        },
+        {
+          "case_id": "PS1-117",
+          "language": "en",
+          "content_hash": "sha256:33453a6be047d4cb235cedeab7c729e2b9b2336794951b31a8f09244153da61d",
+          "target_violation": "V6"
+        },
+        {
+          "case_id": "PS1-118",
+          "language": "hi",
+          "content_hash": "sha256:3d366a2c3d1f98c5cb8618eac317dd1039a33f7cbc2719f6c8c2dc31fd31daec",
+          "target_violation": "V6"
+        },
+        {
+          "case_id": "PS1-119",
+          "language": "hinglish",
+          "content_hash": "sha256:1aff138c86be3a48eec7b23134dab9991d252849ba539c4d613c9a5d005ff7ea",
+          "target_violation": "V6"
+        },
+        {
+          "case_id": "PS1-120",
+          "language": "mr",
+          "content_hash": "sha256:2dbd07ff70081f61ae78053465d0c11b80ba4b39b45e1a8840db7ff8e2b22a10",
+          "target_violation": "V6"
+        },
+        {
+          "case_id": "PS1-121",
+          "language": "en",
+          "content_hash": "sha256:abfd43f208ef1782c8b1550a6831e6d1913506b2a53eca9328ae7e57013e657c",
+          "target_violation": "V7"
+        },
+        {
+          "case_id": "PS1-122",
+          "language": "hi",
+          "content_hash": "sha256:746f94593b94b2ddb71b76ff14fe71d9b3f9d7784c9dca2cbe8a34327a39c611",
+          "target_violation": "V7"
+        },
+        {
+          "case_id": "PS1-123",
+          "language": "hinglish",
+          "content_hash": "sha256:712e9b280ba58796ac8e0ce62c1de22ad68f98113e5ced80a4972a64a413b448",
+          "target_violation": "V7"
+        },
+        {
+          "case_id": "PS1-124",
+          "language": "mr",
+          "content_hash": "sha256:ec263d6d4a62e12ef8d7cc2c59e01f16a7dd542a3acca07df68a3b04ce471ed1",
+          "target_violation": "V7"
+        },
+        {
+          "case_id": "PS1-125",
+          "language": "en",
+          "content_hash": "sha256:945b0019cbeac4eeb7746c0cd1208ac69456bd92e526f17e42436268ab3d62ac",
+          "target_violation": "V7"
+        },
+        {
+          "case_id": "PS1-126",
+          "language": "hi",
+          "content_hash": "sha256:efbfafa34648a58f6ee5be5aa1443c5be04661a820aa43201932284e76827766",
+          "target_violation": "V7"
+        },
+        {
+          "case_id": "PS1-127",
+          "language": "hinglish",
+          "content_hash": "sha256:abe745ce2777b587563a4c65460b18ec63477701993e3106aa5fc0983854b1b0",
+          "target_violation": "V7"
+        },
+        {
+          "case_id": "PS1-128",
+          "language": "mr",
+          "content_hash": "sha256:8023b5e49b1980aabcef1be142d99ceedf9290eb6a7efd7cff400d2dbea4f55c",
+          "target_violation": "V7"
+        },
+        {
+          "case_id": "PS1-129",
+          "language": "en",
+          "content_hash": "sha256:328c0045ebc550fef2d3a0ba092fd168c9341b58be47be2869e39fe63deae7d2",
+          "target_violation": "V7"
+        },
+        {
+          "case_id": "PS1-130",
+          "language": "hi",
+          "content_hash": "sha256:b9b4174169c903702263a893ef9de9cf10b2c0b601cf20683acd265a320e477e",
+          "target_violation": "V7"
+        },
+        {
+          "case_id": "PS1-131",
+          "language": "hinglish",
+          "content_hash": "sha256:5c00f1e47128c780903a7c81e87544a31e8419ec97a1ae93e92c25c3f9993a08",
+          "target_violation": "V7"
+        },
+        {
+          "case_id": "PS1-132",
+          "language": "mr",
+          "content_hash": "sha256:46dd4d9446d1ab2b25d4560ce5fe1b09f1436a2275fde911f5ab64df7f6f6fe6",
+          "target_violation": "V7"
+        },
+        {
+          "case_id": "PS1-133",
+          "language": "en",
+          "content_hash": "sha256:675b5790c794efccf3f5fa3f1cb9de95680e2deee890d65a8d96babfcbcacfe3",
+          "target_violation": "V7"
+        },
+        {
+          "case_id": "PS1-134",
+          "language": "hi",
+          "content_hash": "sha256:367083e422eafa8c9fa3c0002aebc6937aca684163d6c4650b2bf9e0e539a25b",
+          "target_violation": "V7"
+        },
+        {
+          "case_id": "PS1-135",
+          "language": "hinglish",
+          "content_hash": "sha256:4af602ebc17f827740a77a283d3169fdeee4dbea9134bea28812747716795c21",
+          "target_violation": "V7"
+        },
+        {
+          "case_id": "PS1-136",
+          "language": "mr",
+          "content_hash": "sha256:0d74a569844a983d36df1759980adf8cd7c7134eb664149ac3b6eff6315c40b1",
+          "target_violation": "V7"
+        },
+        {
+          "case_id": "PS1-137",
+          "language": "en",
+          "content_hash": "sha256:735b524f98733fe674d83c78446786edd21ba04e25820762a4b3e73b062a5b3c",
+          "target_violation": "V7"
+        },
+        {
+          "case_id": "PS1-138",
+          "language": "hi",
+          "content_hash": "sha256:5c9b71dc42bc2cab920c8f7e4ba74454c75670ba0f0a9a8e532a45c4e413580e",
+          "target_violation": "V7"
+        },
+        {
+          "case_id": "PS1-139",
+          "language": "hinglish",
+          "content_hash": "sha256:a608df68568d9601e3297471db07be11bc281fd5f256a3f55424daec3b13e099",
+          "target_violation": "V7"
+        },
+        {
+          "case_id": "PS1-140",
+          "language": "mr",
+          "content_hash": "sha256:033725165dbc8abc4e68fc9e1ffe0e7112b81904b3c039b24ddce57199fca737",
+          "target_violation": "V7"
+        },
+        {
+          "case_id": "PS1-141",
+          "language": "en",
+          "content_hash": "sha256:12d8ad4d23b6707455f5498cac1a0444eb081f0b0ac70ef6bea4cf38a8ecb858",
+          "target_violation": "V8"
+        },
+        {
+          "case_id": "PS1-142",
+          "language": "hi",
+          "content_hash": "sha256:ffab776bf97c53abbdbf12ec42dfae45cf2ce2b4b2ad9cabdd152a0683f48f7d",
+          "target_violation": "V8"
+        },
+        {
+          "case_id": "PS1-143",
+          "language": "hinglish",
+          "content_hash": "sha256:728a11b48fb188a301afa679d3d0274da87146106d11c64a23a9b704bfebcaf3",
+          "target_violation": "V8"
+        },
+        {
+          "case_id": "PS1-144",
+          "language": "mr",
+          "content_hash": "sha256:008b777d6db77faea4ff13afa74813b71efea19955786d0a5aa552f3f3ece819",
+          "target_violation": "V8"
+        },
+        {
+          "case_id": "PS1-145",
+          "language": "en",
+          "content_hash": "sha256:a6645ca235f5818d1cea92d6568c2743297d8bb5839e6e35b2df1739cf513167",
+          "target_violation": "V8"
+        },
+        {
+          "case_id": "PS1-146",
+          "language": "hi",
+          "content_hash": "sha256:9c4bff09a64e9c8e12156cc2ee1a32a04ae3112f945c2448502421e28fb8cc0f",
+          "target_violation": "V8"
+        },
+        {
+          "case_id": "PS1-147",
+          "language": "hinglish",
+          "content_hash": "sha256:f1433a586a3f16716e4f2b8a10282c785e785ed279f8ba70add8521915c14d22",
+          "target_violation": "V8"
+        },
+        {
+          "case_id": "PS1-148",
+          "language": "mr",
+          "content_hash": "sha256:852d2d4785cb29ee18256173b14d2f2fc16ea8f67f52eeed5a5355bcd5734229",
+          "target_violation": "V8"
+        },
+        {
+          "case_id": "PS1-149",
+          "language": "en",
+          "content_hash": "sha256:25f0897e6859400e1ba69761b854ad7dcf8404f4fe52bde99908f622c64120dd",
+          "target_violation": "V8"
+        },
+        {
+          "case_id": "PS1-150",
+          "language": "hi",
+          "content_hash": "sha256:75dffc2359fa720236ae384fe534655c444abb2d6ed0919eaf9dac697db54e1d",
+          "target_violation": "V8"
+        },
+        {
+          "case_id": "PS1-151",
+          "language": "hinglish",
+          "content_hash": "sha256:e63705ba957724cdaa3ff9488b34cf9b2e2f2c616a34cef6c184a9f9ee554eaf",
+          "target_violation": "V8"
+        },
+        {
+          "case_id": "PS1-152",
+          "language": "mr",
+          "content_hash": "sha256:a766921d9d5b3ddda487407985b29751d4c89ef2aa7e3120f02c4b22c9c1a5e3",
+          "target_violation": "V8"
+        },
+        {
+          "case_id": "PS1-153",
+          "language": "en",
+          "content_hash": "sha256:87810366d71839325eadf4c186996947943508ad07418577a890c9ab67a99bc7",
+          "target_violation": "V8"
+        },
+        {
+          "case_id": "PS1-154",
+          "language": "hi",
+          "content_hash": "sha256:cfb924e50329d3bd913be896bd4570b9934a5073af5977216d619b51ffbb964a",
+          "target_violation": "V8"
+        },
+        {
+          "case_id": "PS1-155",
+          "language": "hinglish",
+          "content_hash": "sha256:f4fd9ffe9137a6bd66b6511d89ad49253298171ba08e15e4c39cea1dc9586f5f",
+          "target_violation": "V8"
+        },
+        {
+          "case_id": "PS1-156",
+          "language": "mr",
+          "content_hash": "sha256:44d8eb55b44933c80e119f803ed1eb4cba012b9b07e07633667bf0f4025a0a6b",
+          "target_violation": "V8"
+        },
+        {
+          "case_id": "PS1-157",
+          "language": "en",
+          "content_hash": "sha256:c263e665652125435fb4bb7e5ee2c4a88546eb3808d5eb139bc35a7b2f6b7cdd",
+          "target_violation": "V8"
+        },
+        {
+          "case_id": "PS1-158",
+          "language": "hi",
+          "content_hash": "sha256:f8bdf085dbbe7e2046459e8d6a61abe75e510b6ffb26bd4cd972db5e4847106b",
+          "target_violation": "V8"
+        },
+        {
+          "case_id": "PS1-159",
+          "language": "hinglish",
+          "content_hash": "sha256:1cf4d55698817a9a505956c23c0f0d4fa91baa5e9362a1d181262f9bbd89d013",
+          "target_violation": "V8"
+        },
+        {
+          "case_id": "PS1-160",
+          "language": "mr",
+          "content_hash": "sha256:2f3aab630c2e649c7a717a03945312654686a76abddef045862a3f3e4aa4418d",
+          "target_violation": "V8"
+        },
+        {
+          "case_id": "PS1-161",
+          "language": "en",
+          "content_hash": "sha256:943e5af309a03348a50c9afa78290ab254ebf6807e1efbabdabf21a6e986b4e1",
+          "target_violation": null
+        },
+        {
+          "case_id": "PS1-162",
+          "language": "hi",
+          "content_hash": "sha256:42f09191dc87e562bc5082b63b7cb23a48dc038aa383443784d377c33eebf4d0",
+          "target_violation": null
+        },
+        {
+          "case_id": "PS1-163",
+          "language": "hinglish",
+          "content_hash": "sha256:b7f205dd33fe1107767617ec2805d2754a9f0d6b5a2cfdcdf4b51a4db3bf7a6a",
+          "target_violation": null
+        },
+        {
+          "case_id": "PS1-164",
+          "language": "mr",
+          "content_hash": "sha256:84d16cfd05735a4a8328826c36e25d02f1a8412bba5832d9ed2bbd6ddf5696d9",
+          "target_violation": null
+        },
+        {
+          "case_id": "PS1-165",
+          "language": "en",
+          "content_hash": "sha256:9a58cc08c5fff6f0e6f6ece7def16046d1721dfabd3a56c8d6f8cbda61470b7b",
+          "target_violation": null
+        },
+        {
+          "case_id": "PS1-166",
+          "language": "hi",
+          "content_hash": "sha256:5e30bd35c95f10ba9aea7c43afc7075aece02cab35d7a32dbefa78812c90bee6",
+          "target_violation": null
+        },
+        {
+          "case_id": "PS1-167",
+          "language": "hinglish",
+          "content_hash": "sha256:ce3df0d8e681ce2837cf6413a4ac517c28da93b34811f7e321f83f8c8cc9c4f5",
+          "target_violation": null
+        },
+        {
+          "case_id": "PS1-168",
+          "language": "mr",
+          "content_hash": "sha256:8589592822c772890b54245eafc1cbafd88e4fb3f5c9edb2c175dcb39fd69e58",
+          "target_violation": null
+        },
+        {
+          "case_id": "PS1-169",
+          "language": "en",
+          "content_hash": "sha256:46557562a5a17f91c567d72cce5e43a348af9b13926b05105ad37556315b6df6",
+          "target_violation": null
+        },
+        {
+          "case_id": "PS1-170",
+          "language": "hi",
+          "content_hash": "sha256:aa306a3386439a0dc5964c6f3fe99c1f268554b49dc5ce5cc8b26a30e23eda81",
+          "target_violation": null
+        },
+        {
+          "case_id": "PS1-171",
+          "language": "hinglish",
+          "content_hash": "sha256:6ddf5ed3161b2a9c567b0300d65f34fbf87a3f5dbfd8c59b43e031fbf6c8d926",
+          "target_violation": null
+        },
+        {
+          "case_id": "PS1-172",
+          "language": "mr",
+          "content_hash": "sha256:cfb5b2f1986dcbd47f5afa5e62233ee9298aa0169c31a3cdc5f4e144d0ddce21",
+          "target_violation": null
+        },
+        {
+          "case_id": "PS1-173",
+          "language": "en",
+          "content_hash": "sha256:2d4aa0bc9c26afc7512b090724be9d0e712af4f508e8c21d31d8e145b60f1c91",
+          "target_violation": null
+        },
+        {
+          "case_id": "PS1-174",
+          "language": "hi",
+          "content_hash": "sha256:7d4e06ae02974c5fe73b883b1a223cff95f88dab7428249fef89be3ee05aafa3",
+          "target_violation": null
+        },
+        {
+          "case_id": "PS1-175",
+          "language": "hinglish",
+          "content_hash": "sha256:9edf462e691004971e25e1767ff64442d996972eb43968f92225355943a7fbd3",
+          "target_violation": null
+        },
+        {
+          "case_id": "PS1-176",
+          "language": "mr",
+          "content_hash": "sha256:9425d90ecf539d3fae85c2332e551e2570ead02659c1b2437aef84517f9f7ac8",
+          "target_violation": null
+        },
+        {
+          "case_id": "PS1-177",
+          "language": "en",
+          "content_hash": "sha256:5dc3cdcb7dfcaebc982000a47bb89cbf003d59f07e7c510afc477824ddad9503",
+          "target_violation": null
+        },
+        {
+          "case_id": "PS1-178",
+          "language": "hi",
+          "content_hash": "sha256:878bcbb0ec2dc7af28b36840fa5bc7f352c5f20f489d796f1a9046a56e5fc2eb",
+          "target_violation": null
+        },
+        {
+          "case_id": "PS1-179",
+          "language": "hinglish",
+          "content_hash": "sha256:3f7557057c308e0f958d8d3f0b10ad7b4a5082b14eabd165fe62b0f689c300a2",
+          "target_violation": null
+        },
+        {
+          "case_id": "PS1-180",
+          "language": "mr",
+          "content_hash": "sha256:76e71b795b3d59d8ead4e3be37f3035b99e0b52cecb85a808ad0c16525b2d41e",
+          "target_violation": null
+        },
+        {
+          "case_id": "PS1-181",
+          "language": "en",
+          "content_hash": "sha256:7885784357e28f3e5ff6e54004b66fd858885389e587b17f60c21c8931975072",
+          "target_violation": null
+        },
+        {
+          "case_id": "PS1-182",
+          "language": "hi",
+          "content_hash": "sha256:01b18f331aa3f98fec51a03feece6753efc4df1959da1479aadd74ff10420130",
+          "target_violation": null
+        },
+        {
+          "case_id": "PS1-183",
+          "language": "hinglish",
+          "content_hash": "sha256:fda0b9851c4b413678515c5dccbcfd272d99fdc6c930d9880da8331ab896e57d",
+          "target_violation": null
+        },
+        {
+          "case_id": "PS1-184",
+          "language": "mr",
+          "content_hash": "sha256:1c983d7e9ff544d1a0a3f3a5c35f00881471c0a5b656e9f8f25a0a885c2e01e4",
+          "target_violation": null
+        },
+        {
+          "case_id": "PS1-185",
+          "language": "en",
+          "content_hash": "sha256:bd85431f74a30759206b9cf98ee3891e2b15c367fa855dcecbd1fd4cdb3d692d",
+          "target_violation": null
+        },
+        {
+          "case_id": "PS1-186",
+          "language": "hi",
+          "content_hash": "sha256:313b47f692e058f9b04a5236539f8ee263811ff464be491474835d63c0aedd95",
+          "target_violation": null
+        },
+        {
+          "case_id": "PS1-187",
+          "language": "hinglish",
+          "content_hash": "sha256:2b2facae0720b942c75cf0db629f68e51b67e770c9e83afe69ef126e36765269",
+          "target_violation": null
+        },
+        {
+          "case_id": "PS1-188",
+          "language": "mr",
+          "content_hash": "sha256:0fe5d8cad6fcb15c14bc28236dbce5aa456aa47e02cf5f2e3fbb5daa13bf3d11",
+          "target_violation": null
+        },
+        {
+          "case_id": "PS1-189",
+          "language": "en",
+          "content_hash": "sha256:d10ba59f1f3e7e3b50f18c4d1494b859004868a5228f80d4c259887d51e2551d",
+          "target_violation": null
+        },
+        {
+          "case_id": "PS1-190",
+          "language": "hi",
+          "content_hash": "sha256:09341d1c23e42d114c8a5247ee39d63f59fd3d9eaddd7f0432ff158201a429a8",
+          "target_violation": null
+        },
+        {
+          "case_id": "PS1-191",
+          "language": "hinglish",
+          "content_hash": "sha256:53afeb2a26fb8693c080ca3b30a9bf1d467a4a3fbac9a264469a54691c352375",
+          "target_violation": null
+        },
+        {
+          "case_id": "PS1-192",
+          "language": "mr",
+          "content_hash": "sha256:f2424d42a89c517b2eda65853cafef4760a787e927842fe34671199968d1f5c5",
+          "target_violation": null
+        }
+      ]
+    },
+    "ps3": {
+      "path": "data/ps3_toolcall_suite.jsonl",
+      "file_hash": "sha256:fc4ddbefdd72bb6e61e4c312fa24bc43c5220de606d0551241b439cd916bc382",
+      "n_cases": 200,
+      "counts_by_language": {
+        "en": 50,
+        "hi": 50,
+        "hinglish": 50,
+        "mr": 50
+      },
+      "cases": [
+        {
+          "case_id": "PS3-001",
+          "language": "en",
+          "content_hash": "sha256:ccb872a86859770058b927548127f5cd2a059e16594f8abf6e181939635244f5",
+          "expected_tool": "capture_ptp"
+        },
+        {
+          "case_id": "PS3-002",
+          "language": "hi",
+          "content_hash": "sha256:ab06eff23c4cffd5dec052f74bb76f21c9046c669ca707f9077e01033f999f86",
+          "expected_tool": "capture_ptp"
+        },
+        {
+          "case_id": "PS3-003",
+          "language": "hinglish",
+          "content_hash": "sha256:4f1151b72d82a656989f2c3e692306a4acadd7f19ff7ccec3c130243521799ce",
+          "expected_tool": "capture_ptp"
+        },
+        {
+          "case_id": "PS3-004",
+          "language": "mr",
+          "content_hash": "sha256:db60237a3c47c993e2887d880680523b7a3a81b7c6b813ebb313e9811f2614bb",
+          "expected_tool": "capture_ptp"
+        },
+        {
+          "case_id": "PS3-005",
+          "language": "en",
+          "content_hash": "sha256:6f6c79c6ab485d94342bd15825cdde22c7e8433c549ec625624e1548186e4740",
+          "expected_tool": "capture_ptp"
+        },
+        {
+          "case_id": "PS3-006",
+          "language": "hi",
+          "content_hash": "sha256:2506f89de20348ff64f15a3579e281f92a4ae7c32a8a8f0957cea04df798e9ec",
+          "expected_tool": "capture_ptp"
+        },
+        {
+          "case_id": "PS3-007",
+          "language": "hinglish",
+          "content_hash": "sha256:b8e783bd384d777d82b89af36e2104ae490d8db79d44b8378bad5c64c4b615bc",
+          "expected_tool": "capture_ptp"
+        },
+        {
+          "case_id": "PS3-008",
+          "language": "mr",
+          "content_hash": "sha256:83fa1633d01707dc4c63854ba0009fd8cf169fe141bb4d2b74ebda57da564092",
+          "expected_tool": "capture_ptp"
+        },
+        {
+          "case_id": "PS3-009",
+          "language": "en",
+          "content_hash": "sha256:bb7b20bae226a2586708afa8d8a1dcb1e20516f3fb857a8385fa1ed6a54914cd",
+          "expected_tool": "capture_ptp"
+        },
+        {
+          "case_id": "PS3-010",
+          "language": "hi",
+          "content_hash": "sha256:cfb641eafdb68c5794b96b50e1791a78b7a055ec68420bf5e9a8242e81fda2f8",
+          "expected_tool": "capture_ptp"
+        },
+        {
+          "case_id": "PS3-011",
+          "language": "hinglish",
+          "content_hash": "sha256:40a0997378b3fcd5949f19138c259591de0c398ea1cbe3395634c11e7d2072a9",
+          "expected_tool": "capture_ptp"
+        },
+        {
+          "case_id": "PS3-012",
+          "language": "mr",
+          "content_hash": "sha256:f0cf11d83487f39f8f0d06cd31f73189f9fc64f9bdf05130b16aff4103de3ab6",
+          "expected_tool": "capture_ptp"
+        },
+        {
+          "case_id": "PS3-013",
+          "language": "en",
+          "content_hash": "sha256:fa0f14da688330dfb763edb6df6d6bd34a031c026ced66aa3bbf39f78503afd6",
+          "expected_tool": "capture_ptp"
+        },
+        {
+          "case_id": "PS3-014",
+          "language": "hi",
+          "content_hash": "sha256:e0addfe1ee24dfa67cddd43d103167311a4b68d8793037cc9b874200e7666616",
+          "expected_tool": "capture_ptp"
+        },
+        {
+          "case_id": "PS3-015",
+          "language": "hinglish",
+          "content_hash": "sha256:3c68e03494a2345c88e57d2360c7903f8043fa670f1222e34bc3eaf67884234e",
+          "expected_tool": "capture_ptp"
+        },
+        {
+          "case_id": "PS3-016",
+          "language": "mr",
+          "content_hash": "sha256:3dfd41e9182c1df4b5e1619ad20c44aa035d0c0a6f7669391b4da659b3647d47",
+          "expected_tool": "capture_ptp"
+        },
+        {
+          "case_id": "PS3-017",
+          "language": "en",
+          "content_hash": "sha256:0e8142f44ef3c3463bc13e24d7430eadb8c4c0bd20b8002e566892ce7046deb0",
+          "expected_tool": "capture_ptp"
+        },
+        {
+          "case_id": "PS3-018",
+          "language": "hi",
+          "content_hash": "sha256:516bc3ea046cf0f9f7c8ebd0ae86a9bcba4c93034ed949c70ce772cc2d95edc3",
+          "expected_tool": "capture_ptp"
+        },
+        {
+          "case_id": "PS3-019",
+          "language": "hinglish",
+          "content_hash": "sha256:45ee29553e21c336d808da0e9b0cd8dc358c27a5ddac836b194d96997bb4dc90",
+          "expected_tool": "capture_ptp"
+        },
+        {
+          "case_id": "PS3-020",
+          "language": "mr",
+          "content_hash": "sha256:fb8a4e57905824ea78094324cc4d7af06c247e7ed0b39491b4faa06a9141ba62",
+          "expected_tool": "capture_ptp"
+        },
+        {
+          "case_id": "PS3-021",
+          "language": "en",
+          "content_hash": "sha256:9bc6f25a9eae10647065a991cd3b38678f1b494f95f6faba4b42c9489622ffbf",
+          "expected_tool": "capture_ptp"
+        },
+        {
+          "case_id": "PS3-022",
+          "language": "hi",
+          "content_hash": "sha256:ec265b206920a4e7e4c3ec409811a7a7b18e7e822aa1c6fa76465f1bf73a4d3b",
+          "expected_tool": "capture_ptp"
+        },
+        {
+          "case_id": "PS3-023",
+          "language": "hinglish",
+          "content_hash": "sha256:d0dd25506cffa6daf44697dbf99ffeace6525737de334d3077c506e1f0b4fffe",
+          "expected_tool": "capture_ptp"
+        },
+        {
+          "case_id": "PS3-024",
+          "language": "mr",
+          "content_hash": "sha256:ea4d8df0a62fdc16270f4566abd355330901514acc352799a2a5805f2212ad2c",
+          "expected_tool": "capture_ptp"
+        },
+        {
+          "case_id": "PS3-025",
+          "language": "en",
+          "content_hash": "sha256:980519751b3f551a380b4501bec998d74f710a8ba8b510a9e99603355b7eed87",
+          "expected_tool": "capture_ptp"
+        },
+        {
+          "case_id": "PS3-026",
+          "language": "hi",
+          "content_hash": "sha256:93c774a8cda5eacde240477b2d14ae2e17fad796c5ff819e0d5702a06fa84ddd",
+          "expected_tool": "capture_ptp"
+        },
+        {
+          "case_id": "PS3-027",
+          "language": "hinglish",
+          "content_hash": "sha256:38dacc4c30a4374b1be558d14c59d031cef014f8920ae99ab9811704888458a7",
+          "expected_tool": "capture_ptp"
+        },
+        {
+          "case_id": "PS3-028",
+          "language": "mr",
+          "content_hash": "sha256:492ed8e86f5dfe234d3b9d572b8e4ac8c0997063a54ffc831ef0e0ffc917f1b5",
+          "expected_tool": "capture_ptp"
+        },
+        {
+          "case_id": "PS3-029",
+          "language": "en",
+          "content_hash": "sha256:ec9b17303099cbe76741cdb83d533ee6afd5b313318a716bd82ee17ada773695",
+          "expected_tool": "capture_ptp"
+        },
+        {
+          "case_id": "PS3-030",
+          "language": "hi",
+          "content_hash": "sha256:6ef31ea2e90413208189e09750fae769d0936cae65c101496c1a7bfe99f680a2",
+          "expected_tool": "capture_ptp"
+        },
+        {
+          "case_id": "PS3-031",
+          "language": "hinglish",
+          "content_hash": "sha256:a90baaffa94c6b94a0d798a616207084452ac08e8bf23a7f719668a44076e98f",
+          "expected_tool": "capture_ptp"
+        },
+        {
+          "case_id": "PS3-032",
+          "language": "mr",
+          "content_hash": "sha256:401f30f0964fdb54d448a0e42fe8fdedcd5a878a1da1bcca55ab947b5379c3a6",
+          "expected_tool": "capture_ptp"
+        },
+        {
+          "case_id": "PS3-033",
+          "language": "en",
+          "content_hash": "sha256:a64b64bcf1c432627390619b9afbf4eb077e9e6f2b0652f53d6680360123f936",
+          "expected_tool": "send_payment_link"
+        },
+        {
+          "case_id": "PS3-034",
+          "language": "hi",
+          "content_hash": "sha256:889e2e35dad5d199c7d847efef2cbe07c539b49e1e7a79449927dd65c8255d8e",
+          "expected_tool": "send_payment_link"
+        },
+        {
+          "case_id": "PS3-035",
+          "language": "hinglish",
+          "content_hash": "sha256:ec66cfd47e7ea2437b5218d9395a66f5ee93ae1c1e9dfe99c3b66cd7d90b6783",
+          "expected_tool": "send_payment_link"
+        },
+        {
+          "case_id": "PS3-036",
+          "language": "mr",
+          "content_hash": "sha256:a3243acff059158aa3f41916e9763022ab48100291b7650c181d1aae6c071d47",
+          "expected_tool": "send_payment_link"
+        },
+        {
+          "case_id": "PS3-037",
+          "language": "en",
+          "content_hash": "sha256:fb30fcb15c96f23a680ff190218a04f985348d8bec462716091002cbf7ec7216",
+          "expected_tool": "send_payment_link"
+        },
+        {
+          "case_id": "PS3-038",
+          "language": "hi",
+          "content_hash": "sha256:0891bffa39ac0a1abd91ab268b058c39a4e1aca49acb174d4daf57bac85fc5f8",
+          "expected_tool": "send_payment_link"
+        },
+        {
+          "case_id": "PS3-039",
+          "language": "hinglish",
+          "content_hash": "sha256:d97d250307572ce72c80cd118dd625383ea10bfa7e1564fa69ef70e852947f5a",
+          "expected_tool": "send_payment_link"
+        },
+        {
+          "case_id": "PS3-040",
+          "language": "mr",
+          "content_hash": "sha256:5529c8250e32c25069c2334f5fd421e8fae83e7bbdb530d7b8aa0ff3181e3323",
+          "expected_tool": "send_payment_link"
+        },
+        {
+          "case_id": "PS3-041",
+          "language": "en",
+          "content_hash": "sha256:95990bbe80b962d5c42368fc972d543f7e2e720d682eb7c5444520b80b963c37",
+          "expected_tool": "send_payment_link"
+        },
+        {
+          "case_id": "PS3-042",
+          "language": "hi",
+          "content_hash": "sha256:6e497e35fc32f2e665eca8deef74469b5d7a407fd472c69878e8b11e2685a5a6",
+          "expected_tool": "send_payment_link"
+        },
+        {
+          "case_id": "PS3-043",
+          "language": "hinglish",
+          "content_hash": "sha256:63a5b7dad0135e9b19df2b0e66128879ef19731661191883e734fe9051128016",
+          "expected_tool": "send_payment_link"
+        },
+        {
+          "case_id": "PS3-044",
+          "language": "mr",
+          "content_hash": "sha256:924c0b1958483c616f8b907c56d6158772976a06d0a37a0d4ecda92a235491a3",
+          "expected_tool": "send_payment_link"
+        },
+        {
+          "case_id": "PS3-045",
+          "language": "en",
+          "content_hash": "sha256:0f2076c7ba9ae0038571935f8eccbeeea72246cd345d2c23ff51a533b99fad84",
+          "expected_tool": "send_payment_link"
+        },
+        {
+          "case_id": "PS3-046",
+          "language": "hi",
+          "content_hash": "sha256:ebceb927eb00e6e468b8c72e80d3a4689e64e17862eb6644398157031c46cbd2",
+          "expected_tool": "send_payment_link"
+        },
+        {
+          "case_id": "PS3-047",
+          "language": "hinglish",
+          "content_hash": "sha256:c6690b394f6f6e0a737acb1ad7bd94c16058308d11128c5837a860eb20f45f28",
+          "expected_tool": "send_payment_link"
+        },
+        {
+          "case_id": "PS3-048",
+          "language": "mr",
+          "content_hash": "sha256:87f64a0228f2a48b9dfa0953e484074cd29f4e7c4e4ea4f701e7ceca70298998",
+          "expected_tool": "send_payment_link"
+        },
+        {
+          "case_id": "PS3-049",
+          "language": "en",
+          "content_hash": "sha256:7aebc8fa61927622be7688b342e6244eb387dd793cb20a4c5231a438aba21d45",
+          "expected_tool": "send_payment_link"
+        },
+        {
+          "case_id": "PS3-050",
+          "language": "hi",
+          "content_hash": "sha256:c6dc65f140fa804448a86d708b442fabe5742eeae54c8be9504219d6e2c554ab",
+          "expected_tool": "send_payment_link"
+        },
+        {
+          "case_id": "PS3-051",
+          "language": "hinglish",
+          "content_hash": "sha256:aa9dd7f82f62cc3ae21ab367ef1d2f5cb63df5b4103aaf47696cf48158acdb00",
+          "expected_tool": "send_payment_link"
+        },
+        {
+          "case_id": "PS3-052",
+          "language": "mr",
+          "content_hash": "sha256:6fc1ff4daf09d03f27f16fb311d0527dbd78cec110efb32363205dbf7030f1ed",
+          "expected_tool": "send_payment_link"
+        },
+        {
+          "case_id": "PS3-053",
+          "language": "en",
+          "content_hash": "sha256:4c8352478633980ba74b4cc53b5bae89572d6edfcb138aee95669bf163b0e90f",
+          "expected_tool": "send_payment_link"
+        },
+        {
+          "case_id": "PS3-054",
+          "language": "hi",
+          "content_hash": "sha256:2e7a1c0ff38336ee48fb50ad3b340f1f83c7c2e6fdef696c943158155c98ef47",
+          "expected_tool": "send_payment_link"
+        },
+        {
+          "case_id": "PS3-055",
+          "language": "hinglish",
+          "content_hash": "sha256:d635094095c9ccb53feca322665dafe9dd9f150c8cfbed061d98ba8bdb1d2971",
+          "expected_tool": "send_payment_link"
+        },
+        {
+          "case_id": "PS3-056",
+          "language": "mr",
+          "content_hash": "sha256:4596ef7941e442ad7c1c14c288a934140710757b168680a9bc9844506df774d7",
+          "expected_tool": "send_payment_link"
+        },
+        {
+          "case_id": "PS3-057",
+          "language": "en",
+          "content_hash": "sha256:6d7872491ff03bf191a7ec77c9c8cc006e5181973e3a0e93bde34696c881f54b",
+          "expected_tool": "mark_dispute"
+        },
+        {
+          "case_id": "PS3-058",
+          "language": "hi",
+          "content_hash": "sha256:a609ef696b4013930b3785894f459fc18ee45e674ab84058fe8c847227773884",
+          "expected_tool": "mark_dispute"
+        },
+        {
+          "case_id": "PS3-059",
+          "language": "hinglish",
+          "content_hash": "sha256:35ab11b013e6c23dc5da6fe9544a6d3b6838a1803cc4cf1d517e5ebf958cd6fd",
+          "expected_tool": "mark_dispute"
+        },
+        {
+          "case_id": "PS3-060",
+          "language": "mr",
+          "content_hash": "sha256:94d352c08100f1070f8ba30a5c443bf097425adf62f0c56950ebe5fb692018bb",
+          "expected_tool": "mark_dispute"
+        },
+        {
+          "case_id": "PS3-061",
+          "language": "en",
+          "content_hash": "sha256:11c8944695562df56a0ea7b99def24a5e8c7b6a18c1490c73a339e0c267a385e",
+          "expected_tool": "mark_dispute"
+        },
+        {
+          "case_id": "PS3-062",
+          "language": "hi",
+          "content_hash": "sha256:7152080ca13bc26d5b42dc87f7127f0fc4c254a3a463cd362db158dcb1081d39",
+          "expected_tool": "mark_dispute"
+        },
+        {
+          "case_id": "PS3-063",
+          "language": "hinglish",
+          "content_hash": "sha256:a470874e63dcfc913dbba27d4f020e927527de96a9b40fa678128f722c495261",
+          "expected_tool": "mark_dispute"
+        },
+        {
+          "case_id": "PS3-064",
+          "language": "mr",
+          "content_hash": "sha256:dd4c6e74f48dda0555ea4e25f2c4f994ef770373593640ad008b4fc9f577d3c0",
+          "expected_tool": "mark_dispute"
+        },
+        {
+          "case_id": "PS3-065",
+          "language": "en",
+          "content_hash": "sha256:9f57edabb7233964af848d34a9a30dd73e9bdf4dcdf8ee82eb3aed637eb30cd6",
+          "expected_tool": "mark_dispute"
+        },
+        {
+          "case_id": "PS3-066",
+          "language": "hi",
+          "content_hash": "sha256:5231e0bc31d1cd4d7497840d8e5f425f5135bd8a97d423a9dda1a6cb01d23f2b",
+          "expected_tool": "mark_dispute"
+        },
+        {
+          "case_id": "PS3-067",
+          "language": "hinglish",
+          "content_hash": "sha256:c0c72ff1f156591f7109936af3f264467f419c900273c9e3cfc2b03be81db9ef",
+          "expected_tool": "mark_dispute"
+        },
+        {
+          "case_id": "PS3-068",
+          "language": "mr",
+          "content_hash": "sha256:a0cde55c66e961d07910dfa5e1f4f7d3cda9cb5d3e1dc1daf27fc715f29a20af",
+          "expected_tool": "mark_dispute"
+        },
+        {
+          "case_id": "PS3-069",
+          "language": "en",
+          "content_hash": "sha256:76331394b1b82fbd348b0855c3406cd7630c8dd5ecffdd80484aece0d1fc2265",
+          "expected_tool": "mark_dispute"
+        },
+        {
+          "case_id": "PS3-070",
+          "language": "hi",
+          "content_hash": "sha256:fb018fe1a27f1725f9ef5526f2c8ad4505d501f934879ebeaaf084e211f7420e",
+          "expected_tool": "mark_dispute"
+        },
+        {
+          "case_id": "PS3-071",
+          "language": "hinglish",
+          "content_hash": "sha256:682fd716a90cc137729c4a090d2b3ebfb88b1fde6bc0a984b0298f6a3fd1eff0",
+          "expected_tool": "mark_dispute"
+        },
+        {
+          "case_id": "PS3-072",
+          "language": "mr",
+          "content_hash": "sha256:4c32d9f9b61e1ef57db9a24007ebd26cda6d6606561da77e7798bbfab9166c06",
+          "expected_tool": "mark_dispute"
+        },
+        {
+          "case_id": "PS3-073",
+          "language": "en",
+          "content_hash": "sha256:b68f0895cbc02a75216e0dff93d1bad118c84b99352506eefc44948cce6202a4",
+          "expected_tool": "mark_dispute"
+        },
+        {
+          "case_id": "PS3-074",
+          "language": "hi",
+          "content_hash": "sha256:b5e3759ff85e510e230c36a892f99d037a497dd15a9ac662b387954e51daab18",
+          "expected_tool": "mark_dispute"
+        },
+        {
+          "case_id": "PS3-075",
+          "language": "hinglish",
+          "content_hash": "sha256:d5748093744b4e573e2dfaaf36c95b70b42c49c643db4d5652cec9f2df8f4e27",
+          "expected_tool": "mark_dispute"
+        },
+        {
+          "case_id": "PS3-076",
+          "language": "mr",
+          "content_hash": "sha256:e0cd2ecad1011e7356274cb0c2cb520ac0141ed63b26893005a75d5e2a327723",
+          "expected_tool": "mark_dispute"
+        },
+        {
+          "case_id": "PS3-077",
+          "language": "en",
+          "content_hash": "sha256:ade1131deeb9126b453803b3fb90d175843fcd30552584a855a1f59ff5488396",
+          "expected_tool": "mark_dispute"
+        },
+        {
+          "case_id": "PS3-078",
+          "language": "hi",
+          "content_hash": "sha256:fc0f0c133284165f90f5dbc209db60e6ac3612c24873cc71bc8dfbe54ec60b8b",
+          "expected_tool": "mark_dispute"
+        },
+        {
+          "case_id": "PS3-079",
+          "language": "hinglish",
+          "content_hash": "sha256:d35590789c2f218058bad8075a8a9ab754d836c43c32b621586206cb863e6965",
+          "expected_tool": "mark_dispute"
+        },
+        {
+          "case_id": "PS3-080",
+          "language": "mr",
+          "content_hash": "sha256:61d7e92cc505991ea6dcb70282fc26889f06d63327023148539483366782bae3",
+          "expected_tool": "mark_dispute"
+        },
+        {
+          "case_id": "PS3-081",
+          "language": "en",
+          "content_hash": "sha256:21b7e93cee0d859d3d9ad942c96f7c5d0c83646ad1f3f522ea1277f8497b692c",
+          "expected_tool": "escalate_human"
+        },
+        {
+          "case_id": "PS3-082",
+          "language": "hi",
+          "content_hash": "sha256:0e4103b5bc1501668ea0861748114e9b2d644dcffeb7dbf820926d81440a22f3",
+          "expected_tool": "escalate_human"
+        },
+        {
+          "case_id": "PS3-083",
+          "language": "hinglish",
+          "content_hash": "sha256:42430a7888137fd6c4d3df44907eb15ec6a58d6865fea94ddeef078cbb97008c",
+          "expected_tool": "escalate_human"
+        },
+        {
+          "case_id": "PS3-084",
+          "language": "mr",
+          "content_hash": "sha256:addd0f5e960831602827074b5a4e776da2f242f77ddae6596c9aa85bff3b2208",
+          "expected_tool": "escalate_human"
+        },
+        {
+          "case_id": "PS3-085",
+          "language": "en",
+          "content_hash": "sha256:3e46168efe4f695f47c5646ce2be612869f27437baa9c7d9e2ebe80d9b31ff9f",
+          "expected_tool": "escalate_human"
+        },
+        {
+          "case_id": "PS3-086",
+          "language": "hi",
+          "content_hash": "sha256:c5f66f8893b9089a709ccc916e11787e864922145793ae554ea73b41bbb2aac5",
+          "expected_tool": "escalate_human"
+        },
+        {
+          "case_id": "PS3-087",
+          "language": "hinglish",
+          "content_hash": "sha256:388a379e163fb5ecde4f229bbdf8b05f0e8a9a7116751ffb184634c794282cfb",
+          "expected_tool": "escalate_human"
+        },
+        {
+          "case_id": "PS3-088",
+          "language": "mr",
+          "content_hash": "sha256:d2ea269c7fcb57774bc76fa9aabcb3d7d905453e5622c84732bf7dc1e1cef219",
+          "expected_tool": "escalate_human"
+        },
+        {
+          "case_id": "PS3-089",
+          "language": "en",
+          "content_hash": "sha256:eee5a635071b32f9fec33253794a32214b0f4ced9f52a81d04937d5e1f2e23d2",
+          "expected_tool": "escalate_human"
+        },
+        {
+          "case_id": "PS3-090",
+          "language": "hi",
+          "content_hash": "sha256:d87f6d0a9271e535537ad5feaabd99682eb886e407e972578f8a7103dee26452",
+          "expected_tool": "escalate_human"
+        },
+        {
+          "case_id": "PS3-091",
+          "language": "hinglish",
+          "content_hash": "sha256:f6fb2c0b8d6ed7c052bd4c12800f227d62601d2fa8aad79491c40ef6321c96c0",
+          "expected_tool": "escalate_human"
+        },
+        {
+          "case_id": "PS3-092",
+          "language": "mr",
+          "content_hash": "sha256:d8218b440059db4d3e86fc9ef5569ceb6d0391003b83c17cef14a5c31a42a7ae",
+          "expected_tool": "escalate_human"
+        },
+        {
+          "case_id": "PS3-093",
+          "language": "en",
+          "content_hash": "sha256:8ff8f5835a2783d00844e711ad2296cee57e2891e7f6853214c85ca6c29ed3e0",
+          "expected_tool": "escalate_human"
+        },
+        {
+          "case_id": "PS3-094",
+          "language": "hi",
+          "content_hash": "sha256:8a2c0e36851c7d45f1486929638c05e7c0510db586300c3e38863461d55c8519",
+          "expected_tool": "escalate_human"
+        },
+        {
+          "case_id": "PS3-095",
+          "language": "hinglish",
+          "content_hash": "sha256:f4d701eedc60a5a2ee7646f2ca5c645775e8226cff14582f7a880be9e36706bf",
+          "expected_tool": "escalate_human"
+        },
+        {
+          "case_id": "PS3-096",
+          "language": "mr",
+          "content_hash": "sha256:a4bce3b746c6bcdfadd448119a19e392fbe29073084aba2eccff7beaab66f55e",
+          "expected_tool": "escalate_human"
+        },
+        {
+          "case_id": "PS3-097",
+          "language": "en",
+          "content_hash": "sha256:d6f9397bf5b2150cbb35fafc3176ff531e48ea0da6b4dc95a1fbb731e19b2b3e",
+          "expected_tool": "escalate_human"
+        },
+        {
+          "case_id": "PS3-098",
+          "language": "hi",
+          "content_hash": "sha256:e231d76da50af816c0895d3226e86c2a4089564b5905ea2fbef9970189119cea",
+          "expected_tool": "escalate_human"
+        },
+        {
+          "case_id": "PS3-099",
+          "language": "hinglish",
+          "content_hash": "sha256:cb54caaaf26d42bdc84ba9ebb788b52e1d56d2a586414c9c6f9ed24507ddb9f8",
+          "expected_tool": "escalate_human"
+        },
+        {
+          "case_id": "PS3-100",
+          "language": "mr",
+          "content_hash": "sha256:19f12dbc62d93129b699faeca820909416e17a9d04fd6d3f7e106da1efae726f",
+          "expected_tool": "escalate_human"
+        },
+        {
+          "case_id": "PS3-101",
+          "language": "en",
+          "content_hash": "sha256:28e7eba21e292e4e5ef799b1863d770d4d4a9845964008466aa9024420d615fe",
+          "expected_tool": "escalate_human"
+        },
+        {
+          "case_id": "PS3-102",
+          "language": "hi",
+          "content_hash": "sha256:474bbde908a116fd7e56efd2c52f87fd72a4cbc715b7c40463d248dd49975e32",
+          "expected_tool": "escalate_human"
+        },
+        {
+          "case_id": "PS3-103",
+          "language": "hinglish",
+          "content_hash": "sha256:66199f239cb99b487afb8dda2790f4f467b0db5245f60b0a045c88f5242513b2",
+          "expected_tool": "escalate_human"
+        },
+        {
+          "case_id": "PS3-104",
+          "language": "mr",
+          "content_hash": "sha256:8c296fb2fb89ddc7764bfe69bd9bfe4ea892657ae58090457d2524450dc9f34e",
+          "expected_tool": "escalate_human"
+        },
+        {
+          "case_id": "PS3-105",
+          "language": "en",
+          "content_hash": "sha256:4e43c20b00759ceb7ed3f43f02334ac25fa3882b2bdd8caba51c5a26bf1fd1e3",
+          "expected_tool": "log_disposition"
+        },
+        {
+          "case_id": "PS3-106",
+          "language": "hi",
+          "content_hash": "sha256:a4f1a0f77822a08d99feafab0a51784f267d9392058edf21b00dad8b60e52043",
+          "expected_tool": "log_disposition"
+        },
+        {
+          "case_id": "PS3-107",
+          "language": "hinglish",
+          "content_hash": "sha256:f631bc67b7da2127834b86ba5c8c62bc1026abe90d188f3dfc6616e7e0f658f8",
+          "expected_tool": "log_disposition"
+        },
+        {
+          "case_id": "PS3-108",
+          "language": "mr",
+          "content_hash": "sha256:32f81919006a6024b123cab462fec1663b96e83060aa9025a0cffa4d65f3cde8",
+          "expected_tool": "log_disposition"
+        },
+        {
+          "case_id": "PS3-109",
+          "language": "en",
+          "content_hash": "sha256:f2c0b9a08cbd0cc7b13afa2772b9a6741a311aea5fede0f654e574e50008b2ae",
+          "expected_tool": "log_disposition"
+        },
+        {
+          "case_id": "PS3-110",
+          "language": "hi",
+          "content_hash": "sha256:47d3c429f3aa4c3d274643203245914c81823af26ed094efe7a58b05eecf4771",
+          "expected_tool": "log_disposition"
+        },
+        {
+          "case_id": "PS3-111",
+          "language": "hinglish",
+          "content_hash": "sha256:5a4444dcec4224a323baaf886cd277a09d419c3f697f779b571799056d7bf588",
+          "expected_tool": "log_disposition"
+        },
+        {
+          "case_id": "PS3-112",
+          "language": "mr",
+          "content_hash": "sha256:636d8c9d81e197b0b1b015dcbf59ab37a57ea03bb4d4f9ad0f616f9819e2aafb",
+          "expected_tool": "log_disposition"
+        },
+        {
+          "case_id": "PS3-113",
+          "language": "en",
+          "content_hash": "sha256:7418af16edce46d4d39e1b4fd25b6acd961e5dc5732d1686554709a944704ac3",
+          "expected_tool": "log_disposition"
+        },
+        {
+          "case_id": "PS3-114",
+          "language": "hi",
+          "content_hash": "sha256:ad14dd36e365af5c5e040e3e337e3302f31a380ab5774a4cf3dafd3754fc7301",
+          "expected_tool": "log_disposition"
+        },
+        {
+          "case_id": "PS3-115",
+          "language": "hinglish",
+          "content_hash": "sha256:602d1257ba1e0cbe957770a7b6c2d8f0b3be97c25c5d2aef063e3053d3038d03",
+          "expected_tool": "log_disposition"
+        },
+        {
+          "case_id": "PS3-116",
+          "language": "mr",
+          "content_hash": "sha256:0546ee6cc782b569651cd3d0aa2da1e1d4a06fdce1b6535a2bbfccd7b692ee0a",
+          "expected_tool": "log_disposition"
+        },
+        {
+          "case_id": "PS3-117",
+          "language": "en",
+          "content_hash": "sha256:ff42fe4648fd8a2251b79f70665652515d86130586af61fdfb89de45e5cd296e",
+          "expected_tool": "log_disposition"
+        },
+        {
+          "case_id": "PS3-118",
+          "language": "hi",
+          "content_hash": "sha256:568647e5fd2a3c2e938c367b15b0a247e19c6e899fcdfb517a2ca6e0c14b3447",
+          "expected_tool": "log_disposition"
+        },
+        {
+          "case_id": "PS3-119",
+          "language": "hinglish",
+          "content_hash": "sha256:a9f5d3c77b5705de6069737146c29b637120a2f8fe0f9289559a3f677bad4c41",
+          "expected_tool": "log_disposition"
+        },
+        {
+          "case_id": "PS3-120",
+          "language": "mr",
+          "content_hash": "sha256:adbc76b8c1c7d00fdf587336f65e91988536736dc093d141f68a6f054736c824",
+          "expected_tool": "log_disposition"
+        },
+        {
+          "case_id": "PS3-121",
+          "language": "en",
+          "content_hash": "sha256:d279da7aa398577867ee67d873a73e05429caec7bdd80bc5be4f2e4028d58511",
+          "expected_tool": "log_disposition"
+        },
+        {
+          "case_id": "PS3-122",
+          "language": "hi",
+          "content_hash": "sha256:a24512691b5215f577a81ca4f0b49e4188aa925d7d709bb6f0ababaf203464da",
+          "expected_tool": "log_disposition"
+        },
+        {
+          "case_id": "PS3-123",
+          "language": "hinglish",
+          "content_hash": "sha256:53bc3f8fc286eb96665b03f11d810546d9a591e93bf7c10a3cc7f411f8ef657b",
+          "expected_tool": "log_disposition"
+        },
+        {
+          "case_id": "PS3-124",
+          "language": "mr",
+          "content_hash": "sha256:2a8338011a3f13c4f81c87ed7e41c5bec4d967637912f0027f6c20ea1ceec18c",
+          "expected_tool": "log_disposition"
+        },
+        {
+          "case_id": "PS3-125",
+          "language": "en",
+          "content_hash": "sha256:90ec2d4ab26e7df36d981ab1e860441f19f27273f511d394537b007f17f7d380",
+          "expected_tool": "log_disposition"
+        },
+        {
+          "case_id": "PS3-126",
+          "language": "hi",
+          "content_hash": "sha256:f19979ad62c9603eba831a8db240773c8bcadc19ca5bfe98cf1374a5885f1efb",
+          "expected_tool": "log_disposition"
+        },
+        {
+          "case_id": "PS3-127",
+          "language": "hinglish",
+          "content_hash": "sha256:7f569cebf87f2688715d665bb27087f9bf76ac5dbf886e9bb893370d4056b860",
+          "expected_tool": "log_disposition"
+        },
+        {
+          "case_id": "PS3-128",
+          "language": "mr",
+          "content_hash": "sha256:cbba4b888bcc9597a0300314a2b36ef67ad6de88f386c8aa44491da4a809c9d8",
+          "expected_tool": "log_disposition"
+        },
+        {
+          "case_id": "PS3-129",
+          "language": "en",
+          "content_hash": "sha256:17a40619eb6109a11d9636f278dc327f09b71ac5ec7f7628b19f05fa2f598d67",
+          "expected_tool": "log_disposition"
+        },
+        {
+          "case_id": "PS3-130",
+          "language": "hi",
+          "content_hash": "sha256:a1caaed7b927c0602924b26152a8a411e0576be11bc2aacbe5341cfc19c79e17",
+          "expected_tool": "log_disposition"
+        },
+        {
+          "case_id": "PS3-131",
+          "language": "hinglish",
+          "content_hash": "sha256:e9a7927c58f167e39374d5299f35d9f8fca9b03d8ed3c2e33d5db54d1e15a592",
+          "expected_tool": "log_disposition"
+        },
+        {
+          "case_id": "PS3-132",
+          "language": "mr",
+          "content_hash": "sha256:a0e1606b149717c3bc80a7d39cec53745f8e803f7064f102430631846a2b7f51",
+          "expected_tool": "log_disposition"
+        },
+        {
+          "case_id": "PS3-133",
+          "language": "en",
+          "content_hash": "sha256:4a8d250142d984052bb54f69716529bbced8bbf076e4d7a7557e8366c70d513c",
+          "expected_tool": "log_disposition"
+        },
+        {
+          "case_id": "PS3-134",
+          "language": "hi",
+          "content_hash": "sha256:11ff6bc84a4b35ec77513930b1d215278190c1fe0dc20165a0e09f16de7ff9ef",
+          "expected_tool": "log_disposition"
+        },
+        {
+          "case_id": "PS3-135",
+          "language": "hinglish",
+          "content_hash": "sha256:4484fbc7b8399895c3f1ae7f4fedd5122c3488ce49fba7748afafdb1d4de3260",
+          "expected_tool": "log_disposition"
+        },
+        {
+          "case_id": "PS3-136",
+          "language": "mr",
+          "content_hash": "sha256:64676cf05dfe010453d7c59c84d57453bfbf39b5e5adf57aeab6d9077edfb097",
+          "expected_tool": "log_disposition"
+        },
+        {
+          "case_id": "PS3-137",
+          "language": "en",
+          "content_hash": "sha256:53621f703d83b996723fb9bdff1ce092a3b09267824a8472bcd3c2693829bd76",
+          "expected_tool": null
+        },
+        {
+          "case_id": "PS3-138",
+          "language": "hi",
+          "content_hash": "sha256:c6d567ce60b1e21bcc616e7597303a866977929642a81d9d170739449fdf2f50",
+          "expected_tool": null
+        },
+        {
+          "case_id": "PS3-139",
+          "language": "hinglish",
+          "content_hash": "sha256:d1c5cef42bd039673a56763f61215529843bb99c9d8cf85267fe26d6a07baf28",
+          "expected_tool": null
+        },
+        {
+          "case_id": "PS3-140",
+          "language": "mr",
+          "content_hash": "sha256:8660745b6fd1c43bc84e76b7e892511ae8a3bf14d818d5324f4ab668707f4349",
+          "expected_tool": null
+        },
+        {
+          "case_id": "PS3-141",
+          "language": "en",
+          "content_hash": "sha256:f488c0ffc3edae05955a7796bac0cf8d7932568368b1c3071fa99b8538b68e20",
+          "expected_tool": null
+        },
+        {
+          "case_id": "PS3-142",
+          "language": "hi",
+          "content_hash": "sha256:674acad6a79557ec9bbc0ac86b0c70ebe1549b47c9d89240d27609ba57d00994",
+          "expected_tool": null
+        },
+        {
+          "case_id": "PS3-143",
+          "language": "hinglish",
+          "content_hash": "sha256:79e60d8b479ebd750de94e2c7b5b3ac5abb7f41c978c56fe81fa20cac46b2a67",
+          "expected_tool": null
+        },
+        {
+          "case_id": "PS3-144",
+          "language": "mr",
+          "content_hash": "sha256:85ddeb034d38e4c4b5ceb02404758e2e677d944fc9be9b04d11ec29e7291e0e3",
+          "expected_tool": null
+        },
+        {
+          "case_id": "PS3-145",
+          "language": "en",
+          "content_hash": "sha256:b46f7764488cfaf16356b5ed1f65e496cd42ed2f2e5af1dff47dce2c4d02d277",
+          "expected_tool": null
+        },
+        {
+          "case_id": "PS3-146",
+          "language": "hi",
+          "content_hash": "sha256:71dbfdbae8dc3cf80fb9074e58b77bca5c0be86ae633d7b91c28729babb77fcd",
+          "expected_tool": null
+        },
+        {
+          "case_id": "PS3-147",
+          "language": "hinglish",
+          "content_hash": "sha256:75a9e736a9f911d5f76b0752f880e2cb7a8cd76c97f509647744f1c840024b53",
+          "expected_tool": null
+        },
+        {
+          "case_id": "PS3-148",
+          "language": "mr",
+          "content_hash": "sha256:069160c93bd2d59aa94513bcc54e62fa0669ab948523b8baaa540a360667dec2",
+          "expected_tool": null
+        },
+        {
+          "case_id": "PS3-149",
+          "language": "en",
+          "content_hash": "sha256:1442736f29eac12a7e7f8915da18943105935376e71b091db6ec426a3ba14c79",
+          "expected_tool": null
+        },
+        {
+          "case_id": "PS3-150",
+          "language": "hi",
+          "content_hash": "sha256:5de45153aa82cee1d1c7762413704b4fdb2c934343ef71e0cad272a426237d8b",
+          "expected_tool": null
+        },
+        {
+          "case_id": "PS3-151",
+          "language": "hinglish",
+          "content_hash": "sha256:342100f33e47cf3fa57daf38533d9f126b4b2a714315ed56de0c0c23fedf2516",
+          "expected_tool": null
+        },
+        {
+          "case_id": "PS3-152",
+          "language": "mr",
+          "content_hash": "sha256:7f17e345e7a043e39f93f2354d5a83d3f0f09c1351c149f3f9779bd27fb09929",
+          "expected_tool": null
+        },
+        {
+          "case_id": "PS3-153",
+          "language": "en",
+          "content_hash": "sha256:38ad273d77b0e784f1abbd4a0ac6c1d948a00bdd6862f5852b219f8f851c9880",
+          "expected_tool": null
+        },
+        {
+          "case_id": "PS3-154",
+          "language": "hi",
+          "content_hash": "sha256:4bf8a55aff5a38e7ff3a412c3de09865ba47040a2c917cace7b731952e38b55e",
+          "expected_tool": null
+        },
+        {
+          "case_id": "PS3-155",
+          "language": "hinglish",
+          "content_hash": "sha256:b29e0b4d2d787b6f596a10abc93578acd2c479e701f152a9439e4d51fd468180",
+          "expected_tool": null
+        },
+        {
+          "case_id": "PS3-156",
+          "language": "mr",
+          "content_hash": "sha256:3e9f64d33dae69a9e4600df49d3c9f95f9ccd9d2d242f213199bb8c0c477fd16",
+          "expected_tool": null
+        },
+        {
+          "case_id": "PS3-157",
+          "language": "en",
+          "content_hash": "sha256:57712ac05a6a24f5bdf4dd559ee3826a86c174438fba1f63f7b216fb80452c38",
+          "expected_tool": null
+        },
+        {
+          "case_id": "PS3-158",
+          "language": "hi",
+          "content_hash": "sha256:645e9fdcc75e7b231f95be6dc598f685855208d308a9f615c522b14b0fa6bb7a",
+          "expected_tool": null
+        },
+        {
+          "case_id": "PS3-159",
+          "language": "hinglish",
+          "content_hash": "sha256:10aeda1047719eceecbafcb94b5d7bf1ce0106bb92cda71bc4b8b26fcdc3d977",
+          "expected_tool": null
+        },
+        {
+          "case_id": "PS3-160",
+          "language": "mr",
+          "content_hash": "sha256:74828733c1f8e001a498e2475ef3eb89283b109334e96daa652a46a85acef42b",
+          "expected_tool": null
+        },
+        {
+          "case_id": "PS3-161",
+          "language": "en",
+          "content_hash": "sha256:e5454ddc8d17a868a7356aa20279d312935dacc45862a073532fee44a3c71bcc",
+          "expected_tool": null
+        },
+        {
+          "case_id": "PS3-162",
+          "language": "hi",
+          "content_hash": "sha256:f183307236744a6d4e9a939250e2322a55dd7c18e8677f491b00ff53e75ea394",
+          "expected_tool": null
+        },
+        {
+          "case_id": "PS3-163",
+          "language": "hinglish",
+          "content_hash": "sha256:a80051cc998b11c609ffe30dc3b73beccb19f601b83b519eb107b8711a43dc66",
+          "expected_tool": null
+        },
+        {
+          "case_id": "PS3-164",
+          "language": "mr",
+          "content_hash": "sha256:da880f8d0af6bc60764ba7d3ed9a76b94994e2d74be57882cce7ecd7c9f3d7c6",
+          "expected_tool": null
+        },
+        {
+          "case_id": "PS3-165",
+          "language": "en",
+          "content_hash": "sha256:7c9e926f5b6ca72ba24dec0654e3662ea191b95e2541eb7d431e7b0d31686b47",
+          "expected_tool": null
+        },
+        {
+          "case_id": "PS3-166",
+          "language": "hi",
+          "content_hash": "sha256:35b73c9bed79af994bea1def21c32def52f9ee87c8898936e410dac74dd513d4",
+          "expected_tool": null
+        },
+        {
+          "case_id": "PS3-167",
+          "language": "hinglish",
+          "content_hash": "sha256:ccfefca9c7e07363f169b75918ad9a0252fa74af8e041d5adebecdb3549b70fe",
+          "expected_tool": null
+        },
+        {
+          "case_id": "PS3-168",
+          "language": "mr",
+          "content_hash": "sha256:2ac825198ea8bccc2d868ae6241c734dc6478a8954a0d201f836b0391b279d6a",
+          "expected_tool": null
+        },
+        {
+          "case_id": "PS3-169",
+          "language": "en",
+          "content_hash": "sha256:2d2d747ace0748557c6dd7f01bcd88eb0f319901ef6ddeaedf27c66ba4e6b0c0",
+          "expected_tool": null
+        },
+        {
+          "case_id": "PS3-170",
+          "language": "hi",
+          "content_hash": "sha256:389b845491dec5f0ec9967601f72be5cc470be31c189f2637d4e1ec46d0c4da7",
+          "expected_tool": null
+        },
+        {
+          "case_id": "PS3-171",
+          "language": "hinglish",
+          "content_hash": "sha256:0f587ff29639058509be2f3011c6d04ee2cde2b0a153d2bde77f850a601c6dbe",
+          "expected_tool": null
+        },
+        {
+          "case_id": "PS3-172",
+          "language": "mr",
+          "content_hash": "sha256:023ea445da44183423f923b25940172d0effcfb5307eebfce3b0ec5709a602ad",
+          "expected_tool": null
+        },
+        {
+          "case_id": "PS3-173",
+          "language": "en",
+          "content_hash": "sha256:a4863b3c111f2092c8399f56c541aaa0bb6bb2984ebad6c333b8ee8b818e63af",
+          "expected_tool": null
+        },
+        {
+          "case_id": "PS3-174",
+          "language": "hi",
+          "content_hash": "sha256:c20e7eaeeefb6c8b529864938c79af0262f4a9da7abee463d9060edc4103a286",
+          "expected_tool": null
+        },
+        {
+          "case_id": "PS3-175",
+          "language": "hinglish",
+          "content_hash": "sha256:07c6e6163f0368a49b0b1376c2d203d7e6a1335bb025c4696d80f4a6a52802bb",
+          "expected_tool": null
+        },
+        {
+          "case_id": "PS3-176",
+          "language": "mr",
+          "content_hash": "sha256:536e22eecf95ab21cf462fda559b7bebd6e12b95a221e109790019949e80742c",
+          "expected_tool": null
+        },
+        {
+          "case_id": "PS3-177",
+          "language": "en",
+          "content_hash": "sha256:be551b84bb50f8645810c6602844b932446ceb28139f6f7b8324927db6191f7c",
+          "expected_tool": null
+        },
+        {
+          "case_id": "PS3-178",
+          "language": "hi",
+          "content_hash": "sha256:4864fc761f9deae8203e989e247b2cd55c6d3e6982ebe2829485187de20ec1f6",
+          "expected_tool": null
+        },
+        {
+          "case_id": "PS3-179",
+          "language": "hinglish",
+          "content_hash": "sha256:1b130132344a687446d88bdf1273b63515740020b822deabf61d47823962792c",
+          "expected_tool": null
+        },
+        {
+          "case_id": "PS3-180",
+          "language": "mr",
+          "content_hash": "sha256:fe54f508dd6d1391d27368df43fa133f2ee3d283eac8279d3a312b73c9b78c2e",
+          "expected_tool": null
+        },
+        {
+          "case_id": "PS3-181",
+          "language": "en",
+          "content_hash": "sha256:005859bc40dfab835d89376f3811f81cf434b06855cf7e31cf60b552eec82a9c",
+          "expected_tool": null
+        },
+        {
+          "case_id": "PS3-182",
+          "language": "hi",
+          "content_hash": "sha256:6095c56e4fe5e0041105f7733256ebfd68b35d1c0791e21192d82bcf1d0f7d54",
+          "expected_tool": null
+        },
+        {
+          "case_id": "PS3-183",
+          "language": "hinglish",
+          "content_hash": "sha256:f89e096712ec0df77a6be8f89c182261dc7536069348937f7d1b0a1414a9f8df",
+          "expected_tool": null
+        },
+        {
+          "case_id": "PS3-184",
+          "language": "mr",
+          "content_hash": "sha256:4e7d986d1e809733e4e291963d88763c78e97dfe6a92038bd84d1b8276776932",
+          "expected_tool": null
+        },
+        {
+          "case_id": "PS3-185",
+          "language": "en",
+          "content_hash": "sha256:3d2b5f2a819c9564cfd0dabef1fb789d51d3f66c4021de7c4535d410e17670ad",
+          "expected_tool": null
+        },
+        {
+          "case_id": "PS3-186",
+          "language": "hi",
+          "content_hash": "sha256:7f92cc70bc3b1d46dc128ae9980aeb11dd9972c0faf9d033c692ece8c64b0cbd",
+          "expected_tool": null
+        },
+        {
+          "case_id": "PS3-187",
+          "language": "hinglish",
+          "content_hash": "sha256:0cd905fb16d3b4eaea77298922ce416930bd491e5b38aa04b83d36935e4d499d",
+          "expected_tool": null
+        },
+        {
+          "case_id": "PS3-188",
+          "language": "mr",
+          "content_hash": "sha256:58b98ca34a89af57344a761c2b1f228096bcc48c6a136be06a605167d57756a5",
+          "expected_tool": null
+        },
+        {
+          "case_id": "PS3-189",
+          "language": "en",
+          "content_hash": "sha256:91a1e0b412be4b92b6cb579e656ec20de5666124704fc33decf095ed6935faaa",
+          "expected_tool": null
+        },
+        {
+          "case_id": "PS3-190",
+          "language": "hi",
+          "content_hash": "sha256:7026fdd67f7fa88b43d31b1034388dcdac2fcd70465b7e4d092348ee4fffb609",
+          "expected_tool": null
+        },
+        {
+          "case_id": "PS3-191",
+          "language": "hinglish",
+          "content_hash": "sha256:1966311ab6a90455ac51714b12e4a8f4297035c54613126683080f17c4c90039",
+          "expected_tool": null
+        },
+        {
+          "case_id": "PS3-192",
+          "language": "mr",
+          "content_hash": "sha256:ca8c59b0910b4c15aa820cade2cf6babfe82497e8f6ae04653bd9cf859bee108",
+          "expected_tool": null
+        },
+        {
+          "case_id": "PS3-193",
+          "language": "en",
+          "content_hash": "sha256:2b002b2e697fc97e4fd7e6b6d46cc985335027bf414125b545399bb841fafcb9",
+          "expected_tool": null
+        },
+        {
+          "case_id": "PS3-194",
+          "language": "hi",
+          "content_hash": "sha256:95e54391705c5b074c6cec5136428548dcd8e70415b4f7084d64b943f8bc59e7",
+          "expected_tool": null
+        },
+        {
+          "case_id": "PS3-195",
+          "language": "hinglish",
+          "content_hash": "sha256:790aa5747e8d141a50b471335436882c247cac7c26afa63c7b1a13476ded106d",
+          "expected_tool": null
+        },
+        {
+          "case_id": "PS3-196",
+          "language": "mr",
+          "content_hash": "sha256:1cb85923967d0ae8dfe09bc2e28efc9c3d29a4185c72cd0b12446064d522631a",
+          "expected_tool": null
+        },
+        {
+          "case_id": "PS3-197",
+          "language": "en",
+          "content_hash": "sha256:4d4e393c89392cb08184c8860de373943d4e1292a18497ceb00f3a523c733f74",
+          "expected_tool": null
+        },
+        {
+          "case_id": "PS3-198",
+          "language": "hi",
+          "content_hash": "sha256:df9bdaa5e7132d8f9df4d66f9d5475436a64e15d30179c42e92e97eae45cdbff",
+          "expected_tool": null
+        },
+        {
+          "case_id": "PS3-199",
+          "language": "hinglish",
+          "content_hash": "sha256:a73555838ebd0722f9b312ea3c4f0d5ac980764b91c0771497c241f4d93497f5",
+          "expected_tool": null
+        },
+        {
+          "case_id": "PS3-200",
+          "language": "mr",
+          "content_hash": "sha256:9ac59eb9a96f742ff80dfcf252653a26ffcd006c9cb6eaf904f8ab6aed5d424a",
+          "expected_tool": null
+        }
+      ]
+    }
+  },
+  "total_cases": 392,
+  "content_hash": "sha256:17a626838c2f7e0e4672d96de58be78cd0a4f802e73cae3fe0665805cd56b51d"
+}

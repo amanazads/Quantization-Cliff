@@ -1,0 +1,22 @@
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+.DS_Store
+
+# Backups written by scripts/rescore.py
+*.jsonl.bak
+
+# Raw results are COMMITTED by default: they are the evidence behind the report,
+# and a findings document without its raw data is not reproducible. They are
+# small (a few MB of JSONL). Uncomment only if your repository host objects, and
+# say so in the findings report if you do.
+# results/
+
+# Local archives and pre-spec scratch
+Claude outputs/
+_stale_pre_spec/
+

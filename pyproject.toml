@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ps5-quantization-cliff"
+version = "1.0.0"
+description = "PS-5: a controlled experiment measuring how quantization affects guardrail adherence and structured-output validity in an open-weight collections agent"
+requires-python = ">=3.9"
+dependencies = [
+    "PyYAML>=6.0,<7",
+    "requests>=2.31,<3",
+    "matplotlib>=3.7,<4",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=7.4"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src", "tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 100
+target-version = "py39"

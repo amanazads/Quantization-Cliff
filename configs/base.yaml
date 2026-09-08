@@ -1,0 +1,64 @@
+# Shared experimental configuration.
+# EVERY precision inherits this file unchanged. Anything defined here is a
+# CONTROLLED variable: if a precision overrides one of these, aggregate_results.py
+# will detect the hash divergence and refuse to produce a comparison without
+# --allow-deviation, which records the deviation in the findings report.
+#
+# The ONLY key an experiment config is expected to override is `precision` and
+# the model tag / backend settings that realise it.
+
+experiment:
+  suite_ids: [ps1, ps3]
+  repeats: 1                 # raise to estimate run-to-run variance; recorded per case
+  results_root: results
+
+# ---- Controlled: identical across all precisions ----------------------------
+prompt:
+  path: prompts/collections_agent_v2.md
+  version: "2.0.0-spec-6.4"
+
+schemas:
+  path: schemas/tools.json
+
+manifest:
+  path: data/evaluation_manifest.json
+
+generation:
+  # Greedy decoding. Determinism is best-effort; see docs/METRICS.md section 7.
+  temperature: 0.0
+  top_p: 1.0
+  top_k: 1
+  seed: 20260907
+  max_tokens: 512
+  stop: []
+  # Uniform retry policy. Applies identically to every case at every precision.
+  # Retries are for TRANSPORT failures only, never for a response we dislike.
+  transport_retries: 2
+  transport_retry_backoff_s: 2.0
+  request_timeout_s: 180
+
+concurrency:
+  # Serial by default. Concurrency changes batching inside llama.cpp, which can
+  # perturb numerics; keeping it at 1 removes that as a confound.
+  max_parallel: 1
+
+scoring:
+  metric_spec_version: "2.0.0-spec-6.4"
+  cliff_criterion_path: configs/cliff_criterion.yaml
+
+# ---- Model identity: held constant in FAMILY across precisions --------------
+# Only the quantization of these weights may differ between experiment configs.
+model:
+  # Model family and size are CONTROLLED variables: identical across every arm.
+  # Qwen3.5-4B is the specification's "turn-loop candidate, smallest viable"
+  # (Section 5, Models in scope). Qwen3.5-9B is the specification's primary
+  # Track 1 candidate and is the stronger choice wherever memory allows -- change
+  # `parameters` to "9b" and the four Ollama tags together, never one arm alone.
+  #
+  # Memory needed by the Ollama arms at 4B: Q4 3.4 GB, Q8 5.3 GB, FP8 5.6 GB,
+  # BF16 9.3 GB. The BF16 REFERENCE arm therefore needs more than 8 GB of unified
+  # memory; the specification's own Track 1 minimum is 16 GB.
+  family: "qwen3.5"
+  parameters: "4b"
+  variant: "base"
+  # Concrete per-backend tag is set in each experiment config.
