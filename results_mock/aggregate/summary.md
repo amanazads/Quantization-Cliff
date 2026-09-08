@@ -3,14 +3,14 @@
 > ## SYNTHETIC DATA -- NOT A RESULT
 > At least one arm came from the mock backend. Every number below is a FABRICATED pipeline-validation fixture and must not be cited as a measurement of any model.
 
-- generated: `2026-09-08T04:35:37.370608+00:00`
+- generated: `2026-09-08T13:13:42.298630+00:00`
 - metric spec: `1.0.0`
 - reference precision: `bf16`
 - arms present: `bf16`, `fp8`, `q4`, `q8`
 
 ## Comparability
 
-All control fields matched across arms: `manifest_hash`, `system_prompt_hash`, `tool_schema_hash`, `generation_config_hash`, `metric_spec_version`, `guardrail_rules_hash`, `hardware_fingerprint`.
+All control fields matched across arms: `manifest_hash`, `system_prompt_hash`, `tool_schema_hash`, `generation_config_hash`, `metric_spec_version`, `guardrail_rules_hash`, `hardware_fingerprint`, `thinking_mode`.
 - WARNING: Arms ['bf16', 'fp8', 'q4', 'q8'] were produced by the SYNTHETIC mock backend. Their numbers are FABRICATED pipeline-validation fixtures and are not measurements of any model.
 
 ## PS1 metrics

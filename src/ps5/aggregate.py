@@ -118,10 +118,31 @@ def discover_runs(results_root: Path, precisions: Optional[Sequence[str]] = None
     return runs
 
 
+def _effective_thinking(run: Run) -> Optional[bool]:
+    """Was thinking mode actually ON for this arm? None when unrecorded.
+
+    Not the same question as "did we ask for it off". A model with no thinking
+    mode rejects the parameter, so the request was not honoured and yet thinking
+    is off — that arm is comparable with one where the parameter was accepted.
+    What is not comparable is an arm where thinking actually ran.
+    """
+    info = (run.metadata.get("backend", {}) or {}).get("info", {}) or {}
+    requested = info.get("thinking_disable_requested")
+    if requested is None:
+        return None
+    if not requested:
+        return True  # not disabled, so assume the model's default (on) applied
+    if info.get("thinking_disable_sent") or info.get("thinking_unsupported_by_model"):
+        return False
+    return None
+
+
 def check_comparability(runs: Dict[str, Run], allow_deviation: bool = False) -> Dict[str, Any]:
     """Verify that the arms differ ONLY in precision."""
     report: Dict[str, Any] = {
-        "checked_fields": [f for f, _ in CONTROL_FIELDS],
+        # `thinking_mode` is verified below rather than by hash comparison, but it
+        # is a checked control and the report must say so.
+        "checked_fields": [f for f, _ in CONTROL_FIELDS] + ["thinking_mode"],
         "arms": sorted(runs),
         "divergences": [],
         "warnings": [],
@@ -178,6 +199,36 @@ def check_comparability(runs: Dict[str, Run], allow_deviation: bool = False) -> 
             "algorithms differ between serving stacks (e.g. GGUF Q4_K_M vs AWQ "
             "W4A16), so cross-backend deltas confound the algorithm with the "
             "bit-width. Treat this comparison as indicative only."
+        )
+
+    # Thinking mode. The specification requires it off for every run, and since
+    # it is negotiated with the server at run time rather than fixed in the
+    # config, it is the one control that can silently differ between arms without
+    # any file on disk changing. An arm that reasoned before answering is not
+    # comparable with one that did not: it spends several times the tokens and
+    # would look better for a reason that has nothing to do with precision.
+    thinking = {p: _effective_thinking(r) for p, r in runs.items()}
+    determinate = {p: v for p, v in thinking.items() if v is not None}
+    if len(set(determinate.values())) > 1:
+        report["comparable"] = False
+        report["divergences"].append({
+            "field": "thinking_mode",
+            "describes": "whether the model reasoned before answering",
+            "values": {p: ("ENABLED" if v else "disabled") if v is not None else "unknown"
+                       for p, v in thinking.items()},
+            "consequence": (
+                "Thinking mode was not in the same state across arms. The "
+                "specification requires it disabled for every run; an arm that "
+                "had it enabled generated far more tokens and cannot be compared "
+                "with one that did not."
+            ),
+        })
+    indeterminate = sorted(p for p, v in thinking.items() if v is None)
+    if indeterminate:
+        report["warnings"].append(
+            f"Thinking mode could not be verified for arms {indeterminate} — the "
+            "backend recorded no thinking status. It is assumed to have been "
+            "disabled as configured, but that assumption is not evidence."
         )
 
     synthetic = [p for p, r in runs.items() if r.synthetic]

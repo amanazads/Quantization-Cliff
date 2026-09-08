@@ -5,6 +5,10 @@
 #   bash scripts/run_all.sh vllm       # all four precisions
 #   bash scripts/run_all.sh mock       # pipeline validation, FABRICATED output
 #
+# A second argument overrides the results root. Mock runs default to
+# `results_mock/` so a pipeline check can never land on top of measured arms;
+# mixing the two in one root is refused before anything runs.
+#
 # Use `bash scripts/run_all.sh ...` rather than `./scripts/run_all.sh ...` unless
 # you have run `chmod +x scripts/*.sh`; the execute bit does not survive every
 # way this repository might reach your machine.
@@ -15,7 +19,15 @@
 set -uo pipefail
 
 BACKEND="${1:-ollama}"
-RESULTS_ROOT="${2:-results}"
+# A mock run defaults to its OWN results root. The raw JSONL is the primary
+# evidence of the experiment and each real arm costs a long time to produce, so a
+# pipeline check run afterwards must not be able to overwrite it. An explicit
+# second argument still wins -- this is a safe default, not a restriction.
+if [ "$BACKEND" = "mock" ]; then
+  RESULTS_ROOT="${2:-results_mock}"
+else
+  RESULTS_ROOT="${2:-results}"
+fi
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$REPO"
 
@@ -95,6 +107,42 @@ if ! "$PY" scripts/build_manifest.py --check; then
   exit 1
 fi
 echo
+
+# --------------------------------------------------------------------------- #
+# Refuse to mix fabricated and measured arms in one results root.
+#
+# The aggregator warns about synthetic arms, but by then the raw JSONL of a real
+# arm may already have been overwritten -- and that file is the evidence, costly
+# to reproduce. So the check happens BEFORE anything runs, and refuses.
+# --------------------------------------------------------------------------- #
+CLASH="$("$PY" - "$RESULTS_ROOT" "$BACKEND" <<'PY'
+import json, sys
+from pathlib import Path
+root, backend = Path(sys.argv[1]), sys.argv[2]
+incoming_synthetic = backend == "mock"
+for meta in sorted(root.glob("*/metadata.json")):
+    try:
+        existing = bool(json.loads(meta.read_text())["backend"]["synthetic"])
+    except Exception:
+        continue
+    if existing != incoming_synthetic:
+        print(f"{meta.parent.name}:{'synthetic' if existing else 'real'}")
+PY
+)"
+if [ -n "$CLASH" ]; then
+  echo "ABORT: '$RESULTS_ROOT' already holds arms of the other kind:"
+  for ARM in $CLASH; do echo "    ${ARM%%:*}  (${ARM##*:})"; done
+  echo
+  if [ "$BACKEND" = "mock" ]; then
+    echo "  Those are MEASURED results. A pipeline check must not overwrite them."
+    echo "  Run:  bash scripts/run_all.sh mock results_mock"
+  else
+    echo "  Those are FABRICATED mock arms. Aggregating them alongside real ones"
+    echo "  would put invented numbers in the findings report."
+    echo "  Remove them first:  rm -rf $RESULTS_ROOT"
+  fi
+  exit 1
+fi
 
 # --------------------------------------------------------------------------- #
 # Preflight: report every arm's readiness at once, before running anything.

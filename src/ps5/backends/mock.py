@@ -109,6 +109,13 @@ class MockBackend(Backend):
             "precision_id": self.precision_id,
             "profile": self.profile,
             "salt": self.salt,
+            # Reported so the aggregator's thinking-mode check sees a determinate
+            # value rather than warning on every pipeline-validation run. A
+            # warning that always fires teaches the reader to skip the warnings.
+            "thinking_disable_requested": True,
+            "thinking_disable_sent": True,
+            "thinking_unsupported_by_model": False,
+            "thinking_status": "not applicable: no model is invoked",
         }
 
     def health_check(self) -> None:

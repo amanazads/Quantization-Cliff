@@ -4,7 +4,7 @@ Track 2, PS-5 of the Predixion AI Open-Weight Collections Agent Challenge.
 
 Locates the precision at which quantization actually breaks instruction-following and structured output, by re-running the PS-1 and PS-3 suites at **Q4, Q8, FP8 and BF16** on identical hardware with every other variable held fixed and hash-verified.
 
-> **Status.** The framework is complete, spec-aligned and validated end-to-end against a deterministic mock backend (**198 tests passing**). **No model has been run yet**, so `reports/FINDINGS.md` contains placeholders, not results. §4 gives the exact commands.
+> **Status.** The framework is complete, spec-aligned and validated end-to-end against a deterministic mock backend (**223 tests passing**). **No model has been run yet**, so `reports/FINDINGS.md` contains placeholders, not results. §4 gives the exact commands.
 
 ---
 
@@ -34,7 +34,7 @@ PS-5 is judged on **experimental control above all**, so control here is *enforc
 | PS-3: 200-case suite against the fixed schemas | 200 cases: 136 tool-expected, 32 no-call, 32 deliberately ambiguous |
 | PS-3: argument-level accuracy, not just tool selection | `capture_ptp` with a wrong amount or date scores `wrong_arguments`, never a pass |
 | PS-3: English-vs-Hinglish delta, *"the headline number"* | Reported per arm with a Newcombe interval, in both findings documents |
-| Thinking mode disabled, §5, *"required for every run"* | Sent unconditionally by both backends (`think: false` / `enable_thinking: false`) |
+| Thinking mode disabled, §5, *"required for every run"* | Requested by both backends (`think: false` / `enable_thinking: false`), the outcome recorded per arm, and **verified equal across arms** by the aggregator — see §5.1 |
 | Findings document, max four pages | `reports/FINDINGS.md` (concise) + `reports/FINDINGS_FULL.md` (appendix), both rendered from one aggregate |
 | Raw results as structured data | JSONL per case, retaining full model output for re-scoring |
 | Limitations section, *"we weight it"* | `docs/METRICS.md` §7, declared before results, reproduced into the report |
@@ -69,7 +69,7 @@ scripts/
   make_plots.py generate_report.py rescore.py validation_subset.py
   run_all.sh   suite_content/{ps1,ps3}_content.py
 docs/METRICS.md              metric + cliff spec, frozen before any run
-tests/                       198 tests
+tests/                       223 tests
 ```
 
 ---
@@ -114,7 +114,7 @@ export PYTHONPATH="$PWD/src:$PYTHONPATH"
 ```bash
 python3 scripts/build_suites.py --check
 python3 scripts/build_manifest.py --check
-python3 -m pytest -q                     # 198 tests
+python3 -m pytest -q                     # 223 tests
 ```
 
 ### 4.3 Check what can run, before running anything
@@ -128,10 +128,12 @@ Reports every arm's readiness in one pass — present, missing (with the exact `
 ### 4.4 Validate the pipeline with no model at all
 
 ```bash
-bash scripts/run_all.sh mock results_mock
+bash scripts/run_all.sh mock
 ```
 
-Output is **fabricated**: watermarked, flagged `synthetic: true` in every record, written only to `_MOCK` paths, and blocked from the real findings report unless forced.
+Output is **fabricated**: watermarked, flagged `synthetic: true` in every record, written to `results_mock/` and the `_MOCK` report paths, and blocked from the real findings report unless forced.
+
+The separation is enforced, not conventional. A mock run defaults to its own results root, and `run_all.sh` refuses outright to write fabricated arms into a root that already holds measured ones — or the reverse — **before** running anything. Each real arm is a long serial run and its raw JSONL is the primary evidence; a pipeline check that quietly overwrote it would be unrecoverable.
 
 ### 4.5 Option A — local Ollama
 
@@ -223,6 +225,21 @@ Extra calls beyond the expected one are `spurious_call`, not partial success: an
 Past the cliff requires **both**: degradation ≥ the pre-registered threshold (**2.0 pp** safety, **5.0 pp** structured output) **and** a Newcombe 95% interval on the difference that excludes zero. The asymmetry is deliberate — a conduct breach is a regulatory event, a malformed tool call is a retry. **These thresholds are this repository's convention, not the challenge's**; `docs/METRICS.md` §4.3 justifies them.
 
 A **cliff** (one dominant step) is distinguished from **gradual degradation** and from **no detected degradation**. `minimum_viable_precision` is computed, not chosen: the lowest-fidelity precision not past the cliff on *any* headline metric in *either* suite — so safe-but-broken does not qualify, nor the reverse.
+
+### 5.1 Thinking mode — the one control that is negotiated at run time
+
+Every other control is fixed in a file and hashed. Thinking mode is not: Ollama returns **HTTP 400** for `think` on a model that has no thinking mode, so the parameter cannot simply be sent and forgotten. Sending it blindly failed *every case in the arm* with an opaque `400 Bad Request`, which is worse than a crash — the other three arms still produce a comparison table, so an entire precision goes missing quietly.
+
+It is therefore negotiated **once per arm**: sent on the first request; if the server rejects it *for that reason* (a 4xx whose body mentions thinking — any other 400 still fails loudly, since silently changing the request would alter the arm's configuration), it is dropped for the rest of the arm. Which of the two happened is recorded in `metadata.json`:
+
+```json
+"thinking_disable_requested": true,
+"thinking_disable_sent":      false,
+"thinking_unsupported_by_model": true,
+"thinking_status": "model has no thinking mode; nothing to disable"
+```
+
+Both outcomes mean thinking did not run, so both are comparable. What is *not* comparable is an arm where it did: the aggregator reads these fields across arms and **refuses the comparison** if they disagree, and warns when an arm recorded nothing rather than assuming the control held. An arm that reasoned before answering spends several times the tokens of one that did not, and would look better for a reason that has nothing to do with precision.
 
 ---
 

@@ -32,6 +32,12 @@ class OllamaBackend(Backend):
         super().__init__("ollama", model_tag, options)
         self.host = (self.options.get("host") or DEFAULT_HOST).rstrip("/")
         self._resolved: Optional[Dict[str, Any]] = None
+        #: Whether `think: false` was sent and accepted. Ollama rejects the
+        #: parameter outright on models with no thinking mode, so this is
+        #: negotiated once on the first request and then held for the whole arm.
+        #: Recorded in metadata so a reader can see which it was.
+        self._send_think: bool = bool(self.options.get("disable_thinking", True))
+        self._think_rejected: bool = False
 
     # -- lifecycle ---------------------------------------------------------- #
 
@@ -97,6 +103,17 @@ class OllamaBackend(Backend):
             "host": self.host,
             "synthetic": False,
             "resolved": self._resolved or {},
+            # The specification requires thinking mode off for every run, so
+            # whether that was actually applied is recorded, not assumed.
+            "thinking_disable_requested": bool(self.options.get("disable_thinking", True)),
+            "thinking_disable_sent": self._send_think,
+            "thinking_unsupported_by_model": self._think_rejected,
+            "thinking_status": (
+                "model has no thinking mode; nothing to disable"
+                if self._think_rejected else
+                "think:false sent and accepted" if self._send_think else
+                "not requested"
+            ),
         }
 
     def unload(self) -> None:
@@ -162,15 +179,29 @@ class OllamaBackend(Backend):
         # "Thinking mode must be disabled for every Track 1 run." The Qwen3.x line
         # ships with it on and it generates roughly 2-5x more tokens, which would
         # inflate token counts, distort latency, and interact with max_tokens
-        # differently at different precisions. Sent unconditionally so it cannot
-        # be on for one arm and off for another; harmless on non-thinking models.
-        if self.options.get("disable_thinking", True):
+        # differently at different precisions.
+        #
+        # Ollama returns 400 for `think` on a model that has no thinking mode, so
+        # the parameter cannot be sent unconditionally: doing so would fail every
+        # single case and destroy the whole arm. It is negotiated once -- sent on
+        # the first request, and if the server rejects it for that reason, dropped
+        # for the rest of the arm and recorded in metadata. Dropping it is safe
+        # precisely because such a model has no thinking mode to leave on, so the
+        # control the specification asks for still holds.
+        if self._send_think:
             payload["think"] = False
 
         last_error: Optional[str] = None
         last_kind: Optional[str] = None
 
-        for attempt in range(1, generation.transport_retries + 2):
+        attempt = 0
+        max_attempts = generation.transport_retries + 1
+        # Renegotiating `think` is not a transport retry and must not consume the
+        # retry budget, so it is granted one extra attempt of its own.
+        think_retry_granted = False
+
+        while attempt < max_attempts:
+            attempt += 1
             started = time.perf_counter()
             try:
                 resp = requests.post(
@@ -188,19 +219,78 @@ class OllamaBackend(Backend):
             except requests.ConnectionError as exc:
                 last_error, last_kind = str(exc), "connection"
             except requests.HTTPError as exc:
-                last_error, last_kind = str(exc), "http"
+                # The status line alone ("400 Client Error: Bad Request") says
+                # nothing about the cause. Ollama puts the reason in the body, so
+                # it is surfaced -- both to diagnose the think case below and so
+                # that any other 400 reaches the operator legibly instead of as an
+                # anonymous failure repeated across every case in the arm.
+                body_text = ""
+                try:
+                    body_text = (exc.response.text or "")[:500] if exc.response is not None else ""
+                except Exception:  # pragma: no cover - defensive
+                    body_text = ""
+                last_error = f"{exc}{(': ' + body_text) if body_text else ''}"
+                last_kind = "http"
+
+                if (
+                    not think_retry_granted
+                    and self._send_think
+                    and "think" in payload
+                    and self._is_think_unsupported(exc, body_text)
+                ):
+                    # Negotiated once per backend instance, so the remaining cases
+                    # in this arm go out without the parameter and never pay this
+                    # round trip again.
+                    self._send_think = False
+                    self._think_rejected = True
+                    payload.pop("think", None)
+                    think_retry_granted = True
+                    max_attempts += 1
+                    continue  # immediate retry, no backoff: nothing is overloaded
             except ValueError as exc:  # undecodable JSON envelope
                 last_error, last_kind = f"invalid JSON envelope: {exc}", "other"
 
-            if attempt <= generation.transport_retries:
+            if attempt < max_attempts:
                 time.sleep(generation.transport_retry_backoff_s * attempt)
 
         return GenerationResult(
             ok=False,
             error=last_error,
             error_kind=last_kind,
-            attempts=generation.transport_retries + 1,
+            attempts=attempt,
         )
+
+    # -- `think` negotiation ------------------------------------------------- #
+
+    #: Substrings that identify a rejection of the `think` parameter itself, as
+    #: opposed to any other 400. Ollama's wording has changed across releases
+    #: ("does not support thinking", "thinking is not supported by this model"),
+    #: so matching is on the concept, not one exact string.
+    _THINK_REJECTION_MARKERS = (
+        "does not support thinking",
+        "thinking is not supported",
+        "not support thinking",
+        "thinking not supported",
+        '"think"',
+        "'think'",
+        " think ",
+    )
+
+    @classmethod
+    def _is_think_unsupported(cls, exc: requests.HTTPError, body_text: str) -> bool:
+        """Is this 400 specifically a rejection of `think`, or something else?
+
+        Narrow on purpose. Retrying without `think` after an unrelated 400 would
+        silently drop the thinking control and leave the arm running under a
+        different configuration from its siblings -- an uncontrolled variable
+        introduced by an error handler. So the retry fires only on a 4xx whose
+        body actually mentions thinking; anything else fails loudly.
+        """
+        status = getattr(exc.response, "status_code", None)
+        if status is None or not (400 <= int(status) < 500):
+            return False
+        haystack = f" {body_text.lower()} "
+        return any(marker in haystack for marker in cls._THINK_REJECTION_MARKERS)
 
     @staticmethod
     def _parse(body: Dict[str, Any], latency_ms: float, attempt: int) -> GenerationResult:

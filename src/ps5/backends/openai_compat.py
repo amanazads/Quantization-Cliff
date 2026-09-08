@@ -67,12 +67,26 @@ class OpenAICompatBackend(Backend):
         self._resolved = {"served_models": served}
 
     def describe(self) -> Dict[str, Any]:
+        # Same thinking-status fields as the Ollama backend, so the aggregator's
+        # cross-arm check reads one shape regardless of serving stack. On vLLM the
+        # flag is a chat-template argument: an unsupported one is ignored rather
+        # than rejected, so there is nothing to negotiate and "sent" is simply
+        # what was configured. That it cannot be confirmed is stated, not glossed.
+        requested = bool(self.options.get("disable_thinking", True))
         return {
             "backend": self.name,
             "model_tag": self.model_tag,
             "base_url": self.base_url,
             "synthetic": False,
             "resolved": self._resolved or {},
+            "thinking_disable_requested": requested,
+            "thinking_disable_sent": requested,
+            "thinking_unsupported_by_model": False,
+            "thinking_status": (
+                "enable_thinking:false passed via chat_template_kwargs "
+                "(silently ignored if the template has no such flag)"
+                if requested else "not requested"
+            ),
         }
 
     # -- generation --------------------------------------------------------- #

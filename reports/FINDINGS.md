@@ -16,8 +16,10 @@
 >
 > A fully populated example built from the deterministic mock backend is in
 > `reports/FINDINGS_MOCK.md`. Every number there is fabricated and watermarked;
-> it demonstrates the pipeline, not the model. `run_all.sh mock` writes only to
-> `_MOCK` paths and cannot overwrite this file.
+> it demonstrates the pipeline, not the model. `run_all.sh mock` writes to
+> `results_mock/` and the `_MOCK` report paths, cannot overwrite this file, and
+> refuses to start at all if asked to write into a results root that already
+> holds measured arms.
 
 ---
 

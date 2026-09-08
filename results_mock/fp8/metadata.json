@@ -1,6 +1,6 @@
 {
-  "experiment_id": "fp8-mock-2518c838-20260908T043536Z",
-  "created_at_utc": "2026-09-08T04:35:36.605580+00:00",
+  "experiment_id": "fp8-mock-2518c838-20260908T131341Z",
+  "created_at_utc": "2026-09-08T13:13:41.492045+00:00",
   "precision": {
     "id": "fp8",
     "label": "FP8",
@@ -39,7 +39,11 @@
         "ps3_spurious": 0.02,
         "gen_failure": 0.0
       },
-      "salt": "ps5-mock-v1"
+      "salt": "ps5-mock-v1",
+      "thinking_disable_requested": true,
+      "thinking_disable_sent": true,
+      "thinking_unsupported_by_model": false,
+      "thinking_status": "not applicable: no model is invoked"
     }
   },
   "generation_config": {
@@ -82,7 +86,7 @@
   "repeats": 1,
   "case_limit_applied": null,
   "environment": {
-    "captured_at_utc": "2026-09-08T04:35:36.576976+00:00",
+    "captured_at_utc": "2026-09-08T13:13:41.444223+00:00",
     "os": {
       "system": "Linux",
       "release": "6.8.0-136-generic",
@@ -130,11 +134,28 @@
       "pytest": "9.1.1"
     },
     "git": {
-      "commit": null,
-      "branch": null,
-      "is_repo": false,
-      "dirty": null,
-      "dirty_files": []
+      "commit": "18f42c3f9d3cf4c153d0b1b00697869ec32c568c",
+      "branch": "main",
+      "is_repo": true,
+      "dirty": true,
+      "dirty_files": [
+        "M README.md",
+        " M docs/METRICS.md",
+        " M docs/SUBMISSION_CHECKLIST.md",
+        " M reports/FINDINGS.md",
+        " M results_mock/bf16/metadata.json",
+        " M results_mock/bf16/ps1_results.jsonl",
+        " M results_mock/bf16/ps3_results.jsonl",
+        " M results_mock/fp8/ps1_results.jsonl",
+        " M results_mock/fp8/ps3_results.jsonl",
+        " M scripts/run_all.sh",
+        " M src/ps5/aggregate.py",
+        " M src/ps5/backends/mock.py",
+        " M src/ps5/backends/ollama.py",
+        " M src/ps5/backends/openai_compat.py",
+        " M tests/test_pipeline.py",
+        "?? tests/test_backends.py"
+      ]
     },
     "hostname": "claude",
     "hardware_fingerprint": "sha256:83402de9a7e0792ff1425d2bc580b2e5b5adc67b80056b4222713c730d0b0dfd"

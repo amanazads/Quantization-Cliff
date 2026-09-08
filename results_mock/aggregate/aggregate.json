@@ -1,11 +1,11 @@
 {
-  "generated_at_utc": "2026-09-08T04:35:37.370608+00:00",
+  "generated_at_utc": "2026-09-08T13:13:42.298630+00:00",
   "aggregate_version": "1.0.0",
   "metric_spec_version": "1.0.0",
   "synthetic": true,
   "arms": {
     "bf16": {
-      "experiment_id": "bf16-mock-2518c838-20260908T043535Z",
+      "experiment_id": "bf16-mock-2518c838-20260908T131340Z",
       "model": {
         "id": "qwen3.5-4b-base",
         "family": "qwen3.5",
@@ -37,8 +37,8 @@
         "cuda_version": null,
         "compute_capability": null,
         "python": "3.10.12",
-        "git_commit": null,
-        "git_dirty": null
+        "git_commit": "18f42c3f9d3cf4c153d0b1b00697869ec32c568c",
+        "git_dirty": true
       },
       "generation_config": {
         "temperature": 0.0,
@@ -65,7 +65,7 @@
       ]
     },
     "fp8": {
-      "experiment_id": "fp8-mock-2518c838-20260908T043536Z",
+      "experiment_id": "fp8-mock-2518c838-20260908T131341Z",
       "model": {
         "id": "qwen3.5-4b-base",
         "family": "qwen3.5",
@@ -97,8 +97,8 @@
         "cuda_version": null,
         "compute_capability": null,
         "python": "3.10.12",
-        "git_commit": null,
-        "git_dirty": null
+        "git_commit": "18f42c3f9d3cf4c153d0b1b00697869ec32c568c",
+        "git_dirty": true
       },
       "generation_config": {
         "temperature": 0.0,
@@ -125,7 +125,7 @@
       ]
     },
     "q4": {
-      "experiment_id": "q4-mock-2518c838-20260908T043537Z",
+      "experiment_id": "q4-mock-2518c838-20260908T131341Z",
       "model": {
         "id": "qwen3.5-4b-base",
         "family": "qwen3.5",
@@ -157,8 +157,8 @@
         "cuda_version": null,
         "compute_capability": null,
         "python": "3.10.12",
-        "git_commit": null,
-        "git_dirty": null
+        "git_commit": "18f42c3f9d3cf4c153d0b1b00697869ec32c568c",
+        "git_dirty": true
       },
       "generation_config": {
         "temperature": 0.0,
@@ -185,7 +185,7 @@
       ]
     },
     "q8": {
-      "experiment_id": "q8-mock-2518c838-20260908T043536Z",
+      "experiment_id": "q8-mock-2518c838-20260908T131341Z",
       "model": {
         "id": "qwen3.5-4b-base",
         "family": "qwen3.5",
@@ -217,8 +217,8 @@
         "cuda_version": null,
         "compute_capability": null,
         "python": "3.10.12",
-        "git_commit": null,
-        "git_dirty": null
+        "git_commit": "18f42c3f9d3cf4c153d0b1b00697869ec32c568c",
+        "git_dirty": true
       },
       "generation_config": {
         "temperature": 0.0,
@@ -254,7 +254,8 @@
       "generation_config_hash",
       "metric_spec_version",
       "guardrail_rules_hash",
-      "hardware_fingerprint"
+      "hardware_fingerprint",
+      "thinking_mode"
     ],
     "arms": [
       "bf16",

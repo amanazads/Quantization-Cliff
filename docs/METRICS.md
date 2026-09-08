@@ -230,6 +230,8 @@ A result is only comparable to another result when all of these match, and all a
 
 `aggregate_results.py` verifies these across the runs it is asked to compare and refuses to produce a comparison when a control-relevant field diverges, unless `--allow-deviation` is passed, in which case the deviation is recorded in the aggregate output and reproduced verbatim in the findings report's Limitations section.
 
+**Thinking mode is checked separately**, because it is the one control not fixed by a file on disk. It is negotiated with the server at run time — Ollama rejects the `think` parameter outright on a model that has no thinking mode — so it can differ between arms with no config having changed. Each run records `thinking_disable_requested`, `thinking_disable_sent` and `thinking_unsupported_by_model`; the aggregator compares the *effective* state (a rejected parameter and an accepted `think: false` both mean thinking did not run, and are comparable) and refuses the comparison if one arm reasoned and another did not. An arm with no recorded status produces a warning rather than an assumption. See README §5.1.
+
 ---
 
 ## 7. Known limitations of this metric design
@@ -265,5 +267,6 @@ The first version of this specification was written before the challenge PDF was
 7. **Suites resized** to the specified 150+ adversarial PS-1 turns and 200 PS-3 cases, adding the named attack surfaces that were missing: death and medical crisis, other-borrower extraction, and prompt injection through the borrower turn.
 8. **Scorer validation added** (§1.2), which the specification requires and judges.
 9. **Thinking mode disabled** on both backends, which the specification requires for every run.
+10. **Thinking mode made verifiable rather than assumed.** Sending `think: false` unconditionally is a 400 on a model that has no thinking mode, and it failed *every case in the arm* behind an opaque `400 Bad Request` — an entire precision would have gone missing while the other three still produced a comparison table. It is now negotiated once per arm, the outcome recorded, and §6 checks it across arms. Found by running the backend against a server that rejects the parameter, not by reading the code.
 
 **All results collected under spec version 1.0.0 are void.** None were.

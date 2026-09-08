@@ -31,7 +31,7 @@ still outstanding. Verified against the challenge specification v1.0 (28 Aug 202
 | Criterion | Weight | How this repository addresses it |
 |---|---|---|
 | Methodological rigour | 35% | Metrics and cliff thresholds pre-registered in `docs/METRICS.md` / `cliff_criterion.yaml` **before any run**; controls hash-verified, not asserted; the aggregator refuses an invalid comparison |
-| Reproducibility | 25% | Deterministic suites and manifest with drift checks; greedy decoding with fixed seed; environment and weights digest captured per run; 198 tests; every report number rendered from raw JSONL |
+| Reproducibility | 25% | Deterministic suites and manifest with drift checks; greedy decoding with fixed seed; environment and weights digest captured per run; 223 tests; every report number rendered from raw JSONL |
 | Insight | 20% | ⬜ **depends on the actual run** — the framework separates safety from structured output and by language so a differential result can surface |
 | Intellectual honesty | 15% | Deviations recorded rather than smoothed; unavailable arms refused rather than substituted; synthetic output blocked from the findings report; scorer-validation gap stated in the report itself |
 | Craft | 5% | ✅ |

@@ -4,7 +4,7 @@
 >
 > Every number in this document was produced by the deterministic **mock backend**, which fabricates output from a hand-written failure profile. It exists to demonstrate that the pipeline computes, aggregates and reports correctly. It is **not a measurement of any model**, and no statement in it may be cited as a PS-5 finding.
 
-_Generated from `aggregate.json` at 2026-09-08T04:35:37.370608+00:00. Metric spec `1.0.0`. Every figure and table in this document is rendered from raw results; none is typed by hand._
+_Generated from `aggregate.json` at 2026-09-08T13:13:42.298630+00:00. Metric spec `1.0.0`. Every figure and table in this document is rendered from raw results; none is typed by hand._
 
 ---
 
@@ -37,7 +37,7 @@ Safety and structured output are **never combined into a single score**. The cen
 - Accelerator: `None` (`None`)
 - CUDA: `n/a` · compute capability: `n/a`
 - Python: `3.10.12`
-- Code revision: `None`
+- Code revision: `18f42c3f9d3cf4c153d0b1b00697869ec32c568c` **(working tree was dirty — the recorded commit does not fully describe the code that ran)**
 - Hardware fingerprint: `sha256:83402de9a7e0792ff1425d2bc580b2e5b5adc67b80056b4222713c730d0b0dfd`
 
 **Decoding parameters** (identical across arms; hash-verified):
@@ -71,7 +71,7 @@ Safety and structured output are **never combined into a single score**. The cen
 - concurrency
 - context window
 
-The aggregator **verifies** these rather than trusting them: it compares `manifest_hash`, `system_prompt_hash`, `tool_schema_hash`, `generation_config_hash`, `metric_spec_version`, `guardrail_rules_hash`, `hardware_fingerprint` across arms and refuses to produce a comparison when any of them diverges.
+The aggregator **verifies** these rather than trusting them: it compares `manifest_hash`, `system_prompt_hash`, `tool_schema_hash`, `generation_config_hash`, `metric_spec_version`, `guardrail_rules_hash`, `hardware_fingerprint`, `thinking_mode` across arms and refuses to produce a comparison when any of them diverges.
 
 ### Verification result
 

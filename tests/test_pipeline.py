@@ -170,6 +170,58 @@ def test_differing_model_tags_are_expected_and_allowed():
     assert check_comparability(runs)["comparable"] is True
 
 
+# -- thinking mode ---------------------------------------------------------- #
+#
+# Unlike every other control, this one is negotiated with the server at run time
+# rather than fixed in a config file, so it can diverge between arms with nothing
+# on disk having changed. That makes it the control most worth checking.
+
+def _backend(name="ollama", **thinking):
+    info = {"thinking_disable_requested": True, "thinking_disable_sent": True,
+            "thinking_unsupported_by_model": False}
+    info.update(thinking)
+    return {"name": name, "synthetic": False, "info": info}
+
+
+def test_uniformly_disabled_thinking_is_comparable():
+    runs = {p: FakeRun(p, backend=_backend()) for p in ["bf16", "q8", "q4"]}
+    report = check_comparability(runs)
+    assert report["comparable"] is True
+    assert not any("Thinking" in w for w in report["warnings"])
+
+
+def test_thinking_enabled_on_one_arm_blocks_the_comparison():
+    """An arm that reasoned first spends several times the tokens of one that did not."""
+    runs = {"bf16": FakeRun("bf16", backend=_backend()),
+            "q4": FakeRun("q4", backend=_backend(thinking_disable_requested=False))}
+    with pytest.raises(ComparabilityError) as exc:
+        check_comparability(runs)
+    assert "thinking_mode" in str(exc.value)
+
+
+def test_a_model_without_thinking_mode_is_still_comparable():
+    """Rejected `think` and accepted `think:false` both mean thinking did not run.
+
+    Failing here would be a false alarm that stops a valid comparison, which is
+    as damaging as missing a real divergence.
+    """
+    runs = {
+        "bf16": FakeRun("bf16", backend=_backend()),
+        "q4": FakeRun("q4", backend=_backend(thinking_disable_sent=False,
+                                             thinking_unsupported_by_model=True)),
+    }
+    assert check_comparability(runs)["comparable"] is True
+
+
+def test_unrecorded_thinking_status_warns_rather_than_asserting():
+    """Absence of evidence is reported as such, not as evidence of the control."""
+    runs = {"bf16": FakeRun("bf16", backend=_backend()),
+            "q4": FakeRun("q4", backend={"name": "ollama", "synthetic": False})}
+    report = check_comparability(runs)
+    assert report["comparable"] is True
+    assert any("could not be verified" in w and "q4" in w for w in report["warnings"])
+
+
 # --------------------------------------------------------------------------- #
 # End-to-end
 # --------------------------------------------------------------------------- #
@@ -319,3 +371,46 @@ def test_run_all_resolves_an_interpreter(repo):
     assert 'PY="${PYTHON:-}"' in script
     assert "$REPO/.venv/bin/python" in script, "should work without activating the venv"
     assert "command -v python3" in script
+
+
+def _run_all(repo, args, cwd=None):
+    import subprocess
+    return subprocess.run(["bash", str(repo / "scripts" / "run_all.sh"), *args],
+                          cwd=cwd or repo, capture_output=True, text=True, timeout=300)
+
+
+def test_mock_run_defaults_to_its_own_results_root(repo):
+    """A pipeline check must not be able to land on top of measured arms.
+
+    Each real arm costs a long serial run, and its JSONL is the primary evidence;
+    a default that overwrites it is a trap, not a convenience.
+    """
+    script = (repo / "scripts" / "run_all.sh").read_text(encoding="utf-8")
+    assert 'RESULTS_ROOT="${2:-results_mock}"' in script
+    assert 'RESULTS_ROOT="${2:-results}"' in script
+
+
+def test_mock_refuses_to_write_into_a_root_holding_measured_arms(repo, tmp_path):
+    (tmp_path / "q4").mkdir()
+    (tmp_path / "q4" / "metadata.json").write_text(
+        json.dumps({"backend": {"name": "ollama", "synthetic": False}}), encoding="utf-8")
+
+    proc = _run_all(repo, ["mock", str(tmp_path)])
+    assert proc.returncode == 1
+    assert "ABORT" in proc.stdout
+    assert "q4  (real)" in proc.stdout
+    # And it refused BEFORE running anything, so the evidence is untouched.
+    assert json.loads((tmp_path / "q4" / "metadata.json").read_text())["backend"]["synthetic"] is False
+    assert not (tmp_path / "bf16").exists()
+
+
+def test_a_real_run_refuses_to_aggregate_alongside_fabricated_arms(repo, tmp_path):
+    """Mixing them would put invented numbers into the findings report."""
+    (tmp_path / "q8").mkdir()
+    (tmp_path / "q8" / "metadata.json").write_text(
+        json.dumps({"backend": {"name": "mock", "synthetic": True}}), encoding="utf-8")
+
+    proc = _run_all(repo, ["ollama", str(tmp_path)])
+    assert proc.returncode == 1
+    assert "q8  (synthetic)" in proc.stdout
+    assert "invented numbers" in proc.stdout
