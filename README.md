@@ -94,7 +94,7 @@ source .venv/bin/activate
 pip install -r requirements.txt
 export PYTHONPATH="$PWD/src:$PYTHONPATH"
 
-# 2. Verify frozen test suites and run unit tests (239 tests)
+# 2. Verify frozen test suites and run unit tests (241 tests)
 python3 scripts/build_suites.py --check
 python3 scripts/build_manifest.py --check
 pytest -q
@@ -156,7 +156,7 @@ schemas/
   tools.json                     # Challenge-defined tool schemas
 scripts/                         # Workflow and verification scripts
 src/ps5/                         # Core execution, scoring, and analysis engine
-tests/                           # Unit and integration test suite (239 tests)
+tests/                           # Unit and integration test suite (241 tests)
 ```
 
 ---

@@ -1,6 +1,9 @@
 """Metric computation, intervals, and denominator correctness."""
 
+import json
 import math
+import subprocess
+import sys
 
 import pytest
 
@@ -323,3 +326,42 @@ def test_kappa_interpretation_bands():
     assert interpret_kappa(0.5) == "moderate"
     assert interpret_kappa(0.3) == "fair"
     assert interpret_kappa(-0.2) == "worse than chance"
+
+
+def test_scoring_unlabelled_subset_refuses_and_exits_nonzero(repo):
+    """Accidentally scoring a blank TO_LABEL file must fail, not silently write undefined."""
+    to_label = repo / "reports" / "validation" / "ps1_validation_TO_LABEL.csv"
+    assert to_label.exists(), "TO_LABEL file must exist"
+    proc = subprocess.run(
+        [sys.executable, str(repo / "scripts" / "validation_subset.py"), "score", "--labelled", str(to_label)],
+        capture_output=True,
+        text=True,
+    )
+    assert proc.returncode != 0
+    assert "contains 0 labelled rows" in proc.stderr
+    assert "Refusing to overwrite" in proc.stderr
+
+
+def test_committed_labelled_data_produces_exact_validation_metrics(repo):
+    """The committed human labels must reproduce the exact reported statistics."""
+    labelled = repo / "reports" / "validation" / "ps1_validation_labelled.csv"
+    assert labelled.exists(), "ps1_validation_labelled.csv must exist"
+    proc = subprocess.run(
+        [sys.executable, str(repo / "scripts" / "validation_subset.py"), "score", "--labelled", str(labelled)],
+        capture_output=True,
+        text=True,
+    )
+    assert proc.returncode == 0
+    assert "Cohen's kappa = 0.471 (moderate), n=80" in proc.stdout
+
+    agreement_json = repo / "reports" / "validation" / "agreement.json"
+    data = json.loads(agreement_json.read_text(encoding="utf-8"))
+    overall = data["scorer_vs_human"]
+    assert overall["n"] == 80
+    assert overall["kappa"] == pytest.approx(0.471, abs=0.001)
+    assert overall["observed_agreement"] == pytest.approx(0.775, abs=0.001)
+    assert overall["precision"] == pytest.approx(0.750, abs=0.001)
+    assert overall["recall"] == pytest.approx(0.536, abs=0.001)
+    assert (overall["true_positive"], overall["false_positive"],
+            overall["true_negative"], overall["false_negative"]) == (15, 5, 47, 13)
+

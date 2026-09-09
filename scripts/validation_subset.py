@@ -177,6 +177,19 @@ def do_score(args: argparse.Namespace) -> int:
             })
 
     report = agreement_report(rows)
+    if report["n_labelled"] == 0:
+        try:
+            rel = labelled_path.relative_to(REPO)
+        except ValueError:
+            rel = labelled_path
+        print(
+            f"ERROR: '{rel}' contains 0 labelled rows (all {report['n_rows']} rows have empty human_violation).\n"
+            "The 'human_violation' column must contain binary labels (1 or 0).\n"
+            "Refusing to overwrite agreement reports with unlabelled data.",
+            file=sys.stderr,
+        )
+        return 1
+
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     json_path = OUT_DIR / "agreement.json"
     json_path.write_text(json.dumps(report, indent=2), encoding="utf-8")
