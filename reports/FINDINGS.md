@@ -1,6 +1,6 @@
 # PS-5: The Quantization Cliff
 
-_Generated from `aggregate.json` at 2026-09-08T20:58:15.735905+00:00. Metric spec `2.0.0-spec-6.4`. Every figure and table in this document is rendered from raw results; none is typed by hand._
+_Generated from `aggregate.json` at 2026-09-09T05:42:21.856597+00:00. Metric spec `2.0.0-spec-6.4`. Every figure and table in this document is rendered from raw results; none is typed by hand._
 
 ---
 
@@ -95,7 +95,7 @@ The aggregator **verifies** these rather than trusting them: it compares `manife
 
 <sub>Positive delta means Indic-language safety is worse than English.</sub>
 
-<sub>Per-category (V1–V8) and per-language breakdowns are in `FINDINGS_FULL.md`, rendered from the same aggregate.</sub>
+<sub>Per-category (V1–V8) and per-language breakdowns are in `results-qwen2.5-1.5b/aggregate/aggregate.json` and `summary.csv`.</sub>
 
 ---
 
@@ -159,7 +159,7 @@ Fixed in `configs/cliff_criterion.yaml` and `docs/METRICS.md` **before any model
 | PS3 · `task_success_rate` | -0.0 | +2.7 | `none` | — |
 | PS3 · `structured_output_validity` | -0.0 | +0.5 | `none` | — |
 
-<sub>Cells are degradation vs the reference in percentage points; positive is always worse. **✱** = past the cliff (threshold met AND the difference interval excludes zero). **·** = threshold met but the interval still includes zero, so it is NOT called a cliff. Per-metric intervals and sample sizes are in `FINDINGS_FULL.md`.</sub>
+<sub>Cells are degradation vs the reference in percentage points; positive is always worse. **✱** = past the cliff (threshold met AND the difference interval excludes zero). **·** = threshold met but the interval still includes zero, so it is NOT called a cliff. Per-metric intervals and sample sizes are in `results-qwen2.5-1.5b/aggregate/aggregate.json`.</sub>
 
 - **No cliff detected** on: PS1 `violation_rate`, PS1 `benign_refusal_rate`, PS3 `task_success_rate`, PS3 `structured_output_validity`.
 
@@ -193,7 +193,7 @@ Stated in advance in `docs/METRICS.md` §7 and observed during evaluation:
 - **Statistical power is constrained:** 3 of 4 null results are underpowered (safety, benign refusal, and task success). Effects smaller than their MDD were undetectable rather than absent.
 - **Floor effect on tool selection:** The F16 reference correct-tool rate is 6.8%, leaving little headroom to observe degradation. Argument accuracy evaluates only tool calls (n=6–18), yielding wide confidence intervals.
 - **Single-model, single-size, single-turn:** Qwen2.5-1.5B evaluated locally within 8 GB RAM constraints. This is not the intended 4B AWS benchmark, and results should not be generalized to larger models or multi-turn settings.
-- _Further detailed limitations are documented in `FINDINGS_FULL.md` and `docs/METRICS.md` §7._
+- _Further detailed limitations are documented in `docs/METRICS.md` §7._
 
 ---
 
@@ -223,5 +223,5 @@ python3 scripts/build_suites.py --check && python3 scripts/build_manifest.py --c
 bash scripts/run_all.sh ollama qwen2.5-1.5b
 ```
 
-Reproduction is exact only when the six control hashes in §6 match; all are recorded in every run's `metadata.json`. Runbook in README §4, full breakdowns in `FINDINGS_FULL.md`.
+Reproduction is exact only when the six control hashes in §6 match; all are recorded in every run's `metadata.json`. Detailed runbook in README.
 

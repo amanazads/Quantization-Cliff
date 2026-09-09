@@ -41,16 +41,9 @@ class ConfigError(RuntimeError):
 # --------------------------------------------------------------------------- #
 # Config sets
 #
-# A config set is one complete four-arm experiment: a model, and the tag that
-# realises each precision for it. `default` (configs/experiments/) targets the
-# specification's Qwen3.5-4B; alternates exist because a 9.3 GB reference arm
-# does not fit on every machine.
-#
-# Two arms of DIFFERENT models must never land in the same results directory.
-# The aggregator already refuses to compare across model families, but that check
-# fires after the fact -- by then one run may have overwritten the other's raw
-# JSONL. So the results root is derived from the set name instead of being a free
-# parameter, and collision is prevented rather than detected.
+# A config set defines one complete experiment configuration: a model family,
+# parameters, and the precision arms evaluating it. The primary configuration
+# is `qwen2.5-1.5b` (configs/experiments-qwen2.5-1.5b/).
 # --------------------------------------------------------------------------- #
 
 DEFAULT_CONFIG_SET = "qwen2.5-1.5b"

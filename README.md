@@ -123,9 +123,8 @@ python3 scripts/generate_report.py
 - **Terminal**: Live preflight checks, per-arm execution logs, MDD power tables, and cliff detection summaries.
 - `results-qwen2.5-1.5b/`: Raw evidence per arm (`f16/`, `q8/`, `q4/`) containing `metadata.json`, `ps1_results.jsonl`, and `ps3_results.jsonl`, plus `fp8/NOT_RUN.json`.
 - `results-qwen2.5-1.5b/aggregate/`: `aggregate.json` (full data & statistical intervals), `summary.csv`, and `summary.md`.
-- `reports/FINDINGS.md`: The submission findings document (~227 lines, $\le$ 4 pages).
+- `reports/FINDINGS.md`: The primary submission findings document (~227 lines, $\le$ 4 pages).
 - `reports/FINDINGS.pdf`: Rendered submission PDF report.
-- `reports/FINDINGS_FULL.md`: Detailed appendix with full breakdown tables.
 - `reports/figures/`: High-resolution figures (`01` through `07`).
 - `reports/validation/`: Human-annotated validation data (`agreement.json`, `agreement.md`, `ps1_validation_labelled.csv`).
 
@@ -145,14 +144,11 @@ data/
   ps3_toolcall_suite.jsonl       # 200 tool-calling cases
 docs/
   METRICS.md                     # Statistical formulas & pre-registered thresholds
-  REVIEWER_GUIDE.md              # Reviewer walkthrough
-  SUBMISSION_CHECKLIST.md        # Pre-submission verification checklist
 prompts/
   collections_agent_v2.md        # Frozen system prompt
 reports/
   FINDINGS.md                    # Primary submission findings document
   FINDINGS.pdf                   # Formatted PDF deliverable
-  FINDINGS_FULL.md               # Detailed appendix
   figures/                       # Generated charts
   validation/                    # Scorer vs human validation data
 results-qwen2.5-1.5b/            # Raw JSONL and aggregate outputs

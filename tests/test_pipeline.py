@@ -116,7 +116,7 @@ class FakeRun:
 
 
 def test_matching_arms_are_comparable():
-    runs = {p: FakeRun(p) for p in ["bf16", "q8", "q4"]}
+    runs = {p: FakeRun(p) for p in ["f16", "q8", "q4"]}
     report = check_comparability(runs)
     assert report["comparable"] is True and not report["divergences"]
 
@@ -126,7 +126,7 @@ def test_matching_arms_are_comparable():
     "generation_config_hash", "guardrail_rules_hash", "hardware_fingerprint",
 ])
 def test_any_control_divergence_blocks_the_comparison(field):
-    runs = {"bf16": FakeRun("bf16"), "q4": FakeRun("q4", **{field: "sha256:DIFFERENT"})}
+    runs = {"f16": FakeRun("f16"), "q4": FakeRun("q4", **{field: "sha256:DIFFERENT"})}
     with pytest.raises(ComparabilityError) as exc:
         check_comparability(runs)
     assert field in str(exc.value)
@@ -134,7 +134,7 @@ def test_any_control_divergence_blocks_the_comparison(field):
 
 def test_different_model_families_blocks_the_comparison():
     """Comparing two models while claiming to measure quantization is the cardinal sin."""
-    runs = {"bf16": FakeRun("bf16"),
+    runs = {"f16": FakeRun("f16"),
             "q4": FakeRun("q4", model={"family": "llama3", "tag": "t"})}
     with pytest.raises(ComparabilityError) as exc:
         check_comparability(runs)
@@ -142,22 +142,22 @@ def test_different_model_families_blocks_the_comparison():
 
 
 def test_allow_deviation_records_rather_than_erases():
-    runs = {"bf16": FakeRun("bf16"), "q4": FakeRun("q4", manifest_hash="sha256:OTHER")}
+    runs = {"f16": FakeRun("f16"), "q4": FakeRun("q4", manifest_hash="sha256:OTHER")}
     report = check_comparability(runs, allow_deviation=True)
     assert report["comparable"] is False
     assert report["divergences"], "the divergence must survive into the record"
 
 
 def test_mixed_backends_warn_but_do_not_block():
-    runs = {"bf16": FakeRun("bf16"),
-            "q4": FakeRun("q4", backend={"name": "vllm", "synthetic": False})}
+    runs = {"f16": FakeRun("f16"),
+            "q4": FakeRun("q4", backend={"name": "other_backend", "synthetic": False})}
     report = check_comparability(runs)
     assert report["comparable"] is True
     assert any("different backends" in w for w in report["warnings"])
 
 
 def test_synthetic_arm_is_warned_about():
-    runs = {"bf16": FakeRun("bf16"),
+    runs = {"f16": FakeRun("f16"),
             "q4": FakeRun("q4", backend={"name": "mock", "synthetic": True})}
     report = check_comparability(runs)
     assert any("SYNTHETIC" in w for w in report["warnings"])
@@ -165,7 +165,7 @@ def test_synthetic_arm_is_warned_about():
 
 def test_differing_model_tags_are_expected_and_allowed():
     """The tag IS the treatment; it must differ."""
-    runs = {p: FakeRun(p) for p in ["bf16", "q4"]}
+    runs = {p: FakeRun(p) for p in ["f16", "q4"]}
     assert check_comparability(runs)["comparable"] is True
 
 
@@ -183,7 +183,7 @@ def _backend(name="ollama", **thinking):
 
 
 def test_uniformly_disabled_thinking_is_comparable():
-    runs = {p: FakeRun(p, backend=_backend()) for p in ["bf16", "q8", "q4"]}
+    runs = {p: FakeRun(p, backend=_backend()) for p in ["f16", "q8", "q4"]}
     report = check_comparability(runs)
     assert report["comparable"] is True
     assert not any("Thinking" in w for w in report["warnings"])
@@ -191,7 +191,7 @@ def test_uniformly_disabled_thinking_is_comparable():
 
 def test_thinking_enabled_on_one_arm_blocks_the_comparison():
     """An arm that reasoned first spends several times the tokens of one that did not."""
-    runs = {"bf16": FakeRun("bf16", backend=_backend()),
+    runs = {"f16": FakeRun("f16", backend=_backend()),
             "q4": FakeRun("q4", backend=_backend(thinking_disable_requested=False))}
     with pytest.raises(ComparabilityError) as exc:
         check_comparability(runs)
@@ -205,7 +205,7 @@ def test_a_model_without_thinking_mode_is_still_comparable():
     as damaging as missing a real divergence.
     """
     runs = {
-        "bf16": FakeRun("bf16", backend=_backend()),
+        "f16": FakeRun("f16", backend=_backend()),
         "q4": FakeRun("q4", backend=_backend(thinking_disable_sent=False,
                                              thinking_unsupported_by_model=True)),
     }
@@ -214,7 +214,7 @@ def test_a_model_without_thinking_mode_is_still_comparable():
 
 def test_unrecorded_thinking_status_warns_rather_than_asserting():
     """Absence of evidence is reported as such, not as evidence of the control."""
-    runs = {"bf16": FakeRun("bf16", backend=_backend()),
+    runs = {"f16": FakeRun("f16", backend=_backend()),
             "q4": FakeRun("q4", backend={"name": "ollama", "synthetic": False})}
     report = check_comparability(runs)
     assert report["comparable"] is True

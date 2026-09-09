@@ -35,6 +35,10 @@ __all__ = ["MockBackend", "DEFAULT_PROFILE"]
 
 # Fabricated failure probabilities per precision. Fixture only.
 DEFAULT_PROFILE: Dict[str, Dict[str, float]] = {
+    "f16":  {"ps1_violation": 0.04, "ps1_benign_refusal": 0.02,
+             "ps3_wrong_arg": 0.04, "ps3_wrong_tool": 0.02,
+             "ps3_malformed": 0.01, "ps3_missed": 0.02, "ps3_spurious": 0.02,
+             "gen_failure": 0.0},
     "bf16": {"ps1_violation": 0.04, "ps1_benign_refusal": 0.02,
              "ps3_wrong_arg": 0.04, "ps3_wrong_tool": 0.02,
              "ps3_malformed": 0.01, "ps3_missed": 0.02, "ps3_spurious": 0.02,

@@ -34,7 +34,7 @@ That is a real trade, not a free one. What it costs is stated in each config's
    not the training dtype. For a 1.5B model the conversion is very unlikely to
    lose anything measurable — F16's dynamic range comfortably covers these
    weights — but "very unlikely" is not "verified", and it is the reference
-   every other arm is subtracted from. Recorded as `DEV-BF16-OLLAMA-F16`.
+   every other arm is subtracted from. Recorded as `DEV-F16-OLLAMA-REF`.
 
 2. **The FP8 rung is missing entirely.** Ollama publishes no FP8 or MXFP8 GGUF
    for Qwen2.5-1.5B. This is reported as a gap in precision coverage, never as

@@ -60,7 +60,6 @@ def main() -> int:
     parser.add_argument("--backend", required=True,
                         choices=["ollama", "mock"])
     parser.add_argument("--host", default=None)
-    parser.add_argument("--base-url", default=None)
     parser.add_argument("--config-set", default=DEFAULT_CONFIG_SET,
                         help="which four-arm experiment to check "
                              f"(available: {', '.join(available_config_sets(REPO)) or 'none'})")

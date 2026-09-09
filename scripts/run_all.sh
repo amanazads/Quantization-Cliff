@@ -37,15 +37,13 @@ fi
 
 if [ "$BACKEND" = "mock" ]; then
   RESULTS_ROOT="${3:-results_mock$SUFFIX}"
-  FIGURES="reports/figures_mock"
-  REPORT="reports/FINDINGS_MOCK.md"
   EXTRA="--allow-synthetic"
 else
   RESULTS_ROOT="${3:-results-qwen2.5-1.5b}"
-  FIGURES="reports/figures"
-  REPORT="reports/FINDINGS.md"
   EXTRA=""
 fi
+FIGURES="reports/figures"
+REPORT="reports/FINDINGS.md"
 
 # Resolve a Python interpreter (prefer repository venv)
 PY="${PYTHON:-}"

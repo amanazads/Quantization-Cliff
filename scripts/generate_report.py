@@ -59,22 +59,12 @@ def main() -> int:
         relative = figures_dir.as_posix()
 
     criterion = load_criterion(str(REPO / args.criterion))
-    full_path = out_path.with_name(out_path.stem + "_FULL" + out_path.suffix)
 
     try:
-        # The specification caps the submitted findings document at four pages, so
-        # the default output is the concise one and the complete set of breakdown
-        # tables goes to a companion appendix. Both render from the same
-        # aggregate, so they cannot disagree with each other.
         concise_md = render_findings(
             aggregate_path, criterion, figures_dir=figures_dir,
             allow_synthetic=args.allow_synthetic, figures_relative=relative,
             concise=True, repo_root=REPO,
-        )
-        full_md = render_findings(
-            aggregate_path, criterion, figures_dir=figures_dir,
-            allow_synthetic=args.allow_synthetic, figures_relative=relative,
-            concise=False, repo_root=REPO,
         )
     except SyntheticReportRefused as exc:
         print(f"\n{exc}\n", file=sys.stderr)
@@ -82,15 +72,11 @@ def main() -> int:
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(concise_md, encoding="utf-8")
-    full_path.write_text(full_md, encoding="utf-8")
     if not args.allow_synthetic and out_path.name != "FINDINGS.md":
-        # Keep reports/FINDINGS.md in sync with the primary real report
         (out_path.parent / "FINDINGS.md").write_text(concise_md, encoding="utf-8")
-        (out_path.parent / "FINDINGS_FULL.md").write_text(full_md, encoding="utf-8")
 
     lines = len(concise_md.splitlines())
     print(f"wrote {out_path.relative_to(REPO)} ({lines} lines) -- the submission document")
-    print(f"wrote {full_path.relative_to(REPO)} ({len(full_md.splitlines())} lines) -- appendix")
     # ~50 rendered lines per page is a rough but useful guard against drifting
     # past the four-page cap without noticing.
     if lines > 200:

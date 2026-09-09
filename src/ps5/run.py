@@ -93,7 +93,6 @@ examples
     p.add_argument("--repeats", type=int, default=None,
                    help="override experiment.repeats, to estimate run-to-run variance")
     p.add_argument("--host", default=None, help="Ollama host, e.g. http://127.0.0.1:11434")
-    p.add_argument("--base-url", default=None, help="OpenAI-compatible base URL")
     # Two separate things, because conflating them is how a multi-hour run ends
     # up with no output at all and no way to tell slow from hung.
     p.add_argument("--quiet", action="store_true",
@@ -146,8 +145,6 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     if args.host:
         cfg.backend.options["host"] = args.host
-    if args.base_url:
-        cfg.backend.options["base_url"] = args.base_url
 
     if args.limit:
         print(

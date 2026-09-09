@@ -436,7 +436,7 @@ def render_findings(
         out += ["_PS-1 was not run in this comparison set._", ""]
     elif concise:
         out += ["<sub>Per-category (V1–V8) and per-language breakdowns are in "
-                "`FINDINGS_FULL.md`, rendered from the same aggregate.</sub>", ""]
+                "`results-qwen2.5-1.5b/aggregate/aggregate.json` and `summary.csv`.</sub>", ""]
 
     out += ["---", "", "## 8. PS-3 results — structured output and tool calling", ""]
     if "ps3" in metrics:
@@ -559,7 +559,7 @@ def render_findings(
                 "is always worse. **✱** = past the cliff (threshold met AND the difference "
                 "interval excludes zero). **·** = threshold met but the interval still "
                 "includes zero, so it is NOT called a cliff. Per-metric intervals and "
-                "sample sizes are in `FINDINGS_FULL.md`.</sub>", ""]
+                "sample sizes are in `results-qwen2.5-1.5b/aggregate/aggregate.json`.</sub>", ""]
         for suite, analyses in (degradation.get("analyses") or {}).items():
             for analysis in analyses:
                 if analysis.get("pattern") != "none":
@@ -674,7 +674,7 @@ def render_findings(
     for item in (limitations[:5] if concise else limitations):
         out.append(f"- {item}")
     if concise:
-        out.append("- _Further detailed limitations are documented in `FINDINGS_FULL.md` and `docs/METRICS.md` §7._")
+        out.append("- _Further detailed limitations are documented in `docs/METRICS.md` §7._")
     out.append("")
 
     # ---- recommendation --------------------------------------------------- #
@@ -726,8 +726,7 @@ def render_findings(
             f"bash scripts/run_all.sh {_backend_name(arms, order)}{_set_arg(agg)}",
             "```", "",
             "Reproduction is exact only when the six control hashes in §6 match; "
-            "all are recorded in every run's `metadata.json`. Runbook in README §4, "
-            "full breakdowns in `FINDINGS_FULL.md`.", "",
+            "all are recorded in every run's `metadata.json`. Detailed runbook in README.", "",
         ]
         return "\n".join(out) + "\n"
 

@@ -3,7 +3,7 @@
 
   python scripts/aggregate_results.py
   python scripts/aggregate_results.py --results-root results_mock
-  python scripts/aggregate_results.py --precisions bf16 q8 q4
+  python scripts/aggregate_results.py --precisions f16 q8 q4
   python scripts/aggregate_results.py --allow-deviation   # proceed despite divergence
 
 Outputs, all machine-readable and all derived from raw JSONL:
@@ -60,7 +60,7 @@ def main() -> int:
     if not runs:
         print(f"No runs found under {results_root}.\n"
               "Run at least one arm first, e.g.:\n"
-              "  python -m ps5.run --precision bf16 --backend mock --suite ps1 ps3",
+              "  python -m ps5.run --precision f16 --backend mock --suite ps1 ps3",
               file=sys.stderr)
         return 1
 
