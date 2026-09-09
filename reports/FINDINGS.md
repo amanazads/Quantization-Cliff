@@ -1,6 +1,6 @@
 # PS-5: The Quantization Cliff
 
-_Generated from `aggregate.json` at 2026-09-09T11:49:53.330957+00:00. Metric spec `2.0.0-spec-6.4`. Every figure and table in this document is rendered from raw results; none is typed by hand._
+_Generated from `aggregate.json` at 2026-09-09T13:03:51.580635+00:00. Metric spec `2.0.0-spec-6.4`. Every figure and table in this document is rendered from raw results; none is typed by hand._
 
 ---
 
@@ -132,15 +132,15 @@ The aggregator **verifies** these rather than trusting them: it compares `manife
 
 **Guardrail adherence and over-refusal vs precision**
 
-![Guardrail adherence and over-refusal vs precision](/Users/aman/Downloads/Quantization Cliff/reports/figures/01_guardrail_adherence_vs_precision.png)
+![Guardrail adherence and over-refusal vs precision](reports/figures/01_guardrail_adherence_vs_precision.png)
 
 **Structured-output metrics vs precision**
 
-![Structured-output metrics vs precision](/Users/aman/Downloads/Quantization Cliff/reports/figures/02_structured_output_vs_precision.png)
+![Structured-output metrics vs precision](reports/figures/02_structured_output_vs_precision.png)
 
 **Degradation vs the reference precision**
 
-![Degradation vs the reference precision](/Users/aman/Downloads/Quantization Cliff/reports/figures/07_degradation_vs_reference.png)
+![Degradation vs the reference precision](reports/figures/07_degradation_vs_reference.png)
 
 ---
 

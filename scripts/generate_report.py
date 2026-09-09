@@ -23,6 +23,30 @@ from ps5.report import SyntheticReportRefused, render_findings  # noqa: E402
 REPO = Path(__file__).resolve().parents[1]
 
 
+def _pdf_page_count(path: Path) -> Optional[int]:
+    if not path.exists():
+        return None
+    try:
+        import subprocess
+        out = subprocess.check_output(
+            ["mdls", "-name", "kMDItemNumberOfPages", "-raw", str(path)],
+            text=True, stderr=subprocess.DEVNULL,
+        ).strip()
+        if out.isdigit():
+            return int(out)
+    except Exception:
+        pass
+    try:
+        import re
+        content = path.read_bytes()
+        pages = re.findall(rb"/Type\s*/Page(?=[^s]|$)", content)
+        if pages:
+            return len(pages)
+    except Exception:
+        pass
+    return None
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -38,9 +62,13 @@ def main() -> int:
     out_path = REPO / args.out
 
     if not aggregate_path.exists():
-        print(f"{aggregate_path} not found. Run scripts/aggregate_results.py first.",
-              file=sys.stderr)
+        print(f"No aggregate found at {aggregate_path}.\n"
+              "Run aggregate_results.py first.", file=sys.stderr)
         return 1
+
+    relative = args.figures
+    if Path(relative).is_absolute():
+        relative = figures_dir.as_posix()
 
     # Belt and braces: even with --allow-synthetic, fabricated output must not be
     # written to the path a reader will take for the real findings report.
@@ -53,10 +81,6 @@ def main() -> int:
             file=sys.stderr,
         )
         return 3
-    try:
-        relative = Path(figures_dir).relative_to(out_path.parent.relative_to(REPO)).as_posix()
-    except ValueError:
-        relative = figures_dir.as_posix()
 
     criterion = load_criterion(str(REPO / args.criterion))
 
@@ -77,11 +101,16 @@ def main() -> int:
 
     lines = len(concise_md.splitlines())
     print(f"wrote {out_path.relative_to(REPO)} ({lines} lines) -- the submission document")
-    # ~50 rendered lines per page is a rough but useful guard against drifting
-    # past the four-page cap without noticing.
-    if lines > 200:
-        print(f"\n  NOTE: the concise document is {lines} lines, which may exceed the")
-        print("  specification's four-page cap once rendered. Check before submitting.")
+
+    pdf_path = out_path.with_suffix(".pdf")
+    pdf_pages = _pdf_page_count(pdf_path)
+    if pdf_pages is not None:
+        if pdf_pages <= 4:
+            print(f"verified PDF: {pdf_path.relative_to(REPO)} is {pdf_pages} pages (within the 4-page cap).")
+        else:
+            print(f"\n  WARNING: {pdf_path.relative_to(REPO)} is {pdf_pages} pages, exceeding the 4-page cap!")
+    elif lines > 300:
+        print(f"\n  NOTE: the concise document is {lines} lines. Check rendered page count before submitting.")
     return 0
 
 
