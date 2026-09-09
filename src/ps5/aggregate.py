@@ -490,7 +490,7 @@ def render_markdown_summary(agg: Dict[str, Any], criterion: CliffCriterion) -> s
             if q_level:
                 return q_level
             deviations = arm.get("deviations") or []
-            if any(d.get("id") == "DEV-BF16-OLLAMA-F16" for d in deviations):
+            if any(d.get("id") in ("DEV-F16-OLLAMA-REF", "DEV-BF16-OLLAMA-F16") for d in deviations):
                 return "F16"
             prec = arm.get("precision") or {}
             if prec.get("label"):
